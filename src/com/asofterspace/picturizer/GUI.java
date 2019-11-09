@@ -8,6 +8,10 @@ import com.asofterspace.toolbox.configuration.ConfigFile;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.gui.MainWindow;
+import com.asofterspace.toolbox.io.Directory;
+import com.asofterspace.toolbox.io.File;
+import com.asofterspace.toolbox.io.ImageFile;
+import com.asofterspace.toolbox.utils.Image;
 import com.asofterspace.toolbox.Utils;
 
 import java.awt.BorderLayout;
@@ -24,7 +28,10 @@ import java.awt.Point;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -40,12 +47,16 @@ public class GUI extends MainWindow {
 	private final static String CONFIG_KEY_HEIGHT = "mainFrameHeight";
 	private final static String CONFIG_KEY_LEFT = "mainFrameLeft";
 	private final static String CONFIG_KEY_TOP = "mainFrameTop";
+	private final static String CONFIG_KEY_LAST_DIRECTORY = "lastDirectory";
 
 	private JPanel mainPanelRight;
 
 	private JMenuItem close;
 
 	private ConfigFile configuration;
+
+	private ImageIcon imageViewer;
+	private Image picture;
 
 
 	public GUI(ConfigFile configFile) {
@@ -125,6 +136,16 @@ public class GUI extends MainWindow {
 		file.add(newFile);
 		*/
 
+		JMenuItem openFile = new JMenuItem("Open");
+		openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+		openFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				openFile();
+			}
+		});
+		file.add(openFile);
+
 		// file.addSeparator();
 
 		close = new JMenuItem("Exit");
@@ -185,6 +206,10 @@ public class GUI extends MainWindow {
 		mainPanelRight.setLayout(new CardLayout());
 		mainPanelRight.setPreferredSize(new Dimension(8, 8));
 
+		imageViewer = new ImageIcon();
+		JLabel imageViewerLabel = new JLabel(imageViewer);
+		mainPanelRight.add(imageViewerLabel);
+
 		mainPanelRightOuter.add(mainPanelRight, new Arrangement(0, 0, 1.0, 1.0));
 
 		mainPanel.add(mainPanelRightOuter, new Arrangement(3, 0, 1.0, 1.0));
@@ -196,6 +221,49 @@ public class GUI extends MainWindow {
 
 	private void refreshTitleBar() {
 		mainFrame.setTitle(Main.PROGRAM_TITLE);
+	}
+
+	private void openFile() {
+
+		// TODO :: de-localize the JFileChooser (by default it seems localized, which is inconsistent when the rest of the program is in English...)
+		// (while you're at it, make Öffnen into Save for the save dialog, but keep it as Open for the open dialog... ^^)
+		// TODO :: actually, write our own file chooser
+		JFileChooser augFilePicker;
+
+		// if we find nothing better, use the last-used directory
+		String lastDirectory = configuration.getValue(CONFIG_KEY_LAST_DIRECTORY);
+
+		if ((lastDirectory != null) && !"".equals(lastDirectory)) {
+			augFilePicker = new JFileChooser(new java.io.File(lastDirectory));
+		} else {
+			augFilePicker = new JFileChooser();
+		}
+
+		augFilePicker.setDialogTitle("Open a Picture File to Edit");
+		augFilePicker.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		augFilePicker.setMultiSelectionEnabled(false);
+
+		int result = augFilePicker.showOpenDialog(mainFrame);
+
+		switch (result) {
+
+			case JFileChooser.APPROVE_OPTION:
+
+				// load the files
+				configuration.set(CONFIG_KEY_LAST_DIRECTORY, augFilePicker.getCurrentDirectory().getAbsolutePath());
+				configuration.create();
+
+				File selectedFile = new File(augFilePicker.getSelectedFile());
+				picture = ImageFile.readImageFromFile(selectedFile);
+				imageViewer.setImage(picture.getAwtImage());
+				mainPanelRight.repaint();
+
+				break;
+
+			case JFileChooser.CANCEL_OPTION:
+				// cancel was pressed... do nothing for now
+				break;
+		}
 	}
 
 }
