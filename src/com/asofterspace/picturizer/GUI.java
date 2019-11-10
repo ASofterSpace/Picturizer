@@ -51,6 +51,8 @@ public class GUI extends MainWindow {
 	private final static String CONFIG_KEY_TOP = "mainFrameTop";
 	private final static String CONFIG_KEY_LAST_DIRECTORY = "lastDirectory";
 
+	private String lastPicturePath;
+
 	private JPanel mainPanelRight;
 
 	private JMenuItem close;
@@ -69,8 +71,6 @@ public class GUI extends MainWindow {
 	public void run() {
 
 		super.create();
-
-		refreshTitleBar();
 
 		createMenu(mainFrame);
 
@@ -117,6 +117,8 @@ public class GUI extends MainWindow {
 				});
 			}
 		});
+
+		createNewEmptyFile();
 	}
 
 	private JMenuBar createMenu(JFrame parent) {
@@ -137,6 +139,28 @@ public class GUI extends MainWindow {
 		});
 		file.add(newFile);
 		*/
+
+		JMenu newFile = new JMenu("New");
+		file.add(newFile);
+
+		JMenuItem emptyFile = new JMenuItem("Empty");
+		emptyFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				createNewEmptyFile();
+			}
+		});
+		newFile.add(emptyFile);
+
+		JMenuItem qrCodeFile = new JMenuItem("QR Code");
+		qrCodeFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				QrGUI qrGUI = new QrGUI(GUI.this);
+				qrGUI.show();
+			}
+		});
+		newFile.add(qrCodeFile);
 
 		JMenuItem openFile = new JMenuItem("Open");
 		openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
@@ -231,7 +255,22 @@ public class GUI extends MainWindow {
 	}
 
 	private void refreshTitleBar() {
-		mainFrame.setTitle(Main.PROGRAM_TITLE);
+		mainFrame.setTitle(Main.PROGRAM_TITLE + " - " + lastPicturePath);
+	}
+
+	private void createNewEmptyFile() {
+
+		setPicture(new Image(100, 100));
+	}
+
+	public void setPicture(Image newPicture) {
+
+		picture = newPicture;
+
+		refreshView();
+
+		lastPicturePath = "Unsaved Picture";
+		refreshTitleBar();
 	}
 
 	private void openFile() {
@@ -268,8 +307,10 @@ public class GUI extends MainWindow {
 
 				File selectedFile = new File(augFilePicker.getSelectedFile());
 				picture = ImageFile.readImageFromFile(selectedFile);
-				imageViewer.setImage(picture.getAwtImage());
-				mainPanelRight.repaint();
+				refreshView();
+
+				lastPicturePath = selectedFile.getCanonicalFilename();
+				refreshTitleBar();
 
 				break;
 
@@ -329,6 +370,9 @@ public class GUI extends MainWindow {
 				}
 				ImageFile.saveImageToFile(picture, selectedFile);
 
+				lastPicturePath = selectedFile.getCanonicalFilename();
+				refreshTitleBar();
+
 				break;
 
 			case JFileChooser.CANCEL_OPTION:
@@ -344,6 +388,11 @@ public class GUI extends MainWindow {
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Bitmap (*.pbm)", "pbm"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Gray Map (*.pgm)", "pgm"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Pixel Map (*.ppm)", "ppm"));
+	}
+
+	private void refreshView() {
+		imageViewer.setImage(picture.getAwtImage());
+		mainPanelRight.repaint();
 	}
 
 }
