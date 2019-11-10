@@ -28,6 +28,8 @@ import java.awt.Point;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -252,6 +254,8 @@ public class GUI extends MainWindow {
 		augFilePicker.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		augFilePicker.setMultiSelectionEnabled(false);
 
+		addFileFilters(augFilePicker);
+
 		int result = augFilePicker.showOpenDialog(mainFrame);
 
 		switch (result) {
@@ -292,6 +296,8 @@ public class GUI extends MainWindow {
 		augFilePicker.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		augFilePicker.setMultiSelectionEnabled(false);
 
+		addFileFilters(augFilePicker);
+
 		int result = augFilePicker.showSaveDialog(mainFrame);
 
 		switch (result) {
@@ -303,6 +309,24 @@ public class GUI extends MainWindow {
 				configuration.create();
 
 				File selectedFile = new File(augFilePicker.getSelectedFile());
+				String selectedExtension = null;
+				FileFilter genericFilter = augFilePicker.getFileFilter();
+				if (genericFilter != null) {
+					if (genericFilter instanceof FileNameExtensionFilter) {
+						FileNameExtensionFilter filter = (FileNameExtensionFilter) genericFilter;
+						if (filter.getExtensions() != null) {
+							if (filter.getExtensions().length > 0) {
+								selectedExtension = filter.getExtensions()[0];
+								if (selectedExtension != null) {
+									selectedExtension = selectedExtension.toLowerCase();
+									if (!selectedFile.getFilename().toLowerCase().endsWith("." + selectedExtension)) {
+										selectedFile = new File(selectedFile.getFilename() + "." + selectedExtension);
+									}
+								}
+							}
+						}
+					}
+				}
 				ImageFile.saveImageToFile(picture, selectedFile);
 
 				break;
@@ -311,6 +335,15 @@ public class GUI extends MainWindow {
 				// cancel was pressed... do nothing for now
 				break;
 		}
+	}
+
+	private void addFileFilters(JFileChooser fileChooser) {
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG files (*.jpg, *.jpeg)", "jpg", "jpeg"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Bitmap files (*.bmp)", "bmp"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Network Graphics (*.png)", "png"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Bitmap (*.pbm)", "pbm"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Gray Map (*.pgm)", "pgm"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Pixel Map (*.ppm)", "ppm"));
 	}
 
 }
