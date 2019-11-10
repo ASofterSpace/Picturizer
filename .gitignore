@@ -32,3 +32,6 @@ src/com/asofterspace/toolbox
 
 # config files
 config
+
+# temp files
+temp/

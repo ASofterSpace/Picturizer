@@ -293,7 +293,7 @@ public class GUI extends MainWindow {
 		augFilePicker.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		augFilePicker.setMultiSelectionEnabled(false);
 
-		addFileFilters(augFilePicker);
+		addOpenFileFilters(augFilePicker);
 
 		int result = augFilePicker.showOpenDialog(mainFrame);
 
@@ -337,7 +337,7 @@ public class GUI extends MainWindow {
 		augFilePicker.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		augFilePicker.setMultiSelectionEnabled(false);
 
-		addFileFilters(augFilePicker);
+		addSaveFileFilters(augFilePicker);
 
 		int result = augFilePicker.showSaveDialog(mainFrame);
 
@@ -381,7 +381,17 @@ public class GUI extends MainWindow {
 		}
 	}
 
-	private void addFileFilters(JFileChooser fileChooser) {
+	private void addOpenFileFilters(JFileChooser fileChooser) {
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG files (*.jpg, *.jpeg)", "jpg", "jpeg"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Bitmap files (*.bmp)", "bmp"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Network Graphics (*.png)", "png"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Bitmap (*.pbm)", "pbm"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Gray Map (*.pgm)", "pgm"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Pixel Map (*.ppm)", "ppm"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Document Format (*.pdf)", "pdf"));
+	}
+
+	private void addSaveFileFilters(JFileChooser fileChooser) {
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG files (*.jpg, *.jpeg)", "jpg", "jpeg"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Bitmap files (*.bmp)", "bmp"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Network Graphics (*.png)", "png"));
