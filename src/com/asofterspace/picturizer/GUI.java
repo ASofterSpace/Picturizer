@@ -146,6 +146,15 @@ public class GUI extends MainWindow {
 		});
 		file.add(openFile);
 
+		JMenuItem saveFileAs = new JMenuItem("Save As...");
+		saveFileAs.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveFileAs();
+			}
+		});
+		file.add(saveFileAs);
+
 		// file.addSeparator();
 
 		close = new JMenuItem("Exit");
@@ -257,6 +266,44 @@ public class GUI extends MainWindow {
 				picture = ImageFile.readImageFromFile(selectedFile);
 				imageViewer.setImage(picture.getAwtImage());
 				mainPanelRight.repaint();
+
+				break;
+
+			case JFileChooser.CANCEL_OPTION:
+				// cancel was pressed... do nothing for now
+				break;
+		}
+	}
+
+	private void saveFileAs() {
+
+		JFileChooser augFilePicker;
+
+		// if we find nothing better, use the last-used directory
+		String lastDirectory = configuration.getValue(CONFIG_KEY_LAST_DIRECTORY);
+
+		if ((lastDirectory != null) && !"".equals(lastDirectory)) {
+			augFilePicker = new JFileChooser(new java.io.File(lastDirectory));
+		} else {
+			augFilePicker = new JFileChooser();
+		}
+
+		augFilePicker.setDialogTitle("Save as Picture File");
+		augFilePicker.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		augFilePicker.setMultiSelectionEnabled(false);
+
+		int result = augFilePicker.showSaveDialog(mainFrame);
+
+		switch (result) {
+
+			case JFileChooser.APPROVE_OPTION:
+
+				// save the files
+				configuration.set(CONFIG_KEY_LAST_DIRECTORY, augFilePicker.getCurrentDirectory().getAbsolutePath());
+				configuration.create();
+
+				File selectedFile = new File(augFilePicker.getSelectedFile());
+				ImageFile.saveImageToFile(picture, selectedFile);
 
 				break;
 
