@@ -7,11 +7,11 @@ if errorlevel 1 goto :32bit
 
 :64bit
 REM   we are running 64 bit - nice! assign loads of heap!
-java -classpath "%~dp0\bin" -Xms16m -Xmx4096m com.asofterspace.picturizer.Main %*
+start "Picturizer" javaw -classpath "%~dp0\bin" -Xms16m -Xmx4096m com.asofterspace.picturizer.Main %*
 goto :end
 
 :32bit
 REM   we are running 32 bit - oh no! assign only a tinly little bit of heap!
-java -classpath "%~dp0\bin" -Xms16m -Xmx1024m com.asofterspace.picturizer.Main %*
+start "Picturizer" javaw -classpath "%~dp0\bin" -Xms16m -Xmx1024m com.asofterspace.picturizer.Main %*
 
 :end
