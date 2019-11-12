@@ -138,7 +138,7 @@ public class ChannelChangeGUI {
 	}
 
 	private void applyPreview() {
-		Image ccPicture = gui.getPicture();
+		ccPicture = gui.getPicture();
 		String basicR = basicFields[0].getText();
 		String basicG = basicFields[1].getText();
 		String basicB = basicFields[2].getText();

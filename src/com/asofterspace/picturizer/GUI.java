@@ -62,6 +62,8 @@ public class GUI extends MainWindow {
 	private ImageIcon imageViewer;
 	private JLabel imageViewerLabel;
 	private Image picture;
+	private Image undoablePicture;
+	private Image redoablePicture;
 
 	private QrGUI qrGUI;
 	private ChannelChangeGUI channelChangeGUI;
@@ -190,6 +192,38 @@ public class GUI extends MainWindow {
 		JMenu edit = new JMenu("Edit");
 		menu.add(edit);
 
+		JMenuItem undo = new JMenuItem("Undo");
+		undo.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				undo();
+			}
+		});
+		edit.add(undo);
+
+		JMenuItem redo = new JMenuItem("Redo");
+		redo.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				redo();
+			}
+		});
+		edit.add(redo);
+
+		edit.addSeparator();
+
+		JMenuItem clear = new JMenuItem("Clear");
+		clear.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.clear();
+				refreshView();
+			}
+		});
+		edit.add(clear);
+
 		JMenuItem editChannelsManually = new JMenuItem("Edit Channels Manually");
 		editChannelsManually.addActionListener(new ActionListener() {
 			@Override
@@ -273,10 +307,12 @@ public class GUI extends MainWindow {
 	}
 
 	public Image getPicture() {
-		return picture;
+		return picture.copy();
 	}
 
 	public void setPicture(Image newPicture) {
+
+		saveCurPicForUndo();
 
 		picture = newPicture;
 
@@ -319,6 +355,7 @@ public class GUI extends MainWindow {
 				configuration.create();
 
 				File selectedFile = new File(augFilePicker.getSelectedFile());
+				saveCurPicForUndo();
 				picture = ImageFile.readImageFromFile(selectedFile);
 				refreshView();
 
@@ -416,6 +453,31 @@ public class GUI extends MainWindow {
 	private void refreshView() {
 		imageViewer.setImage(picture.getAwtImage());
 		imageViewerLabel.repaint();
+	}
+
+	private void saveCurPicForUndo() {
+		undoablePicture = picture;
+		redoablePicture = null;
+	}
+
+	private void undo() {
+		if (undoablePicture == null) {
+			return;
+		}
+		redoablePicture = picture;
+		picture = undoablePicture;
+		undoablePicture = null;
+		refreshView();
+	}
+
+	private void redo() {
+		if (redoablePicture == null) {
+			return;
+		}
+		undoablePicture = picture;
+		picture = redoablePicture;
+		redoablePicture = null;
+		refreshView();
 	}
 
 }
