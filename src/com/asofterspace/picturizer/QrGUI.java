@@ -6,6 +6,7 @@ package com.asofterspace.picturizer;
 
 import com.asofterspace.toolbox.barcodes.QrCode;
 import com.asofterspace.toolbox.barcodes.QrCodeFactory;
+import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.utils.Image;
 import com.asofterspace.toolbox.Utils;
@@ -15,6 +16,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +37,7 @@ public class QrGUI {
 	private JDialog qrDialog;
 
 	private ImageIcon qrImageViewer;
+	private JLabel qrImageViewerLabel;
 
 	private Image qrPicture;
 
@@ -50,18 +53,17 @@ public class QrGUI {
 
 		// Create the window
 		final JDialog qrDialog = new JDialog(gui.getMainFrame(), "Create QR Code", true);
-		GridLayout qrDialogLayout = new GridLayout(4, 1);
-		qrDialogLayout.setVgap(8);
+		GridBagLayout qrDialogLayout = new GridBagLayout();
 		qrDialog.setLayout(qrDialogLayout);
 		qrDialog.getRootPane().setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
 		// Populate the window
 		JLabel explanationLabel = new JLabel();
 		explanationLabel.setText("Enter the text content of the QR code here:");
-		qrDialog.add(explanationLabel);
+		qrDialog.add(explanationLabel, new Arrangement(0, 0, 1.0, 0.0));
 
 		final JTextField qrTextContent = new JTextField();
-		qrDialog.add(qrTextContent);
+		qrDialog.add(qrTextContent, new Arrangement(0, 1, 1.0, 0.0));
 
 		qrTextContent.addKeyListener(new KeyAdapter() {
 			@Override
@@ -69,7 +71,7 @@ public class QrGUI {
 				QrCode qrCode = QrCodeFactory.createFromString(qrTextContent.getText());
 				qrPicture = qrCode.toImage();
 				qrImageViewer.setImage(qrPicture.getAwtImage());
-				qrDialog.repaint();
+				qrImageViewerLabel.repaint();
 			}
 
 			@Override
@@ -82,19 +84,20 @@ public class QrGUI {
 		});
 
 		qrImageViewer = new ImageIcon();
-		JLabel qrImageViewerLabel = new JLabel(qrImageViewer);
-		qrDialog.add(qrImageViewerLabel);
+		qrImageViewerLabel = new JLabel(qrImageViewer);
+		qrDialog.add(qrImageViewerLabel, new Arrangement(0, 2, 1.0, 1.0));
 
 		JPanel buttonRow = new JPanel();
 		GridLayout buttonRowLayout = new GridLayout(1, 2);
 		buttonRowLayout.setHgap(8);
 		buttonRow.setLayout(buttonRowLayout);
-		qrDialog.add(buttonRow);
+		qrDialog.add(buttonRow, new Arrangement(0, 3, 1.0, 0.0));
 
 		JButton okButton = new JButton("OK, take this");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				gui.setPicture(qrPicture);
+				qrDialog.dispose();
 			}
 		});
 		buttonRow.add(okButton);

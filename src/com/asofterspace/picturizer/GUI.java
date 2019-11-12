@@ -60,7 +60,11 @@ public class GUI extends MainWindow {
 	private ConfigFile configuration;
 
 	private ImageIcon imageViewer;
+	private JLabel imageViewerLabel;
 	private Image picture;
+
+	private QrGUI qrGUI;
+	private ChannelChangeGUI channelChangeGUI;
 
 
 	public GUI(ConfigFile configFile) {
@@ -128,18 +132,6 @@ public class GUI extends MainWindow {
 		JMenu file = new JMenu("File");
 		menu.add(file);
 
-		/*
-		JMenuItem newFile = new JMenuItem("New File");
-		newFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
-		newFile.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				newFile();
-			}
-		});
-		file.add(newFile);
-		*/
-
 		JMenu newFile = new JMenu("New");
 		file.add(newFile);
 
@@ -156,7 +148,9 @@ public class GUI extends MainWindow {
 		qrCodeFile.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				QrGUI qrGUI = new QrGUI(GUI.this);
+				if (qrGUI == null) {
+					qrGUI = new QrGUI(GUI.this);
+				}
 				qrGUI.show();
 			}
 		});
@@ -192,6 +186,21 @@ public class GUI extends MainWindow {
 			}
 		});
 		file.add(close);
+
+		JMenu edit = new JMenu("Edit");
+		menu.add(edit);
+
+		JMenuItem editChannelsManually = new JMenuItem("Edit Channels Manually");
+		editChannelsManually.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (channelChangeGUI == null) {
+					channelChangeGUI = new ChannelChangeGUI(GUI.this);
+				}
+				channelChangeGUI.show();
+			}
+		});
+		edit.add(editChannelsManually);
 
 		JMenu huh = new JMenu("?");
 
@@ -242,7 +251,7 @@ public class GUI extends MainWindow {
 		mainPanelRight.setPreferredSize(new Dimension(8, 8));
 
 		imageViewer = new ImageIcon();
-		JLabel imageViewerLabel = new JLabel(imageViewer);
+		imageViewerLabel = new JLabel(imageViewer);
 		mainPanelRight.add(imageViewerLabel);
 
 		mainPanelRightOuter.add(mainPanelRight, new Arrangement(0, 0, 1.0, 1.0));
@@ -261,6 +270,10 @@ public class GUI extends MainWindow {
 	private void createNewEmptyFile() {
 
 		setPicture(new Image(100, 100));
+	}
+
+	public Image getPicture() {
+		return picture;
 	}
 
 	public void setPicture(Image newPicture) {
@@ -402,7 +415,7 @@ public class GUI extends MainWindow {
 
 	private void refreshView() {
 		imageViewer.setImage(picture.getAwtImage());
-		mainPanelRight.repaint();
+		imageViewerLabel.repaint();
 	}
 
 }
