@@ -262,17 +262,6 @@ public class GUI extends MainWindow {
 
 		/*
 		TODO:
-		stark dämpfen:
-		p^[1] := max(255 - ((255 - p^[1]) * 2), 0);
-		p^[2] := max(255 - ((255 - p^[2]) * 2), 0);
-		p^[3] := max(255 - ((255 - p^[3]) * 2), 0)
-
-		leicht dämpfen:
-		p^[1] := max(255 - round((255 - p^[1]) * 1.5), 0);
-		p^[2] := max(255 - round((255 - p^[2]) * 1.5), 0);
-		p^[3] := max(255 - round((255 - p^[3]) * 1.5), 0);
-
-
 		kopieren
 
 		einfügen
