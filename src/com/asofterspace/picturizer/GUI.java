@@ -236,6 +236,173 @@ public class GUI extends MainWindow {
 		});
 		edit.add(editChannelsManually);
 
+		JMenuItem dampenWeakly = new JMenuItem("Dampen Weakly");
+		dampenWeakly.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.dampen(1.5f);
+				refreshView();
+			}
+		});
+		edit.add(dampenWeakly);
+
+		JMenuItem dampenStrongly = new JMenuItem("Dampen Strongly");
+		dampenStrongly.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.dampen(2);
+				refreshView();
+			}
+		});
+		edit.add(dampenStrongly);
+
+		/*
+		TODO:
+		stark dämpfen:
+		p^[1] := max(255 - ((255 - p^[1]) * 2), 0);
+		p^[2] := max(255 - ((255 - p^[2]) * 2), 0);
+		p^[3] := max(255 - ((255 - p^[3]) * 2), 0)
+
+		leicht dämpfen:
+		p^[1] := max(255 - round((255 - p^[1]) * 1.5), 0);
+		p^[2] := max(255 - round((255 - p^[2]) * 1.5), 0);
+		p^[3] := max(255 - round((255 - p^[3]) * 1.5), 0);
+
+
+		kopieren
+
+		einfügen
+
+		Differenzanalyse:
+		varc := ColorToRGB(PicOrgSicherung.Canvas.Pixels[varx, vary]);
+		varcc := ColorToRGB(PicOrgSicherung.Canvas.Pixels[varx + 1, vary]);
+		varccc := ColorToRGB(PicOrgSicherung.Canvas.Pixels[varx, vary + 1]);
+		varcccc := ColorToRGB(PicOrgSicherung.Canvas.Pixels[varx + 1, vary + 1]);
+		varbr := max255(Abs(GetRValue(varc) - GetRValue(varcc)) + Abs(GetRValue(varccc) - GetRValue(varcccc)));
+		varbg := max255(Abs(GetGValue(varc) - GetGValue(varcc)) + Abs(GetGValue(varccc) - GetGValue(varcccc)));
+		varbb := max255(Abs(GetBValue(varc) - GetBValue(varcc)) + Abs(GetBValue(varccc) - GetBValue(varcccc)));
+		PicOrgImage.Canvas.Pixels[varx, vary] := RGB(varbr, varbg, varbb);
+
+		second layer:
+		PicOrgImage.Canvas.Pixels[varx, vary] := RGB(HextoInt(InttoHex(GetRValue(PicOrgImage.Canvas.Pixels[varx, vary]), 2)[2] + InttoHex(GetRValue(PicOrgImage.Canvas.Pixels[varx, vary]), 2)[1]), HextoInt(InttoHex(GetGValue(PicOrgImage.Canvas.Pixels[varx, vary]), 2)[2] + InttoHex(GetGValue(PicOrgImage.Canvas.Pixels[varx, vary]), 2)[1]), HextoInt(InttoHex(GetBValue(PicOrgImage.Canvas.Pixels[varx, vary]), 2)[2] + InttoHex(GetBValue(PicOrgImage.Canvas.Pixels[varx, vary]), 2)[1]));
+
+		Differenzanalyse grau:
+		varbr := max255(Abs(GetRValue(ColorToRGB(PicOrgSicherung.Canvas.Pixels[varx, vary])) - GetRValue(ColorToRGB(PicOrgSicherung.Canvas.Pixels[varx + 1, vary]))) + Abs(GetRValue(ColorToRGB(PicOrgSicherung.Canvas.Pixels[varx, vary + 1])) - GetRValue(ColorToRGB(PicOrgSicherung.Canvas.Pixels[varx + 1, vary + 1]))));
+		PicOrgImage.Canvas.Pixels[varx, vary] := RGB(varbr, varbr, varbr);
+
+		Bild einfärben:
+		p^[1] := Div0((p^[1] * 255), GetBValue(PicOrgFC.Color));
+		p^[2] := Div0((p^[2] * 255), GetGValue(PicOrgFC.Color));
+		p^[3] := Div0((p^[3] * 255), GetRValue(PicOrgFC.Color));
+		Farben entfernen:
+		p^[1] := Trunc((p^[1] * 0.11) + (p^[2] * 0.59) + (p^[3] * 0.3));
+		p^[2] := p^[1];
+		p^[3] := p^[2];
+		Inc(p);
+
+		Bild stark verdunkeln:
+		p^[1] := round(p^[1] * 0.25);
+		p^[2] := round(p^[2] * 0.25);
+		p^[3] := round(p^[3] * 0.25);
+
+		Bild leicht verdunkeln:
+		p^[1] := round(p^[1] * 0.75);
+		p^[2] := round(p^[2] * 0.75);
+		p^[3] := round(p^[3] * 0.75);
+
+		Bild leicht aufhellen:
+		p^[1] := max255(round(p^[1] * 1.25));
+		p^[2] := max255(round(p^[2] * 1.25));
+		p^[3] := max255(round(p^[3] * 1.25));
+
+		Bild stark aufhellen:
+		p^[1] := max255(round(p^[1] * 1.75));
+		p^[2] := max255(round(p^[2] * 1.75));
+		p^[3] := max255(round(p^[3] * 1.75));
+
+		Farben intensivieren:
+		p^[1] := max255((p^[1] * p^[1]) div 128);
+		p^[2] := max255((p^[2] * p^[2]) div 128);
+		p^[3] := max255((p^[3] * p^[3]) div 128);
+
+		Farben leicht intensivieren:
+		p^[1] := (max255((p^[1] * p^[1]) div 128) * p^[1]) div 2;
+		p^[2] := (max255((p^[2] * p^[2]) div 128) * p^[2]) div 2;
+		p^[3] := (max255((p^[3] * p^[3]) div 128) * p^[3]) div 2;
+		Farben reduziern:
+		varbr := Trunc((p^[1] * 0.11) + (p^[2] * 0.59) + (p^[3] * 0.3));
+		p^[1] := max255((p^[1] * varbr) div 128);
+		p^[2] := max255((p^[2] * varbr) div 128);
+		p^[3] := max255((p^[3] * varbr) div 128);
+
+		Farben dereduzieren:
+		varbr := Trunc((p^[1] * 0.11) + (p^[2] * 0.59) + (p^[3] * 0.3));
+		if varbr = 0 then
+		begin
+		p^[1] := 255;
+		p^[2] := 255;
+		p^[3] := 255;
+		end
+		else
+		begin
+		p^[1] := max255((p^[1] * 255) div varbr);
+		p^[2] := max255((p^[2] * 255) div varbr);
+		p^[3] := max255((p^[3] * 255) div varbr);
+		end;
+		Farben verwischen:
+		varc := ColorToRGB(Pixels[varx, vary]);
+		varwr := round(sqrt(GetRValue(varc) * 128));
+		varwg := round(sqrt(GetGValue(varc) * 128));
+		varwb := round(sqrt(GetBValue(varc) * 128));
+		if varwr > 255 then
+		varwr := 255;
+		if varwg > 255 then
+		varwg := 255;
+		if varwb > 255 then
+		varwb := 255;
+		Pixels[varx, vary] := RGB(varwr, varwg, varwb);
+
+		Farbrichtig invertieren:
+		varc := ColorToRGB(Pixels[varx, vary]);
+		varbb := GetBValue(varc);
+		varbr := GetRValue(varc);
+		varbg := GetGValue(varc);
+		varbb := Trunc((varbb * 0.11) + (varbg * 0.59) + (varbr * 0.3));
+		varbr := (GetRValue(varc) * (256 - varbb)) div 255;
+		varbg := (GetGValue(varc) * (256 - varbb)) div 255;
+		varbb := (GetBValue(varc) * (256 - varbb)) div 255;
+		Pixels[varx, vary] := RGB(varbr, varbg, varbb);
+		Farben invertieren:
+		drawShape(pmNot)
+
+		Farbe einmischen:
+		varc := ColorToRGB(Pixels[varx, vary]);
+		varbr := (GetRValue(varc) + GetRValue(varcc)) div 2;
+		varbg := (GetGValue(varc) + GetGValue(varcc)) div 2;
+		varbb := (GetBValue(varc) + GetBValue(varcc)) div 2;
+		Pixels[varx, vary] := RGB(varbr, varbg, varbb);
+
+		Farbe extrahieren:
+		varc := ColorToRGB(Pixels[varx, vary]);
+		{ varwr := (posor0((GetRValue(varc)) - (GetRValue(varcc)) div 2)) * 2;
+		varwg := (posor0((GetGValue(varc)) - (GetGValue(varcc)) div 2)) * 2;
+		varwb := (posor0((GetBValue(varc)) - (GetBValue(varcc)) div 2)) * 2;}
+		varwr := (GetRValue(varc) * 2) - GetRValue(varcc);
+		varwg := (GetGValue(varc) * 2) - GetGValue(varcc);
+		varwb := (GetBValue(varc) * 2) - GetBValue(varcc);
+		if varwr > 255 then
+		varwr := 255;
+		if varwg > 255 then
+		varwg := 255;
+		if varwb > 255 then
+		varwb := 255;
+		Pixels[varx, vary] := RGB(varwr, varwg, varwb);
+		*/
+
 		JMenu huh = new JMenu("?");
 
 		JMenuItem openConfigPath = new JMenuItem("Open Config Path");
