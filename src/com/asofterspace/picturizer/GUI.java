@@ -14,6 +14,7 @@ import com.asofterspace.toolbox.io.ImageFile;
 import com.asofterspace.toolbox.utils.Image;
 import com.asofterspace.toolbox.Utils;
 
+import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Desktop;
@@ -24,7 +25,11 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.GridBagLayout;
+import java.awt.image.BufferedImage;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.List;
 
@@ -145,6 +150,15 @@ public class GUI extends MainWindow {
 			}
 		});
 		newFile.add(emptyFile);
+
+		JMenuItem screenshotFile = new JMenuItem("Screenshot");
+		screenshotFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				createScreenshot();
+			}
+		});
+		newFile.add(screenshotFile);
 
 		JMenuItem qrCodeFile = new JMenuItem("QR Code");
 		qrCodeFile.addActionListener(new ActionListener() {
@@ -491,8 +505,25 @@ public class GUI extends MainWindow {
 	}
 
 	private void createNewEmptyFile() {
-
 		setPicture(new Image(100, 100));
+	}
+
+	private void createScreenshot() {
+
+		try {
+			Robot robot = new Robot();
+
+			Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+
+			BufferedImage screenshotBufImg = robot.createScreenCapture(new Rectangle(screenDimension));
+
+			Image screenshotImg = Image.createFromAwtImage(screenshotBufImg);
+
+			setPicture(screenshotImg);
+
+		} catch (AWTException e) {
+			// whoops! guess not...
+		}
 	}
 
 	public Image getPicture() {
