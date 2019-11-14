@@ -236,7 +236,7 @@ public class GUI extends MainWindow {
 		});
 		edit.add(editChannelsManually);
 
-		JMenuItem dampenWeakly = new JMenuItem("Dampen Weakly");
+		JMenuItem dampenWeakly = new JMenuItem("Dampen Slightly");
 		dampenWeakly.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -260,8 +260,61 @@ public class GUI extends MainWindow {
 		});
 		edit.add(dampenStrongly);
 
+		JMenuItem curMenuItem;
+
+		curMenuItem = new JMenuItem("Darken Slightly");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.editChannels("R", 0.75, "G", 0.75, "B", 0.75);
+				refreshView();
+			}
+		});
+		edit.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Darken Strongly");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.editChannels("R", 0.25, "G", 0.25, "B", 0.25);
+				refreshView();
+			}
+		});
+		edit.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Brighten Slightly");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.editChannels("R", 1.25, "G", 1.25, "B", 1.25);
+				refreshView();
+			}
+		});
+		edit.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Brighten Strongly");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.editChannels("R", 1.75, "G", 1.75, "B", 1.75);
+				refreshView();
+			}
+		});
+		edit.add(curMenuItem);
+
 		/*
 		TODO:
+		add slots on the left hand side, such that pictures can be pushed into these slots for later re-combination
+		(however, this will use up even more memory... wäääh!)
+
 		kopieren
 
 		einfügen
@@ -292,26 +345,6 @@ public class GUI extends MainWindow {
 		p^[2] := p^[1];
 		p^[3] := p^[2];
 		Inc(p);
-
-		Bild stark verdunkeln:
-		p^[1] := round(p^[1] * 0.25);
-		p^[2] := round(p^[2] * 0.25);
-		p^[3] := round(p^[3] * 0.25);
-
-		Bild leicht verdunkeln:
-		p^[1] := round(p^[1] * 0.75);
-		p^[2] := round(p^[2] * 0.75);
-		p^[3] := round(p^[3] * 0.75);
-
-		Bild leicht aufhellen:
-		p^[1] := max255(round(p^[1] * 1.25));
-		p^[2] := max255(round(p^[2] * 1.25));
-		p^[3] := max255(round(p^[3] * 1.25));
-
-		Bild stark aufhellen:
-		p^[1] := max255(round(p^[1] * 1.75));
-		p^[2] := max255(round(p^[2] * 1.75));
-		p^[3] := max255(round(p^[3] * 1.75));
 
 		Farben intensivieren:
 		p^[1] := max255((p^[1] * p^[1]) div 128);
