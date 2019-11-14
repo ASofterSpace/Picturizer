@@ -16,7 +16,7 @@ import com.asofterspace.toolbox.Utils;
 
 import java.awt.AWTException;
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -33,6 +33,7 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.ImageIcon;
@@ -44,6 +45,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
@@ -58,7 +60,7 @@ public class GUI extends MainWindow {
 
 	private String lastPicturePath;
 
-	private JPanel mainPanelRight;
+	private JScrollPane mainPanelRight;
 
 	private JMenuItem close;
 
@@ -479,21 +481,13 @@ public class GUI extends MainWindow {
 		GridBagLayout mainPanelLayout = new GridBagLayout();
 		mainPanel.setLayout(mainPanelLayout);
 
-		JPanel mainPanelRightOuter = new JPanel();
-		GridBagLayout mainPanelRightOuterLayout = new GridBagLayout();
-		mainPanelRightOuter.setLayout(mainPanelRightOuterLayout);
-
-		mainPanelRight = new JPanel();
-		mainPanelRight.setLayout(new CardLayout());
-		mainPanelRight.setPreferredSize(new Dimension(8, 8));
-
 		imageViewer = new ImageIcon();
 		imageViewerLabel = new JLabel(imageViewer);
-		mainPanelRight.add(imageViewerLabel);
 
-		mainPanelRightOuter.add(mainPanelRight, new Arrangement(0, 0, 1.0, 1.0));
+		mainPanelRight = new JScrollPane(imageViewerLabel);
+		mainPanelRight.setBorder(BorderFactory.createEmptyBorder());
 
-		mainPanel.add(mainPanelRightOuter, new Arrangement(3, 0, 1.0, 1.0));
+		mainPanel.add(mainPanelRight, new Arrangement(0, 0, 1.0, 1.0));
 
 		parent.add(mainPanel, BorderLayout.CENTER);
 
@@ -672,7 +666,9 @@ public class GUI extends MainWindow {
 
 	private void refreshView() {
 		imageViewer.setImage(picture.getAwtImage());
-		imageViewerLabel.repaint();
+		// imageViewerLabel.repaint();
+		mainPanelRight.revalidate();
+		mainPanelRight.repaint();
 	}
 
 	private void saveCurPicForUndo() {
