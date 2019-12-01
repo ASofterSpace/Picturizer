@@ -8,6 +8,7 @@ import com.asofterspace.toolbox.configuration.ConfigFile;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.gui.MainWindow;
+import com.asofterspace.toolbox.gui.MenuItemForMainMenu;
 import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.io.ImageFile;
@@ -205,30 +206,25 @@ public class GUI extends MainWindow {
 		});
 		file.add(close);
 
-		JMenu edit = new JMenu("Edit");
-		menu.add(edit);
-
-		JMenuItem undo = new JMenuItem("Undo");
+		MenuItemForMainMenu undo = new MenuItemForMainMenu("Undo");
 		undo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				undo();
 			}
 		});
-		edit.add(undo);
+		menu.add(undo);
 
-		JMenuItem redo = new JMenuItem("Redo");
+		MenuItemForMainMenu redo = new MenuItemForMainMenu("Redo");
 		redo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				redo();
 			}
 		});
-		edit.add(redo);
+		menu.add(redo);
 
-		edit.addSeparator();
-
-		JMenuItem clear = new JMenuItem("Clear");
+		MenuItemForMainMenu clear = new MenuItemForMainMenu("Clear");
 		clear.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -238,9 +234,9 @@ public class GUI extends MainWindow {
 				refreshView();
 			}
 		});
-		edit.add(clear);
+		menu.add(clear);
 
-		JMenuItem editChannelsManually = new JMenuItem("Edit Channels Manually");
+		MenuItemForMainMenu editChannelsManually = new MenuItemForMainMenu("Edit Channels");
 		editChannelsManually.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -250,9 +246,102 @@ public class GUI extends MainWindow {
 				channelChangeGUI.show();
 			}
 		});
-		edit.add(editChannelsManually);
+		menu.add(editChannelsManually);
 
-		JMenuItem dampenWeakly = new JMenuItem("Dampen Slightly");
+		JMenu removeColors = new JMenu("Remove Colors");
+		menu.add(removeColors);
+
+		JMenuItem removeAbsoluteColors = new JMenuItem("Remove Colors by Absolute Brightness");
+		removeAbsoluteColors.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.removeColors();
+				refreshView();
+			}
+		});
+		removeColors.add(removeAbsoluteColors);
+
+		JMenuItem removePerceivedColors = new JMenuItem("Remove Colors by Perceived Brightness");
+		removePerceivedColors.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.removePerceivedColors();
+				refreshView();
+			}
+		});
+		removeColors.add(removePerceivedColors);
+
+		JMenu invert = new JMenu("Invert");
+		menu.add(invert);
+
+		JMenuItem invertColors = new JMenuItem("Invert Colors");
+		invertColors.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.invert();
+				refreshView();
+			}
+		});
+		invert.add(invertColors);
+
+		JMenuItem invertBrightness = new JMenuItem("Invert Brightness (Keeping Colors, Approach 1)");
+		invertBrightness.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.invertBrightness1();
+				refreshView();
+			}
+		});
+		invert.add(invertBrightness);
+
+		JMenuItem invertBrightness2 = new JMenuItem("Invert Brightness (Keeping Colors, Approach 2)");
+		invertBrightness2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.invertBrightness2();
+				refreshView();
+			}
+		});
+		invert.add(invertBrightness2);
+
+		JMenu dampen = new JMenu("Dampen");
+		menu.add(dampen);
+
+		JMenuItem undampenStrongly = new JMenuItem("0.25 - Undampen Strongly");
+		undampenStrongly.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.dampen(0.25f);
+				refreshView();
+			}
+		});
+		dampen.add(undampenStrongly);
+
+		JMenuItem undampenWeakly = new JMenuItem("0.75 - Undampen Slightly");
+		undampenWeakly.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.dampen(0.75f);
+				refreshView();
+			}
+		});
+		dampen.add(undampenWeakly);
+
+		JMenuItem dampenWeakly = new JMenuItem("1.5 - Dampen Slightly");
 		dampenWeakly.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -262,9 +351,9 @@ public class GUI extends MainWindow {
 				refreshView();
 			}
 		});
-		edit.add(dampenWeakly);
+		dampen.add(dampenWeakly);
 
-		JMenuItem dampenStrongly = new JMenuItem("Dampen Strongly");
+		JMenuItem dampenStrongly = new JMenuItem("2.0 - Dampen Strongly");
 		dampenStrongly.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -274,23 +363,14 @@ public class GUI extends MainWindow {
 				refreshView();
 			}
 		});
-		edit.add(dampenStrongly);
+		dampen.add(dampenStrongly);
+
+		JMenu darkenBrighten = new JMenu("Darken / Brighten");
+		menu.add(darkenBrighten);
 
 		JMenuItem curMenuItem;
 
-		curMenuItem = new JMenuItem("Darken Slightly");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.editChannels("R", 0.75, "G", 0.75, "B", 0.75);
-				refreshView();
-			}
-		});
-		edit.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Darken Strongly");
+		curMenuItem = new JMenuItem("0.25 - Darken Strongly");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -300,9 +380,21 @@ public class GUI extends MainWindow {
 				refreshView();
 			}
 		});
-		edit.add(curMenuItem);
+		darkenBrighten.add(curMenuItem);
 
-		curMenuItem = new JMenuItem("Brighten Slightly");
+		curMenuItem = new JMenuItem("0.75 - Darken Slightly");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.editChannels("R", 0.75, "G", 0.75, "B", 0.75);
+				refreshView();
+			}
+		});
+		darkenBrighten.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("1.25 - Brighten Slightly");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -312,9 +404,9 @@ public class GUI extends MainWindow {
 				refreshView();
 			}
 		});
-		edit.add(curMenuItem);
+		darkenBrighten.add(curMenuItem);
 
-		curMenuItem = new JMenuItem("Brighten Strongly");
+		curMenuItem = new JMenuItem("1.75 - Brighten Strongly");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -324,16 +416,58 @@ public class GUI extends MainWindow {
 				refreshView();
 			}
 		});
-		edit.add(curMenuItem);
+		darkenBrighten.add(curMenuItem);
 
 		/*
 		TODO:
+		add commandline options to be able to just automatically apply this or that editing directly... well... from the commandline :D
+		(also much more efficient then, as no AWT nonsense needed in between!)
+
+		add floor() and ceil() functions for channels (maybe on the channel editing gui?) where you can say e.g. R should be ceil(R, 128), or somesuch
+
 		add slots on the left hand side, such that pictures can be pushed into these slots for later re-combination
 		(however, this will use up even more memory... wäääh!)
 
 		kopieren
 
 		einfügen
+
+		Farben entfernen:
+		p^[1] := Trunc((p^[1] * 0.11) + (p^[2] * 0.59) + (p^[3] * 0.3));
+		p^[2] := p^[1];
+		p^[3] := p^[2];
+		Inc(p);
+
+		Farben intensivieren:
+		p^[1] := max255((p^[1] * p^[1]) div 128);
+		p^[2] := max255((p^[2] * p^[2]) div 128);
+		p^[3] := max255((p^[3] * p^[3]) div 128);
+
+		Farben leicht intensivieren:
+		p^[1] := (max255((p^[1] * p^[1]) div 128) * p^[1]) div 2;
+		p^[2] := (max255((p^[2] * p^[2]) div 128) * p^[2]) div 2;
+		p^[3] := (max255((p^[3] * p^[3]) div 128) * p^[3]) div 2;
+
+		Farben reduziern:
+		varbr := Trunc((p^[1] * 0.11) + (p^[2] * 0.59) + (p^[3] * 0.3));
+		p^[1] := max255((p^[1] * varbr) div 128);
+		p^[2] := max255((p^[2] * varbr) div 128);
+		p^[3] := max255((p^[3] * varbr) div 128);
+
+		Farben dereduzieren:
+		varbr := Trunc((p^[1] * 0.11) + (p^[2] * 0.59) + (p^[3] * 0.3));
+		if varbr = 0 then
+		begin
+		p^[1] := 255;
+		p^[2] := 255;
+		p^[3] := 255;
+		end
+		else
+		begin
+		p^[1] := max255((p^[1] * 255) div varbr);
+		p^[2] := max255((p^[2] * 255) div varbr);
+		p^[3] := max255((p^[3] * 255) div varbr);
+		end;
 
 		Differenzanalyse:
 		varc := ColorToRGB(PicOrgSicherung.Canvas.Pixels[varx, vary]);
@@ -356,41 +490,7 @@ public class GUI extends MainWindow {
 		p^[1] := Div0((p^[1] * 255), GetBValue(PicOrgFC.Color));
 		p^[2] := Div0((p^[2] * 255), GetGValue(PicOrgFC.Color));
 		p^[3] := Div0((p^[3] * 255), GetRValue(PicOrgFC.Color));
-		Farben entfernen:
-		p^[1] := Trunc((p^[1] * 0.11) + (p^[2] * 0.59) + (p^[3] * 0.3));
-		p^[2] := p^[1];
-		p^[3] := p^[2];
-		Inc(p);
 
-		Farben intensivieren:
-		p^[1] := max255((p^[1] * p^[1]) div 128);
-		p^[2] := max255((p^[2] * p^[2]) div 128);
-		p^[3] := max255((p^[3] * p^[3]) div 128);
-
-		Farben leicht intensivieren:
-		p^[1] := (max255((p^[1] * p^[1]) div 128) * p^[1]) div 2;
-		p^[2] := (max255((p^[2] * p^[2]) div 128) * p^[2]) div 2;
-		p^[3] := (max255((p^[3] * p^[3]) div 128) * p^[3]) div 2;
-		Farben reduziern:
-		varbr := Trunc((p^[1] * 0.11) + (p^[2] * 0.59) + (p^[3] * 0.3));
-		p^[1] := max255((p^[1] * varbr) div 128);
-		p^[2] := max255((p^[2] * varbr) div 128);
-		p^[3] := max255((p^[3] * varbr) div 128);
-
-		Farben dereduzieren:
-		varbr := Trunc((p^[1] * 0.11) + (p^[2] * 0.59) + (p^[3] * 0.3));
-		if varbr = 0 then
-		begin
-		p^[1] := 255;
-		p^[2] := 255;
-		p^[3] := 255;
-		end
-		else
-		begin
-		p^[1] := max255((p^[1] * 255) div varbr);
-		p^[2] := max255((p^[2] * 255) div varbr);
-		p^[3] := max255((p^[3] * 255) div varbr);
-		end;
 		Farben verwischen:
 		varc := ColorToRGB(Pixels[varx, vary]);
 		varwr := round(sqrt(GetRValue(varc) * 128));
@@ -403,19 +503,6 @@ public class GUI extends MainWindow {
 		if varwb > 255 then
 		varwb := 255;
 		Pixels[varx, vary] := RGB(varwr, varwg, varwb);
-
-		Farbrichtig invertieren:
-		varc := ColorToRGB(Pixels[varx, vary]);
-		varbb := GetBValue(varc);
-		varbr := GetRValue(varc);
-		varbg := GetGValue(varc);
-		varbb := Trunc((varbb * 0.11) + (varbg * 0.59) + (varbr * 0.3));
-		varbr := (GetRValue(varc) * (256 - varbb)) div 255;
-		varbg := (GetGValue(varc) * (256 - varbb)) div 255;
-		varbb := (GetBValue(varc) * (256 - varbb)) div 255;
-		Pixels[varx, vary] := RGB(varbr, varbg, varbb);
-		Farben invertieren:
-		drawShape(pmNot)
 
 		Farbe einmischen:
 		varc := ColorToRGB(Pixels[varx, vary]);
