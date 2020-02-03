@@ -17,6 +17,7 @@ mkdir coders
 mkdir configuration
 mkdir gui
 mkdir io
+mkdir pdf
 mkdir utils
 
 cd ../../../..
@@ -27,6 +28,7 @@ cp ../Toolbox-Java/src/com/asofterspace/toolbox/coders/*.* src/com/asofterspace/
 cp ../Toolbox-Java/src/com/asofterspace/toolbox/configuration/*.* src/com/asofterspace/toolbox/configuration
 cp ../Toolbox-Java/src/com/asofterspace/toolbox/gui/*.* src/com/asofterspace/toolbox/gui
 cp ../Toolbox-Java/src/com/asofterspace/toolbox/io/*.* src/com/asofterspace/toolbox/io
+cp ../Toolbox-Java/src/com/asofterspace/toolbox/pdf/*.* src/com/asofterspace/toolbox/pdf
 cp ../Toolbox-Java/src/com/asofterspace/toolbox/utils/*.* src/com/asofterspace/toolbox/utils
 
 rm -rf bin

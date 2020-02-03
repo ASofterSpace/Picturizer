@@ -12,6 +12,8 @@ import com.asofterspace.toolbox.gui.MenuItemForMainMenu;
 import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.io.ImageFile;
+import com.asofterspace.toolbox.io.ImageFileCtrl;
+import com.asofterspace.toolbox.pdf.PdfImageHandler;
 import com.asofterspace.toolbox.utils.Image;
 import com.asofterspace.toolbox.Utils;
 
@@ -76,9 +78,16 @@ public class GUI extends MainWindow {
 	private QrGUI qrGUI;
 	private ChannelChangeGUI channelChangeGUI;
 
+	private ImageFileCtrl imageFileCtrl;
+
 
 	public GUI(ConfigFile configFile) {
 		this.configuration = configFile;
+
+		// we want to handle as many image formats as we can...
+		// even opening images from PDF files, if possible :)
+		this.imageFileCtrl = new ImageFileCtrl();
+		this.imageFileCtrl.addHandler(new PdfImageHandler());
 	}
 
 	@Override
@@ -657,7 +666,7 @@ public class GUI extends MainWindow {
 
 				File selectedFile = new File(augFilePicker.getSelectedFile());
 				saveCurPicForUndo();
-				picture = ImageFile.readImageFromFile(selectedFile);
+				picture = imageFileCtrl.loadImageFromFile(selectedFile);
 				refreshView();
 
 				lastPicturePath = selectedFile.getCanonicalFilename();
@@ -719,7 +728,7 @@ public class GUI extends MainWindow {
 						}
 					}
 				}
-				ImageFile.saveImageToFile(picture, selectedFile);
+				imageFileCtrl.saveImageToFile(picture, selectedFile);
 
 				lastPicturePath = selectedFile.getCanonicalFilename();
 				refreshTitleBar();

@@ -15,6 +15,7 @@ md coders
 md configuration
 md gui
 md io
+md pdf
 md utils
 
 cd ..\..\..\..
@@ -25,6 +26,7 @@ copy "..\Toolbox-Java\src\com\asofterspace\toolbox\coders\*.*" "src\com\asofters
 copy "..\Toolbox-Java\src\com\asofterspace\toolbox\configuration\*.*" "src\com\asofterspace\toolbox\configuration"
 copy "..\Toolbox-Java\src\com\asofterspace\toolbox\gui\*.*" "src\com\asofterspace\toolbox\gui"
 copy "..\Toolbox-Java\src\com\asofterspace\toolbox\io\*.*" "src\com\asofterspace\toolbox\io"
+copy "..\Toolbox-Java\src\com\asofterspace\toolbox\pdf\*.*" "src\com\asofterspace\toolbox\pdf"
 copy "..\Toolbox-Java\src\com\asofterspace\toolbox\utils\*.*" "src\com\asofterspace\toolbox\utils"
 
 rd /s /q bin
