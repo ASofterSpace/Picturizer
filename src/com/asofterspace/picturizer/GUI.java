@@ -9,12 +9,12 @@ import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.gui.MainWindow;
 import com.asofterspace.toolbox.gui.MenuItemForMainMenu;
+import com.asofterspace.toolbox.images.Image;
+import com.asofterspace.toolbox.images.ImageFile;
+import com.asofterspace.toolbox.images.ImageFileCtrl;
 import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
-import com.asofterspace.toolbox.io.ImageFile;
-import com.asofterspace.toolbox.io.ImageFileCtrl;
 import com.asofterspace.toolbox.pdf.PdfImageHandler;
-import com.asofterspace.toolbox.utils.Image;
 import com.asofterspace.toolbox.Utils;
 
 import java.awt.AWTException;

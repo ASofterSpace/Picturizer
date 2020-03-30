@@ -8,7 +8,7 @@ import com.asofterspace.toolbox.barcodes.QrCode;
 import com.asofterspace.toolbox.barcodes.QrCodeFactory;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
-import com.asofterspace.toolbox.utils.Image;
+import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.Utils;
 
 import java.awt.Dimension;
