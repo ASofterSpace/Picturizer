@@ -156,7 +156,7 @@ public class GUI extends MainWindow {
 		menu.add(file);
 
 		JMenu newFile = new JMenu("New");
-		file.add(newFile);
+		menu.add(newFile);
 
 		JMenuItem emptyFile = new JMenuItem("Empty");
 		emptyFile.addActionListener(new ActionListener() {
@@ -195,6 +195,24 @@ public class GUI extends MainWindow {
 				}
 			}
 		}
+
+		JMenuItem picFromPDF1 = new JMenuItem("Picture from PDF 1");
+		picFromPDF1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				createPicFromPDF1();
+			}
+		});
+		newFile.add(picFromPDF1);
+
+		JMenuItem picFromPDF2 = new JMenuItem("Picture from PDF 2");
+		picFromPDF2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				createPicFromPDF2();
+			}
+		});
+		newFile.add(picFromPDF2);
 
 		JMenuItem qrCodeFile = new JMenuItem("QR Code");
 		qrCodeFile.addActionListener(new ActionListener() {
@@ -243,6 +261,7 @@ public class GUI extends MainWindow {
 		menu.add(edit);
 
 		JMenuItem undo = new JMenuItem("Undo");
+		undo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
 		undo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -252,6 +271,7 @@ public class GUI extends MainWindow {
 		edit.add(undo);
 
 		JMenuItem redo = new JMenuItem("Redo");
+		redo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
 		redo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -647,6 +667,118 @@ public class GUI extends MainWindow {
 
 	private void createNewEmptyFile() {
 		setPicture(new Image(100, 100));
+	}
+
+	private Image getPdfPic() {
+
+		Image pic = Image.createFromClipboard();
+
+		ColorRGB background = new ColorRGB(255, 255, 255);
+		int longestRunOverallLength = 0;
+		int leftmostLongestRunTop = 0;
+		int leftmostLongestRunBottom = 0;
+		int leftmostLongestRunLeft = 0;
+		int rightmostLongestRunRight = 0;
+
+		// go from left to right across all columns
+		for (int x = 0; x < pic.getWidth(); x++) {
+
+			// check for each how long the longest run of white color is
+			int curLongestRunStart = 0;
+			int curLongestRunLength = 0;
+			int curStart = 0;
+			boolean curInARun = false;
+			for (int y = 0; y < pic.getHeight(); y++) {
+				if (pic.getPixel(x, y).equals(background)) {
+					if (!curInARun) {
+						curInARun = true;
+						curStart = y;
+					}
+				} else {
+					if (curInARun) {
+						curInARun = false;
+						int curLength = y - curStart;
+						if (curLength > curLongestRunLength) {
+							curLongestRunLength = curLength;
+							curLongestRunStart = curStart;
+						}
+					}
+				}
+			}
+			if (curInARun) {
+				int curLength = pic.getHeight() - curStart;
+				if (curLength > curLongestRunLength) {
+					curLongestRunLength = curLength;
+					curLongestRunStart = curStart;
+				}
+			}
+			if (curLongestRunLength > longestRunOverallLength) {
+				longestRunOverallLength = curLongestRunLength;
+				leftmostLongestRunTop = curLongestRunStart;
+				leftmostLongestRunBottom = curLongestRunStart + curLongestRunLength - 1;
+				leftmostLongestRunLeft = x;
+			}
+			if (curLongestRunLength == longestRunOverallLength) {
+				rightmostLongestRunRight = x;
+			}
+		}
+
+		int picLeft = leftmostLongestRunLeft;
+		int picTop = leftmostLongestRunTop;
+		int picRight = rightmostLongestRunRight;
+		int picBottom = leftmostLongestRunBottom;
+
+		pic = pic.copy(picTop, picRight, picBottom, picLeft);
+
+		return pic;
+	}
+
+	private void createPicFromPDF1() {
+
+		Image pdfPic = getPdfPic();
+
+		setPicture(pdfPic);
+	}
+
+	private void createPicFromPDF2() {
+
+		// take the first picture (from the top of the page)
+		Image origPic = picture.copy();
+
+		int origPicHeight = origPic.getHeight();
+
+		// and the second picture (from the bottom of the same page)
+		Image pdfPic = getPdfPic();
+
+		int overlapRows = 0;
+		int potentialOverlapStart = 0;
+		if (pdfPic.getHeight() < origPicHeight) {
+			potentialOverlapStart = origPicHeight - pdfPic.getHeight();
+		}
+
+		// figure out how large the overlap is
+		for (; potentialOverlapStart < origPicHeight; potentialOverlapStart++) {
+			boolean isOverlapping = true;
+			trynext:
+			for (int x = 0; (x < origPic.getWidth()) && (x < pdfPic.getWidth()); x++) {
+				for (int y = potentialOverlapStart; (y < origPic.getHeight()) && (y - potentialOverlapStart < pdfPic.getHeight()); y++) {
+					if (!origPic.getPixel(x, y).equals(pdfPic.getPixel(x, y - potentialOverlapStart))) {
+						isOverlapping = false;
+						break trynext;
+					}
+				}
+			}
+			if (isOverlapping) {
+				overlapRows = origPicHeight - potentialOverlapStart;
+			}
+		}
+
+		// and draw the second picture on top of the first picture, but leave the non-overlapping area untouched
+		origPic.expandBottomBy(pdfPic.getHeight() - overlapRows, new ColorRGB(255, 255, 255));
+
+		origPic.draw(pdfPic, 0, origPicHeight - overlapRows);
+
+		setPicture(origPic);
 	}
 
 	private void createPicFromScreenshot(ColorRGB background) {
