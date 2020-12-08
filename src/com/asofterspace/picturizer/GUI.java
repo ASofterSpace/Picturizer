@@ -9,6 +9,7 @@ import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.gui.MainWindow;
 import com.asofterspace.toolbox.gui.MenuItemForMainMenu;
+import com.asofterspace.toolbox.images.ColorRGB;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageFile;
 import com.asofterspace.toolbox.images.ImageFileCtrl;
@@ -27,6 +28,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.GridBagLayout;
 import java.awt.image.BufferedImage;
 import java.awt.Point;
@@ -35,6 +38,7 @@ import java.awt.Robot;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.filechooser.FileFilter;
@@ -172,6 +176,26 @@ public class GUI extends MainWindow {
 		});
 		newFile.add(screenshotFile);
 
+		Map<String, Object> screenshotBackgrounds =
+			configuration.getAllContents().getObjectMap("screenshotBackgrounds");
+
+		for (Map.Entry<String, Object> entry : screenshotBackgrounds.entrySet()) {
+			String colorName = entry.getKey();
+			Object value = entry.getValue();
+			if (value != null) {
+				if (value instanceof String) {
+					JMenuItem picFromScreenshot = new JMenuItem("Picture from Screenshot (" + colorName + ")");
+					picFromScreenshot.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							createPicFromScreenshot(ColorRGB.fromString((String) value));
+						}
+					});
+					newFile.add(picFromScreenshot);
+				}
+			}
+		}
+
 		JMenuItem qrCodeFile = new JMenuItem("QR Code");
 		qrCodeFile.addActionListener(new ActionListener() {
 			@Override
@@ -215,25 +239,30 @@ public class GUI extends MainWindow {
 		});
 		file.add(close);
 
-		MenuItemForMainMenu undo = new MenuItemForMainMenu("Undo");
+		JMenu edit = new JMenu("Edit");
+		menu.add(edit);
+
+		JMenuItem undo = new JMenuItem("Undo");
 		undo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				undo();
 			}
 		});
-		menu.add(undo);
+		edit.add(undo);
 
-		MenuItemForMainMenu redo = new MenuItemForMainMenu("Redo");
+		JMenuItem redo = new JMenuItem("Redo");
 		redo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				redo();
 			}
 		});
-		menu.add(redo);
+		edit.add(redo);
 
-		MenuItemForMainMenu clear = new MenuItemForMainMenu("Clear");
+		edit.addSeparator();
+
+		JMenuItem clear = new JMenuItem("Clear");
 		clear.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -243,12 +272,34 @@ public class GUI extends MainWindow {
 				refreshView();
 			}
 		});
-		menu.add(clear);
+		edit.add(clear);
 
-		MenuItemForMainMenu editChannelsManually = new MenuItemForMainMenu("Edit Channels");
-		editChannelsManually.addActionListener(new ActionListener() {
+		edit.addSeparator();
+
+		JMenuItem copy = new JMenuItem("Copy");
+		copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
+		copy.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				picture.copyToClipboard();
+			}
+		});
+		edit.add(copy);
+
+		JMenuItem paste = new JMenuItem("Paste");
+		paste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+		paste.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setPicture(Image.createFromClipboard());
+			}
+		});
+		edit.add(paste);
+
+		MenuItemForMainMenu editChannelsManually = new MenuItemForMainMenu("Edit Channels");
+		editChannelsManually.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
 				if (channelChangeGUI == null) {
 					channelChangeGUI = new ChannelChangeGUI(GUI.this);
 				}
@@ -596,6 +647,78 @@ public class GUI extends MainWindow {
 
 	private void createNewEmptyFile() {
 		setPicture(new Image(100, 100));
+	}
+
+	private void createPicFromScreenshot(ColorRGB background) {
+
+		Image pic = Image.createFromClipboard();
+
+		int startX = 88;
+		int endX = 0;
+		int startY = 0;
+		int picLeft = 0;
+		int picTop = 0;
+		int picRight = 0;
+		int picBottom = 0;
+
+		// move from the top down until we find the first background pixel
+		for (int y = 0; y < pic.getHeight(); y++) {
+			if (pic.getPixel(startX, y).equals(background)) {
+				startY = y;
+				// move right until we find the last background pixel
+				for (int x = startX; x < pic.getWidth(); x++) {
+					if (!pic.getPixel(x, y).equals(background)) {
+						endX = x;
+						break;
+					}
+				}
+				break;
+			}
+		}
+
+		// move down until we find the first row in which the background is not a continuous row
+		for (int y = startY; y < pic.getHeight(); y++) {
+			for (int x = startX; x < endX; x++) {
+				if (!pic.getPixel(x, y).equals(background)) {
+					// we have found our upper left corner!
+					picLeft = x;
+					picTop = y;
+					break;
+				}
+			}
+			if (picLeft > 0) {
+				break;
+			}
+		}
+
+		// move right from the upper left corner until we find the upper right corner
+		for (int x = picLeft; x < endX; x++) {
+			if (pic.getPixel(x, picTop).equals(background)) {
+				picRight = x - 1;
+				break;
+			}
+		}
+
+		// move down from the upper left corner until we find a whole row containing the same color;
+		// this is one below the bottom
+		for (int y = picTop; y < pic.getHeight(); y++) {
+			ColorRGB firstPixel = pic.getPixel(picLeft, y);
+			boolean allPixelsSame = true;
+			for (int x = picLeft; x <= picRight; x++) {
+				if (!pic.getPixel(x, y).equals(firstPixel)) {
+					allPixelsSame = false;
+					break;
+				}
+			}
+			if (allPixelsSame) {
+				picBottom = y - 1;
+				break;
+			}
+		}
+
+		pic = pic.copy(picTop, picRight, picBottom, picLeft);
+
+		setPicture(pic);
 	}
 
 	private void createScreenshot() {

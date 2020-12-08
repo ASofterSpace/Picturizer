@@ -5,8 +5,7 @@
 package com.asofterspace.picturizer;
 
 import com.asofterspace.toolbox.configuration.ConfigFile;
-import com.asofterspace.toolbox.io.JSON;
-import com.asofterspace.toolbox.io.JsonParseException;
+import com.asofterspace.toolbox.utils.Record;
 import com.asofterspace.toolbox.Utils;
 
 import javax.swing.SwingUtilities;
@@ -42,19 +41,9 @@ public class Main {
 
 		System.out.println("Starting the Picturizer...");
 
-		try {
-			// load config
-			config = new ConfigFile("settings", true);
-
-			// create a default config file, if necessary
-			if (config.getAllContents().isEmpty()) {
-				config.setAllContents(new JSON("{}"));
-			}
-		} catch (JsonParseException e) {
-			System.err.println("Loading the settings failed:");
-			System.err.println(e);
-			System.exit(1);
-		}
+		// load config
+		boolean onlyUseDefaultIfBroken = true;
+		config = new ConfigFile("settings", true, Record.emptyObject(), onlyUseDefaultIfBroken);
 
 		SwingUtilities.invokeLater(new GUI(config));
 
