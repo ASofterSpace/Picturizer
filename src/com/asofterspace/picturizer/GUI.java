@@ -84,6 +84,8 @@ public class GUI extends MainWindow {
 
 	private ImageFileCtrl imageFileCtrl;
 
+	private final static Directory TEMP_DIR = new Directory("temp");
+
 
 	public GUI(ConfigFile configFile) {
 		this.configuration = configFile;
@@ -196,6 +198,9 @@ public class GUI extends MainWindow {
 			}
 		}
 
+		JMenuItem picFromPDFexplanation = new JMenuItem("Take screenshot, click PDF 1, take second screenshot with tiny overlap, click PDF 2:");
+		newFile.add(picFromPDFexplanation);
+
 		JMenuItem picFromPDF1 = new JMenuItem("Picture from PDF 1");
 		picFromPDF1.addActionListener(new ActionListener() {
 			@Override
@@ -245,7 +250,19 @@ public class GUI extends MainWindow {
 		});
 		file.add(saveFileAs);
 
-		// file.addSeparator();
+		file.addSeparator();
+
+		JMenuItem openTempDir = new JMenuItem("Open Temp Directory");
+		openTempDir.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				TEMP_DIR.create();
+				GuiUtils.openFolder(TEMP_DIR);
+			}
+		});
+		file.add(openTempDir);
+
+		file.addSeparator();
 
 		close = new JMenuItem("Exit");
 		close.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK));
@@ -760,9 +777,9 @@ public class GUI extends MainWindow {
 		for (; potentialOverlapStart < origPicHeight; potentialOverlapStart++) {
 			boolean isOverlapping = true;
 			trynext:
-			for (int x = 0; (x < origPic.getWidth()) && (x < pdfPic.getWidth()); x++) {
-				for (int y = potentialOverlapStart; (y < origPic.getHeight()) && (y - potentialOverlapStart < pdfPic.getHeight()); y++) {
-					if (!origPic.getPixel(x, y).equals(pdfPic.getPixel(x, y - potentialOverlapStart))) {
+			for (int y = potentialOverlapStart; (y < origPic.getHeight()) && (y - potentialOverlapStart < pdfPic.getHeight()); y++) {
+				for (int x = 0; (x < origPic.getWidth()) && (x < pdfPic.getWidth()); x++) {
+					if (!origPic.getPixel(x, y).fastVaguelySimilar(pdfPic.getPixel(x, y - potentialOverlapStart))) {
 						isOverlapping = false;
 						break trynext;
 					}
@@ -770,7 +787,14 @@ public class GUI extends MainWindow {
 			}
 			if (isOverlapping) {
 				overlapRows = origPicHeight - potentialOverlapStart;
+				break;
 			}
+		}
+
+		if (overlapRows < 1) {
+			GuiUtils.complain("Could not find any overlapping area; probably fonts shifted by a pixel up or down.\n" +
+				"Try including a smaller (but existing) overlap.");
+			return;
 		}
 
 		// and draw the second picture on top of the first picture, but leave the non-overlapping area untouched
@@ -779,6 +803,20 @@ public class GUI extends MainWindow {
 		origPic.draw(pdfPic, 0, origPicHeight - overlapRows);
 
 		setPicture(origPic);
+
+		// save the screenshot immediately automagically
+		TEMP_DIR.create();
+		File tempFile = null;
+		int fileNum = 1;
+		while (true) {
+			tempFile = new File(TEMP_DIR, "pdf_" + fileNum + ".png");
+			if (tempFile.exists()) {
+				fileNum++;
+			} else {
+				break;
+			}
+		}
+		saveImageToFile(origPic, tempFile);
 	}
 
 	private void createPicFromScreenshot(ColorRGB background) {
@@ -983,10 +1021,7 @@ public class GUI extends MainWindow {
 						}
 					}
 				}
-				imageFileCtrl.saveImageToFile(picture, selectedFile);
-
-				lastPicturePath = selectedFile.getCanonicalFilename();
-				refreshTitleBar();
+				saveImageToFile(picture, selectedFile);
 
 				break;
 
@@ -994,6 +1029,12 @@ public class GUI extends MainWindow {
 				// cancel was pressed... do nothing for now
 				break;
 		}
+	}
+
+	private void saveImageToFile(Image picture, File selectedFile) {
+		imageFileCtrl.saveImageToFile(picture, selectedFile);
+		lastPicturePath = selectedFile.getCanonicalFilename();
+		refreshTitleBar();
 	}
 
 	private void addOpenFileFilters(JFileChooser fileChooser) {
