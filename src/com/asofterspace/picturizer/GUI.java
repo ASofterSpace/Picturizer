@@ -274,6 +274,65 @@ public class GUI extends MainWindow {
 		});
 		file.add(close);
 
+
+		JMenu view = new JMenu("View");
+		menu.add(view);
+
+		JMenuItem bgBlack = new JMenuItem("Set BG to Black");
+		bgBlack.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				imageViewerLabel.setBackground(Color.black);
+			}
+		});
+		view.add(bgBlack);
+
+		JMenuItem bgGray = new JMenuItem("Set BG to Gray");
+		bgGray.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				imageViewerLabel.setBackground(Color.gray);
+			}
+		});
+		view.add(bgGray);
+
+		JMenuItem bgWhite = new JMenuItem("Set BG to White");
+		bgWhite.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				imageViewerLabel.setBackground(Color.white);
+			}
+		});
+		view.add(bgWhite);
+
+		JMenuItem bgRed = new JMenuItem("Set BG to Red");
+		bgRed.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				imageViewerLabel.setBackground(Color.red);
+			}
+		});
+		view.add(bgRed);
+
+		JMenuItem bgGreen = new JMenuItem("Set BG to Green");
+		bgGreen.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				imageViewerLabel.setBackground(Color.green);
+			}
+		});
+		view.add(bgGreen);
+
+		JMenuItem bgBlue = new JMenuItem("Set BG to Blue");
+		bgBlue.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				imageViewerLabel.setBackground(Color.blue);
+			}
+		});
+		view.add(bgBlue);
+
+
 		JMenu edit = new JMenu("Edit");
 		menu.add(edit);
 
@@ -345,8 +404,8 @@ public class GUI extends MainWindow {
 		});
 		menu.add(editChannelsManually);
 
-		JMenu removeColors = new JMenu("Remove Colors");
-		menu.add(removeColors);
+		JMenu adjustColors = new JMenu("Adjust Colors");
+		menu.add(adjustColors);
 
 		JMenuItem removeAbsoluteColors = new JMenuItem("Remove Colors by Absolute Brightness");
 		removeAbsoluteColors.addActionListener(new ActionListener() {
@@ -358,7 +417,7 @@ public class GUI extends MainWindow {
 				refreshView();
 			}
 		});
-		removeColors.add(removeAbsoluteColors);
+		adjustColors.add(removeAbsoluteColors);
 
 		JMenuItem removePerceivedColors = new JMenuItem("Remove Colors by Perceived Brightness");
 		removePerceivedColors.addActionListener(new ActionListener() {
@@ -370,7 +429,46 @@ public class GUI extends MainWindow {
 				refreshView();
 			}
 		});
-		removeColors.add(removePerceivedColors);
+		adjustColors.add(removePerceivedColors);
+
+		adjustColors.addSeparator();
+
+		JMenuItem extractBlackToAlpha = new JMenuItem("Extract Black to Alpha");
+		extractBlackToAlpha.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.extractBlackToAlpha();
+				refreshView();
+			}
+		});
+		adjustColors.add(extractBlackToAlpha);
+
+		JMenuItem extractBgColToAlpha = new JMenuItem("Extract Background Color to Alpha");
+		extractBgColToAlpha.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.extractBackgroundColorToAlpha();
+				refreshView();
+			}
+		});
+		adjustColors.add(extractBgColToAlpha);
+
+		JMenuItem bakeCurrentView = new JMenuItem("Remove Alpha by Baking In Current View");
+		bakeCurrentView.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.bakeAlpha(new ColorRGB(imageViewerLabel.getBackground()));
+				refreshView();
+			}
+		});
+		adjustColors.add(bakeCurrentView);
+
 
 		JMenu invert = new JMenu("Invert");
 		menu.add(invert);
@@ -667,6 +765,8 @@ public class GUI extends MainWindow {
 
 		imageViewer = new ImageIcon();
 		imageViewerLabel = new JLabel(imageViewer);
+		imageViewerLabel.setBackground(Color.gray);
+		imageViewerLabel.setOpaque(true);
 
 		mainPanelRight = new JScrollPane(imageViewerLabel);
 		mainPanelRight.setBorder(BorderFactory.createEmptyBorder());
