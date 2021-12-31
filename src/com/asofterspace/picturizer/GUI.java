@@ -433,6 +433,9 @@ public class GUI extends MainWindow {
 
 		adjustColors.addSeparator();
 
+		JMenuItem headline1 = new JMenuItem("RGB to RGBA:");
+		adjustColors.add(headline1);
+
 		JMenuItem extractBlackToAlpha = new JMenuItem("Extract Black to Alpha");
 		extractBlackToAlpha.addActionListener(new ActionListener() {
 			@Override
@@ -457,7 +460,24 @@ public class GUI extends MainWindow {
 		});
 		adjustColors.add(extractBgColToAlpha);
 
-		JMenuItem bakeCurrentView = new JMenuItem("Remove Alpha by Baking In Current View");
+		adjustColors.addSeparator();
+
+		JMenuItem headline2 = new JMenuItem("RGBA to RGB:");
+		adjustColors.add(headline2);
+
+		JMenuItem removeAlpha = new JMenuItem("Just Remove Alpha Channel");
+		removeAlpha.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.removeAlpha();
+				refreshView();
+			}
+		});
+		adjustColors.add(removeAlpha);
+
+		JMenuItem bakeCurrentView = new JMenuItem("Remove Alpha Channel by Baking In Current Background View");
 		bakeCurrentView.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
