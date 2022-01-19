@@ -9,7 +9,7 @@ import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.gui.MainWindow;
 import com.asofterspace.toolbox.gui.MenuItemForMainMenu;
-import com.asofterspace.toolbox.images.ColorRGB;
+import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageFile;
 import com.asofterspace.toolbox.images.ImageFileCtrl;
@@ -190,7 +190,7 @@ public class GUI extends MainWindow {
 					picFromScreenshot.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							createPicFromScreenshot(ColorRGB.fromString((String) value));
+							createPicFromScreenshot(ColorRGBA.fromString((String) value));
 						}
 					});
 					newFile.add(picFromScreenshot);
@@ -483,7 +483,7 @@ public class GUI extends MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
 				picture = picture.copy();
-				picture.bakeAlpha(new ColorRGB(imageViewerLabel.getBackground()));
+				picture.bakeAlpha(new ColorRGBA(imageViewerLabel.getBackground()));
 				refreshView();
 			}
 		});
@@ -810,7 +810,7 @@ public class GUI extends MainWindow {
 
 		Image pic = Image.createFromClipboard();
 
-		ColorRGB background = new ColorRGB(255, 255, 255);
+		ColorRGBA background = new ColorRGBA(255, 255, 255);
 		int longestRunOverallLength = 0;
 		int leftmostLongestRunTop = 0;
 		int leftmostLongestRunBottom = 0;
@@ -918,7 +918,7 @@ public class GUI extends MainWindow {
 		}
 
 		// and draw the second picture on top of the first picture, but leave the non-overlapping area untouched
-		origPic.expandBottomBy(pdfPic.getHeight() - overlapRows, new ColorRGB(255, 255, 255));
+		origPic.expandBottomBy(pdfPic.getHeight() - overlapRows, new ColorRGBA(255, 255, 255));
 
 		origPic.draw(pdfPic, 0, origPicHeight - overlapRows);
 
@@ -939,7 +939,7 @@ public class GUI extends MainWindow {
 		saveImageToFile(origPic, tempFile);
 	}
 
-	private void createPicFromScreenshot(ColorRGB background) {
+	private void createPicFromScreenshot(ColorRGBA background) {
 
 		Image pic = Image.createFromClipboard();
 
@@ -992,7 +992,7 @@ public class GUI extends MainWindow {
 		// move down from the upper left corner until we find a whole row containing the same color;
 		// this is one below the bottom
 		for (int y = picTop; y < pic.getHeight(); y++) {
-			ColorRGB firstPixel = pic.getPixel(picLeft, y);
+			ColorRGBA firstPixel = pic.getPixel(picLeft, y);
 			boolean allPixelsSame = true;
 			for (int x = picLeft; x <= picRight; x++) {
 				if (!pic.getPixel(x, y).equals(firstPixel)) {
