@@ -404,6 +404,61 @@ public class GUI extends MainWindow {
 		});
 		menu.add(editChannelsManually);
 
+		JMenu adjustPixels = new JMenu("Adjust at Pixel-Level");
+		menu.add(adjustPixels);
+
+		JMenuItem replaceMostCommonWhite = new JMenuItem("Replace Most Common Color with White");
+		replaceMostCommonWhite.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				ColorRGBA mostCommonCol = picture.getMostCommonColor();
+				picture.replaceColors(mostCommonCol, ColorRGBA.WHITE);
+				refreshView();
+			}
+		});
+		adjustPixels.add(replaceMostCommonWhite);
+
+		JMenuItem replaceMostCommonSurroundingWhite = new JMenuItem("Replace Most Common Surrounding Color with White");
+		replaceMostCommonSurroundingWhite.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				ColorRGBA mostCommonSurroundCol = picture.getMostCommonSurroundingColor();
+				picture.replaceColors(mostCommonSurroundCol, ColorRGBA.WHITE);
+				refreshView();
+			}
+		});
+		adjustPixels.add(replaceMostCommonSurroundingWhite);
+
+		JMenuItem replaceStragglersWithMostCommonSurrounding = new JMenuItem("Replace Stragglers (Single Pixels) with Most Common Surrounding Color");
+		replaceStragglersWithMostCommonSurrounding.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				ColorRGBA mostCommonSurroundCol = picture.getMostCommonSurroundingColor();
+				picture.replaceStragglersWith(mostCommonSurroundCol, mostCommonSurroundCol);
+				refreshView();
+			}
+		});
+		adjustPixels.add(replaceStragglersWithMostCommonSurrounding);
+
+		JMenuItem replaceStragglersIshWithMostCommonSurrounding = new JMenuItem("Replace Stragglers-ish (Single-ish Pixels) with Most Common Surrounding Color");
+		replaceStragglersIshWithMostCommonSurrounding.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				ColorRGBA mostCommonSurroundCol = picture.getMostCommonSurroundingColor();
+				picture.replaceStragglersIshWith(mostCommonSurroundCol, mostCommonSurroundCol);
+				refreshView();
+			}
+		});
+		adjustPixels.add(replaceStragglersIshWithMostCommonSurrounding);
+
 		JMenu adjustColors = new JMenu("Adjust Colors");
 		menu.add(adjustColors);
 
