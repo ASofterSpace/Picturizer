@@ -67,11 +67,15 @@ public class GUI extends MainWindow {
 
 	private String lastPicturePath;
 
+	private JScrollPane mainPanelLeft;
 	private JScrollPane mainPanelRight;
 
 	private JMenuItem close;
 
 	private ConfigFile configuration;
+
+	private Image mainPanelLeftImg;
+	private ImageIcon mainPanelLeftViewer;
 
 	private ImageIcon imageViewer;
 	private JLabel imageViewerLabel;
@@ -83,6 +87,10 @@ public class GUI extends MainWindow {
 	private ChannelChangeGUI channelChangeGUI;
 
 	private ImageFileCtrl imageFileCtrl;
+
+	private ColorRGBA foregroundColor = ColorRGBA.BLACK;
+	private ColorRGBA backgroundColor = ColorRGBA.WHITE;
+	private ColorRGBA windowBackgroundColor = new ColorRGBA(Color.gray);
 
 	private final static Directory TEMP_DIR = new Directory("temp");
 
@@ -144,6 +152,10 @@ public class GUI extends MainWindow {
 						configuration.set(CONFIG_KEY_TOP, mainFrame.getLocation().y);
 					}
 				});
+
+				refreshLeftView();
+
+				refreshMainView();
 			}
 		});
 
@@ -282,7 +294,7 @@ public class GUI extends MainWindow {
 		bgBlack.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				imageViewerLabel.setBackground(Color.black);
+				setWindowBackgroundColor(Color.black);
 			}
 		});
 		view.add(bgBlack);
@@ -291,7 +303,7 @@ public class GUI extends MainWindow {
 		bgGray.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				imageViewerLabel.setBackground(Color.gray);
+				setWindowBackgroundColor(Color.gray);
 			}
 		});
 		view.add(bgGray);
@@ -300,7 +312,7 @@ public class GUI extends MainWindow {
 		bgWhite.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				imageViewerLabel.setBackground(Color.white);
+				setWindowBackgroundColor(Color.white);
 			}
 		});
 		view.add(bgWhite);
@@ -309,7 +321,7 @@ public class GUI extends MainWindow {
 		bgRed.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				imageViewerLabel.setBackground(Color.red);
+				setWindowBackgroundColor(Color.red);
 			}
 		});
 		view.add(bgRed);
@@ -318,7 +330,7 @@ public class GUI extends MainWindow {
 		bgGreen.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				imageViewerLabel.setBackground(Color.green);
+				setWindowBackgroundColor(Color.green);
 			}
 		});
 		view.add(bgGreen);
@@ -327,7 +339,7 @@ public class GUI extends MainWindow {
 		bgBlue.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				imageViewerLabel.setBackground(Color.blue);
+				setWindowBackgroundColor(Color.blue);
 			}
 		});
 		view.add(bgBlue);
@@ -365,7 +377,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.clear();
-				refreshView();
+				refreshMainView();
 			}
 		});
 		edit.add(clear);
@@ -404,60 +416,110 @@ public class GUI extends MainWindow {
 		});
 		menu.add(editChannelsManually);
 
-		JMenu adjustPixels = new JMenu("Adjust at Pixel-Level");
+		JMenu colors = new JMenu("Colors");
+		menu.add(colors);
+
+		JMenuItem setForegroundToMostCommon = new JMenuItem("Set Foreground to Most Common Color");
+		setForegroundToMostCommon.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setForegroundColor(picture.getMostCommonColor());
+			}
+		});
+		colors.add(setForegroundToMostCommon);
+
+		JMenuItem setBackgroundToMostCommon = new JMenuItem("Set Background to Most Common Color");
+		setBackgroundToMostCommon.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setBackgroundColor(picture.getMostCommonColor());
+			}
+		});
+		colors.add(setBackgroundToMostCommon);
+
+		JMenuItem setForegroundToMostCommonSur = new JMenuItem("Set Foreground to Most Common Surrounding Color");
+		setForegroundToMostCommonSur.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setForegroundColor(picture.getMostCommonSurroundingColor());
+			}
+		});
+		colors.add(setForegroundToMostCommonSur);
+
+		JMenuItem setBackgroundToMostCommonSur = new JMenuItem("Set Background to Most Common Surrounding Color");
+		setBackgroundToMostCommonSur.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setBackgroundColor(picture.getMostCommonSurroundingColor());
+			}
+		});
+		colors.add(setBackgroundToMostCommonSur);
+
+		JMenu adjustPixels = new JMenu("Pixel-Level");
 		menu.add(adjustPixels);
 
-		JMenuItem replaceMostCommonWhite = new JMenuItem("Replace Most Common Color with White");
-		replaceMostCommonWhite.addActionListener(new ActionListener() {
+		JMenuItem replaceBackgroundForeground = new JMenuItem("Replace Background Color with Foreground Color");
+		replaceBackgroundForeground.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.replaceColors(backgroundColor, foregroundColor);
+				refreshMainView();
+			}
+		});
+		adjustPixels.add(replaceBackgroundForeground);
+
+		JMenuItem replaceMostCommonForeground = new JMenuItem("Replace Most Common Color with Foreground Color");
+		replaceMostCommonForeground.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				ColorRGBA mostCommonCol = picture.getMostCommonColor();
-				picture.replaceColors(mostCommonCol, ColorRGBA.WHITE);
-				refreshView();
+				picture.replaceColors(mostCommonCol, foregroundColor);
+				refreshMainView();
 			}
 		});
-		adjustPixels.add(replaceMostCommonWhite);
+		adjustPixels.add(replaceMostCommonForeground);
 
-		JMenuItem replaceMostCommonSurroundingWhite = new JMenuItem("Replace Most Common Surrounding Color with White");
-		replaceMostCommonSurroundingWhite.addActionListener(new ActionListener() {
+		JMenuItem replaceMostCommonSurroundingForeground = new JMenuItem("Replace Most Common Surrounding Color with Foreground Color");
+		replaceMostCommonSurroundingForeground.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				ColorRGBA mostCommonSurroundCol = picture.getMostCommonSurroundingColor();
-				picture.replaceColors(mostCommonSurroundCol, ColorRGBA.WHITE);
-				refreshView();
+				picture.replaceColors(mostCommonSurroundCol, foregroundColor);
+				refreshMainView();
 			}
 		});
-		adjustPixels.add(replaceMostCommonSurroundingWhite);
+		adjustPixels.add(replaceMostCommonSurroundingForeground);
 
-		JMenuItem replaceStragglersWithMostCommonSurrounding = new JMenuItem("Replace Stragglers (Single Pixels) with Most Common Surrounding Color");
-		replaceStragglersWithMostCommonSurrounding.addActionListener(new ActionListener() {
+		JMenuItem replaceStragglersWithForeground = new JMenuItem("Replace Stragglers (Single Pixels) based on Background Color with Foreground Color");
+		replaceStragglersWithForeground.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.replaceStragglersWith(backgroundColor, foregroundColor);
+				refreshMainView();
+			}
+		});
+		adjustPixels.add(replaceStragglersWithForeground);
+
+		JMenuItem replaceStragglersIshWithForeground = new JMenuItem("Replace Stragglers-ish (Single-ish Pixels) based on Background Color with Foreground Color");
+		replaceStragglersIshWithForeground.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				ColorRGBA mostCommonSurroundCol = picture.getMostCommonSurroundingColor();
-				picture.replaceStragglersWith(mostCommonSurroundCol, mostCommonSurroundCol);
-				refreshView();
+				picture.replaceStragglersIshWith(backgroundColor, foregroundColor);
+				refreshMainView();
 			}
 		});
-		adjustPixels.add(replaceStragglersWithMostCommonSurrounding);
-
-		JMenuItem replaceStragglersIshWithMostCommonSurrounding = new JMenuItem("Replace Stragglers-ish (Single-ish Pixels) with Most Common Surrounding Color");
-		replaceStragglersIshWithMostCommonSurrounding.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				picture = picture.copy();
-				ColorRGBA mostCommonSurroundCol = picture.getMostCommonSurroundingColor();
-				picture.replaceStragglersIshWith(mostCommonSurroundCol, mostCommonSurroundCol);
-				refreshView();
-			}
-		});
-		adjustPixels.add(replaceStragglersIshWithMostCommonSurrounding);
+		adjustPixels.add(replaceStragglersIshWithForeground);
 
 		JMenu adjustColors = new JMenu("Adjust Colors");
 		menu.add(adjustColors);
@@ -469,7 +531,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.removeColors();
-				refreshView();
+				refreshMainView();
 			}
 		});
 		adjustColors.add(removeAbsoluteColors);
@@ -481,7 +543,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.removePerceivedColors();
-				refreshView();
+				refreshMainView();
 			}
 		});
 		adjustColors.add(removePerceivedColors);
@@ -498,7 +560,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.extractBlackToAlpha();
-				refreshView();
+				refreshMainView();
 			}
 		});
 		adjustColors.add(extractBlackToAlpha);
@@ -510,7 +572,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.extractBackgroundColorToAlpha();
-				refreshView();
+				refreshMainView();
 			}
 		});
 		adjustColors.add(extractBgColToAlpha);
@@ -527,7 +589,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.removeAlpha();
-				refreshView();
+				refreshMainView();
 			}
 		});
 		adjustColors.add(removeAlpha);
@@ -539,7 +601,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.bakeAlpha(new ColorRGBA(imageViewerLabel.getBackground()));
-				refreshView();
+				refreshMainView();
 			}
 		});
 		adjustColors.add(bakeCurrentView);
@@ -555,7 +617,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.invert();
-				refreshView();
+				refreshMainView();
 			}
 		});
 		invert.add(invertColors);
@@ -567,7 +629,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.invertBrightness1();
-				refreshView();
+				refreshMainView();
 			}
 		});
 		invert.add(invertBrightness);
@@ -579,7 +641,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.invertBrightness2();
-				refreshView();
+				refreshMainView();
 			}
 		});
 		invert.add(invertBrightness2);
@@ -594,7 +656,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.dampen(0.25f);
-				refreshView();
+				refreshMainView();
 			}
 		});
 		dampen.add(undampenStrongly);
@@ -606,7 +668,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.dampen(0.75f);
-				refreshView();
+				refreshMainView();
 			}
 		});
 		dampen.add(undampenWeakly);
@@ -618,7 +680,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.dampen(1.5f);
-				refreshView();
+				refreshMainView();
 			}
 		});
 		dampen.add(dampenWeakly);
@@ -630,7 +692,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.dampen(2);
-				refreshView();
+				refreshMainView();
 			}
 		});
 		dampen.add(dampenStrongly);
@@ -647,7 +709,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.editChannels("R", 0.25, "G", 0.25, "B", 0.25);
-				refreshView();
+				refreshMainView();
 			}
 		});
 		darkenBrighten.add(curMenuItem);
@@ -659,7 +721,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.editChannels("R", 0.75, "G", 0.75, "B", 0.75);
-				refreshView();
+				refreshMainView();
 			}
 		});
 		darkenBrighten.add(curMenuItem);
@@ -671,7 +733,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.editChannels("R", 1.25, "G", 1.25, "B", 1.25);
-				refreshView();
+				refreshMainView();
 			}
 		});
 		darkenBrighten.add(curMenuItem);
@@ -683,7 +745,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.editChannels("R", 1.75, "G", 1.75, "B", 1.75);
-				refreshView();
+				refreshMainView();
 			}
 		});
 		darkenBrighten.add(curMenuItem);
@@ -838,6 +900,18 @@ public class GUI extends MainWindow {
 		GridBagLayout mainPanelLayout = new GridBagLayout();
 		mainPanel.setLayout(mainPanelLayout);
 
+		mainPanelLeftImg = new Image(80, 200, ColorRGBA.WHITE);
+		mainPanelLeftViewer = new ImageIcon();
+		mainPanelLeftViewer.setImage(mainPanelLeftImg.getAwtImage());
+		JLabel mainPanelLeftViewerLabel = new JLabel(mainPanelLeftViewer);
+		mainPanelLeftViewerLabel.setBackground(windowBackgroundColor.toColor());
+		mainPanelLeftViewerLabel.setOpaque(true);
+		mainPanelLeft = new JScrollPane(mainPanelLeftViewerLabel);
+		mainPanelLeft.setPreferredSize(new Dimension(80, 1));
+		mainPanelLeft.setBorder(BorderFactory.createEmptyBorder());
+
+		mainPanel.add(mainPanelLeft, new Arrangement(0, 0, 0.0, 1.0));
+
 		imageViewer = new ImageIcon();
 		imageViewerLabel = new JLabel(imageViewer);
 		imageViewerLabel.setBackground(Color.gray);
@@ -846,7 +920,7 @@ public class GUI extends MainWindow {
 		mainPanelRight = new JScrollPane(imageViewerLabel);
 		mainPanelRight.setBorder(BorderFactory.createEmptyBorder());
 
-		mainPanel.add(mainPanelRight, new Arrangement(0, 0, 1.0, 1.0));
+		mainPanel.add(mainPanelRight, new Arrangement(1, 0, 1.0, 1.0));
 
 		parent.add(mainPanel, BorderLayout.CENTER);
 
@@ -1094,7 +1168,7 @@ public class GUI extends MainWindow {
 
 		picture = newPicture;
 
-		refreshView();
+		refreshMainView();
 
 		lastPicturePath = "Unsaved Picture";
 		refreshTitleBar();
@@ -1135,7 +1209,7 @@ public class GUI extends MainWindow {
 				File selectedFile = new File(augFilePicker.getSelectedFile());
 				saveCurPicForUndo();
 				picture = imageFileCtrl.loadImageFromFile(selectedFile);
-				refreshView();
+				refreshMainView();
 
 				lastPicturePath = selectedFile.getCanonicalFilename();
 				refreshTitleBar();
@@ -1231,16 +1305,49 @@ public class GUI extends MainWindow {
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Pixel Map (*.ppm)", "ppm"));
 	}
 
-	private void refreshView() {
+	private void refreshMainView() {
 		imageViewer.setImage(picture.getAwtImage());
 		// imageViewerLabel.repaint();
 		mainPanelRight.revalidate();
 		mainPanelRight.repaint();
 	}
 
+	private void refreshLeftView() {
+
+		// background overall
+		mainPanelLeftImg.drawRectangle(0, 0, 79, 199, windowBackgroundColor);
+
+		// background color
+		mainPanelLeftImg.drawRectangle(12, 12, 32, 32, backgroundColor);
+
+		// foreground color
+		mainPanelLeftImg.drawRectangle(5, 5, 25, 25, foregroundColor);
+
+		mainPanelLeftViewer.setImage(mainPanelLeftImg.getAwtImage());
+
+		mainPanelLeft.revalidate();
+		mainPanelLeft.repaint();
+	}
+
 	private void saveCurPicForUndo() {
 		undoablePicture = picture;
 		redoablePicture = null;
+	}
+
+	private void setForegroundColor(ColorRGBA col) {
+		foregroundColor = col;
+		refreshLeftView();
+	}
+
+	private void setBackgroundColor(ColorRGBA col) {
+		backgroundColor = col;
+		refreshLeftView();
+	}
+
+	private void setWindowBackgroundColor(Color newBgColor) {
+		windowBackgroundColor = new ColorRGBA(newBgColor);
+		imageViewerLabel.setBackground(newBgColor);
+		refreshLeftView();
 	}
 
 	private void undo() {
@@ -1250,7 +1357,7 @@ public class GUI extends MainWindow {
 		redoablePicture = picture;
 		picture = undoablePicture;
 		undoablePicture = null;
-		refreshView();
+		refreshMainView();
 	}
 
 	private void redo() {
@@ -1260,7 +1367,7 @@ public class GUI extends MainWindow {
 		undoablePicture = picture;
 		picture = redoablePicture;
 		redoablePicture = null;
-		refreshView();
+		refreshMainView();
 	}
 
 }
