@@ -67,6 +67,7 @@ public class GUI extends MainWindow {
 
 	private String lastPicturePath;
 
+	private JPanel mainPanel;
 	private JScrollPane mainPanelLeft;
 	private JScrollPane mainPanelRight;
 
@@ -76,6 +77,7 @@ public class GUI extends MainWindow {
 
 	private Image mainPanelLeftImg;
 	private ImageIcon mainPanelLeftViewer;
+	private JLabel mainPanelLeftViewerLabel;
 
 	private ImageIcon imageViewer;
 	private JLabel imageViewerLabel;
@@ -285,64 +287,6 @@ public class GUI extends MainWindow {
 			}
 		});
 		file.add(close);
-
-
-		JMenu view = new JMenu("View");
-		menu.add(view);
-
-		JMenuItem bgBlack = new JMenuItem("Set BG to Black");
-		bgBlack.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.black);
-			}
-		});
-		view.add(bgBlack);
-
-		JMenuItem bgGray = new JMenuItem("Set BG to Gray");
-		bgGray.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.gray);
-			}
-		});
-		view.add(bgGray);
-
-		JMenuItem bgWhite = new JMenuItem("Set BG to White");
-		bgWhite.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.white);
-			}
-		});
-		view.add(bgWhite);
-
-		JMenuItem bgRed = new JMenuItem("Set BG to Red");
-		bgRed.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.red);
-			}
-		});
-		view.add(bgRed);
-
-		JMenuItem bgGreen = new JMenuItem("Set BG to Green");
-		bgGreen.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.green);
-			}
-		});
-		view.add(bgGreen);
-
-		JMenuItem bgBlue = new JMenuItem("Set BG to Blue");
-		bgBlue.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.blue);
-			}
-		});
-		view.add(bgBlue);
 
 
 		JMenu edit = new JMenu("Edit");
@@ -860,6 +804,83 @@ public class GUI extends MainWindow {
 		Pixels[varx, vary] := RGB(varwr, varwg, varwb);
 		*/
 
+
+		JMenu view = new JMenu("Window");
+		menu.add(view);
+
+		JMenuItem bgForeground = new JMenuItem("Set Window BG to Foreground Color");
+		bgForeground.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setWindowBackgroundColor(foregroundColor.toColor());
+			}
+		});
+		view.add(bgForeground);
+
+		JMenuItem bgBackground = new JMenuItem("Set Window BG to Background Color");
+		bgBackground.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setWindowBackgroundColor(backgroundColor.toColor());
+			}
+		});
+		view.add(bgBackground);
+
+		JMenuItem bgBlack = new JMenuItem("Set Window BG to Black");
+		bgBlack.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setWindowBackgroundColor(Color.black);
+			}
+		});
+		view.add(bgBlack);
+
+		JMenuItem bgGray = new JMenuItem("Set Window BG to Gray");
+		bgGray.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setWindowBackgroundColor(Color.gray);
+			}
+		});
+		view.add(bgGray);
+
+		JMenuItem bgWhite = new JMenuItem("Set Window BG to White");
+		bgWhite.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setWindowBackgroundColor(Color.white);
+			}
+		});
+		view.add(bgWhite);
+
+		JMenuItem bgRed = new JMenuItem("Set Window BG to Red");
+		bgRed.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setWindowBackgroundColor(Color.red);
+			}
+		});
+		view.add(bgRed);
+
+		JMenuItem bgGreen = new JMenuItem("Set Window BG to Green");
+		bgGreen.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setWindowBackgroundColor(Color.green);
+			}
+		});
+		view.add(bgGreen);
+
+		JMenuItem bgBlue = new JMenuItem("Set Window BG to Blue");
+		bgBlue.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setWindowBackgroundColor(Color.blue);
+			}
+		});
+		view.add(bgBlue);
+
+
 		JMenu huh = new JMenu("?");
 
 		JMenuItem openConfigPath = new JMenuItem("Open Config Path");
@@ -895,7 +916,7 @@ public class GUI extends MainWindow {
 
 	private JPanel createMainPanel(JFrame parent) {
 
-		JPanel mainPanel = new JPanel();
+		mainPanel = new JPanel();
 		mainPanel.setPreferredSize(new Dimension(800, 500));
 		GridBagLayout mainPanelLayout = new GridBagLayout();
 		mainPanel.setLayout(mainPanelLayout);
@@ -903,7 +924,7 @@ public class GUI extends MainWindow {
 		mainPanelLeftImg = new Image(80, 200, ColorRGBA.WHITE);
 		mainPanelLeftViewer = new ImageIcon();
 		mainPanelLeftViewer.setImage(mainPanelLeftImg.getAwtImage());
-		JLabel mainPanelLeftViewerLabel = new JLabel(mainPanelLeftViewer);
+		mainPanelLeftViewerLabel = new JLabel(mainPanelLeftViewer);
 		mainPanelLeftViewerLabel.setBackground(windowBackgroundColor.toColor());
 		mainPanelLeftViewerLabel.setOpaque(true);
 		mainPanelLeft = new JScrollPane(mainPanelLeftViewerLabel);
@@ -1347,6 +1368,7 @@ public class GUI extends MainWindow {
 	private void setWindowBackgroundColor(Color newBgColor) {
 		windowBackgroundColor = new ColorRGBA(newBgColor);
 		imageViewerLabel.setBackground(newBgColor);
+		mainPanelLeftViewerLabel.setBackground(newBgColor);
 		refreshLeftView();
 	}
 
