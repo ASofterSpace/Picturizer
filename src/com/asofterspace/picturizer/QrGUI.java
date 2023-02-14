@@ -8,6 +8,7 @@ import com.asofterspace.toolbox.barcodes.QrCode;
 import com.asofterspace.toolbox.barcodes.QrCodeFactory;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
+import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.Utils;
 
@@ -19,7 +20,6 @@ import java.awt.event.KeyEvent;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -38,8 +38,13 @@ public class QrGUI {
 
 	private ImageIcon qrImageViewer;
 	private JLabel qrImageViewerLabel;
+	private JTextField qrTextContent;
 
 	private Image qrPicture;
+
+	private boolean useFrame = true;
+	private ColorRGBA foregroundColor = ColorRGBA.BLACK;
+	private ColorRGBA backgroundColor = ColorRGBA.WHITE;
 
 
 	public QrGUI(GUI gui) {
@@ -62,16 +67,13 @@ public class QrGUI {
 		explanationLabel.setText("Enter the text content of the QR code here:");
 		qrDialog.add(explanationLabel, new Arrangement(0, 0, 1.0, 0.0));
 
-		final JTextField qrTextContent = new JTextField();
+		qrTextContent = new JTextField();
 		qrDialog.add(qrTextContent, new Arrangement(0, 1, 1.0, 0.0));
 
 		qrTextContent.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
-				QrCode qrCode = QrCodeFactory.createFromString(qrTextContent.getText());
-				qrPicture = qrCode.toImage();
-				qrImageViewer.setImage(qrPicture.getAwtImage());
-				qrImageViewerLabel.repaint();
+				refresh();
 			}
 
 			@Override
@@ -121,6 +123,26 @@ public class QrGUI {
 
 	public void show() {
 		GuiUtils.centerAndShowWindow(qrDialog);
+		refresh();
+	}
+
+	public void setForegroundColor(ColorRGBA col) {
+		this.foregroundColor = col;
+	}
+
+	public void setBackgroundColor(ColorRGBA col) {
+		this.backgroundColor = col;
+	}
+
+	public void setUseFrame(boolean useFrame) {
+		this.useFrame = useFrame;
+	}
+
+	private void refresh() {
+		QrCode qrCode = QrCodeFactory.createFromString(qrTextContent.getText());
+		qrPicture = qrCode.toImage(foregroundColor, backgroundColor, useFrame);
+		qrImageViewer.setImage(qrPicture.getAwtImage());
+		qrImageViewerLabel.repaint();
 	}
 
 }

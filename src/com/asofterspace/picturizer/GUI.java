@@ -233,17 +233,35 @@ public class GUI extends MainWindow {
 		});
 		newFile.add(picFromPDF2);
 
-		JMenuItem qrCodeFile = new JMenuItem("QR Code");
-		qrCodeFile.addActionListener(new ActionListener() {
+		JMenuItem qrCodeCore = new JMenuItem("QR Code Core");
+		qrCodeCore.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (qrGUI == null) {
 					qrGUI = new QrGUI(GUI.this);
 				}
+				qrGUI.setUseFrame(false);
+				qrGUI.setBackgroundColor(backgroundColor);
+				qrGUI.setForegroundColor(foregroundColor);
 				qrGUI.show();
 			}
 		});
-		newFile.add(qrCodeFile);
+		newFile.add(qrCodeCore);
+
+		JMenuItem qrCodeFramed = new JMenuItem("QR Code Framed");
+		qrCodeFramed.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (qrGUI == null) {
+					qrGUI = new QrGUI(GUI.this);
+				}
+				qrGUI.setUseFrame(true);
+				qrGUI.setBackgroundColor(backgroundColor);
+				qrGUI.setForegroundColor(foregroundColor);
+				qrGUI.show();
+			}
+		});
+		newFile.add(qrCodeFramed);
 
 		JMenuItem openFile = new JMenuItem("Open");
 		openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
@@ -362,6 +380,17 @@ public class GUI extends MainWindow {
 
 		JMenu colors = new JMenu("Colors");
 		menu.add(colors);
+
+		JMenuItem switchForeAndBack = new JMenuItem("Switch Foreground and Background Colors");
+		switchForeAndBack.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ColorRGBA col = backgroundColor;
+				setBackgroundColor(foregroundColor);
+				setForegroundColor(col);
+			}
+		});
+		colors.add(switchForeAndBack);
 
 		JMenuItem setForegroundToMostCommon = new JMenuItem("Set Foreground to Most Common Color");
 		setForegroundToMostCommon.addActionListener(new ActionListener() {
