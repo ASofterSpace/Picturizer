@@ -89,6 +89,7 @@ public class GUI extends MainWindow {
 	private ChannelChangeGUI channelChangeGUI;
 
 	private ImageFileCtrl imageFileCtrl;
+	private Image colorpickerImg;
 
 	private ColorRGBA foregroundColor = ColorRGBA.BLACK;
 	private ColorRGBA backgroundColor = ColorRGBA.WHITE;
@@ -104,6 +105,8 @@ public class GUI extends MainWindow {
 		// even opening images from PDF files, if possible :)
 		this.imageFileCtrl = new ImageFileCtrl();
 		this.imageFileCtrl.addHandler(new PdfImageHandler());
+
+		colorpickerImg = imageFileCtrl.loadImageFromFile(new File("res/colorpicker.png"));
 	}
 
 	@Override
@@ -385,9 +388,7 @@ public class GUI extends MainWindow {
 		switchForeAndBack.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ColorRGBA col = backgroundColor;
-				setBackgroundColor(foregroundColor);
-				setForegroundColor(col);
+				switchForeAndBackColor();
 			}
 		});
 		colors.add(switchForeAndBack);
@@ -943,6 +944,47 @@ public class GUI extends MainWindow {
 		return menu;
 	}
 
+	// magic numbers within this function correspond to mouse listener in the createMainPanel() function below
+	private void refreshLeftView() {
+
+		// background overall
+		mainPanelLeftImg.drawRectangle(0, 0, 79, 199, windowBackgroundColor);
+
+		// background color
+		int left = 12;
+		int top = 12;
+		int right = left + 20;
+		int bottom = top + 20;
+		mainPanelLeftImg.drawRectangle(left, top, right, bottom, foregroundColor);
+
+		// foreground color
+		left = 5;
+		top = 5;
+		right = left + 20;
+		bottom = top + 20;
+		mainPanelLeftImg.drawRectangle(left, top, right, bottom, backgroundColor);
+
+		// color switcher
+		left = 52;
+		top = 8;
+		right = left + 20;
+		bottom = top + 20;
+		mainPanelLeftImg.drawRectangle(left, top, right, bottom, foregroundColor);
+		for (int x = left; x <= right; x++) {
+			for (int y = 1 + top + right - x; y <= bottom; y++) {
+				mainPanelLeftImg.setPixel(x, y, backgroundColor);
+			}
+		}
+
+		// colorpicker
+		mainPanelLeftImg.draw(colorpickerImg, 0, 40);
+
+		mainPanelLeftViewer.setImage(mainPanelLeftImg.getAwtImage());
+
+		mainPanelLeft.revalidate();
+		mainPanelLeft.repaint();
+	}
+
 	private JPanel createMainPanel(JFrame parent) {
 
 		mainPanel = new JPanel();
@@ -956,6 +998,27 @@ public class GUI extends MainWindow {
 		mainPanelLeftViewerLabel = new JLabel(mainPanelLeftViewer);
 		mainPanelLeftViewerLabel.setBackground(windowBackgroundColor.toColor());
 		mainPanelLeftViewerLabel.setOpaque(true);
+
+		// magic numbers within the mouse listener correspond to refreshLeftView() function above
+		mainPanelLeftViewerLabel.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				int x = e.getX();
+				int y = e.getY() - ((mainPanelLeftViewerLabel.getHeight() - mainPanelLeftImg.getHeight()) / 2);
+				if ((x >= 52) && (x < 72) && (y >= 8) && (y < 28)) {
+					switchForeAndBackColor();
+				}
+
+				if ((x >= 0) && (x < 80) && (y >= 40) && (y < 168)) {
+					System.out.println(e.getModifiersEx() + "");
+					if (e.getModifiersEx() == 0) {
+						setBackgroundColor(colorpickerImg.getPixelSafely(x, y - 40));
+					} else {
+						setForegroundColor(colorpickerImg.getPixelSafely(x, y - 40));
+					}
+				}
+			}
+		});
+
 		mainPanelLeft = new JScrollPane(mainPanelLeftViewerLabel);
 		mainPanelLeft.setPreferredSize(new Dimension(80, 1));
 		mainPanelLeft.setBorder(BorderFactory.createEmptyBorder());
@@ -1362,26 +1425,16 @@ public class GUI extends MainWindow {
 		mainPanelRight.repaint();
 	}
 
-	private void refreshLeftView() {
-
-		// background overall
-		mainPanelLeftImg.drawRectangle(0, 0, 79, 199, windowBackgroundColor);
-
-		// background color
-		mainPanelLeftImg.drawRectangle(12, 12, 32, 32, backgroundColor);
-
-		// foreground color
-		mainPanelLeftImg.drawRectangle(5, 5, 25, 25, foregroundColor);
-
-		mainPanelLeftViewer.setImage(mainPanelLeftImg.getAwtImage());
-
-		mainPanelLeft.revalidate();
-		mainPanelLeft.repaint();
-	}
-
 	private void saveCurPicForUndo() {
 		undoablePicture = picture;
 		redoablePicture = null;
+	}
+
+	private void switchForeAndBackColor() {
+		ColorRGBA prevBackgroundColor = backgroundColor;
+		backgroundColor = foregroundColor;
+		foregroundColor = prevBackgroundColor;
+		refreshLeftView();
 	}
 
 	private void setForegroundColor(ColorRGBA col) {
