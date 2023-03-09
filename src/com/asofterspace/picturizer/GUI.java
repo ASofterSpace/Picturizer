@@ -87,6 +87,8 @@ public class GUI extends MainWindow {
 
 	private QrGUI qrGUI;
 	private ChannelChangeGUI channelChangeGUI;
+	private ColorPickerGUI colorPickerGUI;
+	private boolean colorToBePickedIsForeground = true;
 
 	private ImageFileCtrl imageFileCtrl;
 	private Image colorpickerImg;
@@ -392,6 +394,32 @@ public class GUI extends MainWindow {
 			}
 		});
 		colors.add(switchForeAndBack);
+
+		JMenuItem setForegroundToColorPickerGUI = new JMenuItem("Set Foreground to a Particular Color");
+		setForegroundToColorPickerGUI.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				colorToBePickedIsForeground = true;
+				if (colorPickerGUI == null) {
+					colorPickerGUI = new ColorPickerGUI(GUI.this);
+				}
+				colorPickerGUI.show(foregroundColor);
+			}
+		});
+		colors.add(setForegroundToColorPickerGUI);
+
+		JMenuItem setBackgroundToColorPickerGUI = new JMenuItem("Set Background to a Particular Color");
+		setBackgroundToColorPickerGUI.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				colorToBePickedIsForeground = false;
+				if (colorPickerGUI == null) {
+					colorPickerGUI = new ColorPickerGUI(GUI.this);
+				}
+				colorPickerGUI.show(backgroundColor);
+			}
+		});
+		colors.add(setBackgroundToColorPickerGUI);
 
 		JMenuItem setForegroundToMostCommon = new JMenuItem("Set Foreground to Most Common Color");
 		setForegroundToMostCommon.addActionListener(new ActionListener() {
@@ -955,24 +983,24 @@ public class GUI extends MainWindow {
 		int top = 12;
 		int right = left + 20;
 		int bottom = top + 20;
-		mainPanelLeftImg.drawRectangle(left, top, right, bottom, foregroundColor);
+		mainPanelLeftImg.drawRectangle(left, top, right, bottom, backgroundColor);
 
 		// foreground color
 		left = 5;
 		top = 5;
 		right = left + 20;
 		bottom = top + 20;
-		mainPanelLeftImg.drawRectangle(left, top, right, bottom, backgroundColor);
+		mainPanelLeftImg.drawRectangle(left, top, right, bottom, foregroundColor);
 
 		// color switcher
 		left = 52;
 		top = 8;
 		right = left + 20;
 		bottom = top + 20;
-		mainPanelLeftImg.drawRectangle(left, top, right, bottom, foregroundColor);
+		mainPanelLeftImg.drawRectangle(left, top, right, bottom, backgroundColor);
 		for (int x = left; x <= right; x++) {
 			for (int y = 1 + top + right - x; y <= bottom; y++) {
-				mainPanelLeftImg.setPixel(x, y, backgroundColor);
+				mainPanelLeftImg.setPixel(x, y, foregroundColor);
 			}
 		}
 
@@ -983,6 +1011,14 @@ public class GUI extends MainWindow {
 
 		mainPanelLeft.revalidate();
 		mainPanelLeft.repaint();
+	}
+
+	public void setPickedColor(ColorRGBA newColor) {
+		if (colorToBePickedIsForeground) {
+			setForegroundColor(newColor);
+		} else {
+			setBackgroundColor(newColor);
+		}
 	}
 
 	private JPanel createMainPanel(JFrame parent) {
@@ -1011,9 +1047,9 @@ public class GUI extends MainWindow {
 				if ((x >= 0) && (x < 80) && (y >= 40) && (y < 168)) {
 					System.out.println(e.getModifiersEx() + "");
 					if (e.getModifiersEx() == 0) {
-						setBackgroundColor(colorpickerImg.getPixelSafely(x, y - 40));
-					} else {
 						setForegroundColor(colorpickerImg.getPixelSafely(x, y - 40));
+					} else {
+						setBackgroundColor(colorpickerImg.getPixelSafely(x, y - 40));
 					}
 				}
 			}
