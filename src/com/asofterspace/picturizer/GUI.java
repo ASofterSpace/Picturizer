@@ -752,6 +752,60 @@ public class GUI extends MainWindow {
 		});
 		darkenBrighten.add(curMenuItem);
 
+		JMenu intensify = new JMenu("Intensify");
+		menu.add(intensify);
+
+		/*
+		Farben intensivieren:
+		p^[1] := max255((p^[1] * p^[1]) div 128);
+		p^[2] := max255((p^[2] * p^[2]) div 128);
+		p^[3] := max255((p^[3] * p^[3]) div 128);
+		*/
+		curMenuItem = new JMenuItem("Intensify");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intensify();
+				refreshMainView();
+			}
+		});
+		intensify.add(curMenuItem);
+
+		/*
+		Farben leicht intensivieren:
+		p^[1] := (max255((p^[1] * p^[1]) div 128) + p^[1]) div 2;
+		p^[2] := (max255((p^[2] * p^[2]) div 128) + p^[2]) div 2;
+		p^[3] := (max255((p^[3] * p^[3]) div 128) + p^[3]) div 2;
+		*/
+		curMenuItem = new JMenuItem("Intensify Slightly");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intensifySlightly();
+				refreshMainView();
+			}
+		});
+		intensify.add(curMenuItem);
+
+		// intensifies colors, and the ones that achieve black or white are set to that,
+		// but all others are kept as before, so if it was somewhere in the middle before,
+		// it just stays exactly there
+		curMenuItem = new JMenuItem("Intensify Extremes, but Keep Non-Intense Pixels");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intensifyExtremes();
+				refreshMainView();
+			}
+		});
+		intensify.add(curMenuItem);
+
 		/*
 		TODO:
 		add commandline options to be able to just automatically apply this or that editing directly... well... from the commandline :D
@@ -771,16 +825,6 @@ public class GUI extends MainWindow {
 		p^[2] := p^[1];
 		p^[3] := p^[2];
 		Inc(p);
-
-		Farben intensivieren:
-		p^[1] := max255((p^[1] * p^[1]) div 128);
-		p^[2] := max255((p^[2] * p^[2]) div 128);
-		p^[3] := max255((p^[3] * p^[3]) div 128);
-
-		Farben leicht intensivieren:
-		p^[1] := (max255((p^[1] * p^[1]) div 128) * p^[1]) div 2;
-		p^[2] := (max255((p^[2] * p^[2]) div 128) * p^[2]) div 2;
-		p^[3] := (max255((p^[3] * p^[3]) div 128) * p^[3]) div 2;
 
 		Farben reduziern:
 		varbr := Trunc((p^[1] * 0.11) + (p^[2] * 0.59) + (p^[3] * 0.3));
