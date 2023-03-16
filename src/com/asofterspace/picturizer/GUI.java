@@ -85,9 +85,10 @@ public class GUI extends MainWindow {
 	private Image undoablePicture;
 	private Image redoablePicture;
 
-	private QrGUI qrGUI;
-	private ChannelChangeGUI channelChangeGUI;
-	private ColorPickerGUI colorPickerGUI;
+	private QrGUI qrGUI = null;
+	private ChannelChangeGUI channelChangeGUI = null;
+	private CreateGridGUI createGridGUI = null;
+	private ColorPickerGUI colorPickerGUI = null;
 	private boolean colorToBePickedIsForeground = true;
 
 	private ImageFileCtrl imageFileCtrl;
@@ -267,6 +268,19 @@ public class GUI extends MainWindow {
 			}
 		});
 		newFile.add(qrCodeFramed);
+
+		JMenuItem newGrid = new JMenuItem("Empty Grid to Align Images");
+		newGrid.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (createGridGUI == null) {
+					createGridGUI = new CreateGridGUI(GUI.this);
+				}
+				createGridGUI.show(foregroundColor, backgroundColor);
+			}
+		});
+		newFile.add(newGrid);
+
 
 		JMenuItem openFile = new JMenuItem("Open");
 		openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
