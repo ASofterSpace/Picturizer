@@ -109,7 +109,8 @@ public class GUI extends MainWindow {
 		this.imageFileCtrl = new ImageFileCtrl();
 		this.imageFileCtrl.addHandler(new PdfImageHandler());
 
-		colorpickerImg = imageFileCtrl.loadImageFromFile(new File("res/colorpicker.png"));
+		colorpickerImg = imageFileCtrl.loadImageFromFile(new File(
+			 System.getProperty("java.class.path") + "/../res/colorpicker.png"));
 	}
 
 	@Override
