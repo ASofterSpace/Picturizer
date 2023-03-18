@@ -15,11 +15,11 @@ import java.awt.event.ActionListener;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -34,6 +34,7 @@ public class ChannelChangeGUI {
 
 	private ImageIcon ccImageViewer;
 	private JLabel ccImageViewerLabel;
+	private JCheckBox allowOverflowBox;
 
 	private Image ccPicture;
 
@@ -45,8 +46,8 @@ public class ChannelChangeGUI {
 
 		this.gui = gui;
 
-		this.basicFields = new JTextField[3];
-		this.multiplierFields = new JTextField[3];
+		this.basicFields = new JTextField[4];
+		this.multiplierFields = new JTextField[4];
 
 		this.ccDialog = createGUI();
 	}
@@ -63,16 +64,20 @@ public class ChannelChangeGUI {
 		createChannelWidget('R', 0, ccDialog);
 		createChannelWidget('G', 1, ccDialog);
 		createChannelWidget('B', 2, ccDialog);
+		createChannelWidget('A', 3, ccDialog);
+
+		allowOverflowBox = new JCheckBox("Allow overflow (so instead of clipping 355 to 255, 355 becomes 100)");
+		ccDialog.add(allowOverflowBox, new Arrangement(0, 4, 1.0, 0.0));
 
 		ccImageViewer = new ImageIcon();
 		ccImageViewerLabel = new JLabel(ccImageViewer);
-		ccDialog.add(ccImageViewerLabel, new Arrangement(0, 3, 1.0, 1.0));
+		ccDialog.add(ccImageViewerLabel, new Arrangement(0, 5, 1.0, 1.0));
 
 		JPanel buttonRow = new JPanel();
 		GridLayout buttonRowLayout = new GridLayout(1, 3);
 		buttonRowLayout.setHgap(8);
 		buttonRow.setLayout(buttonRowLayout);
-		ccDialog.add(buttonRow, new Arrangement(0, 4, 1.0, 0.0));
+		ccDialog.add(buttonRow, new Arrangement(0, 6, 1.0, 0.0));
 
 		JButton applyPreview = new JButton("Apply to Preview");
 		applyPreview.addActionListener(new ActionListener() {
@@ -142,10 +147,13 @@ public class ChannelChangeGUI {
 		String basicR = basicFields[0].getText();
 		String basicG = basicFields[1].getText();
 		String basicB = basicFields[2].getText();
+		String basicA = basicFields[3].getText();
 		double modR = Double.parseDouble(multiplierFields[0].getText());
 		double modG = Double.parseDouble(multiplierFields[1].getText());
 		double modB = Double.parseDouble(multiplierFields[2].getText());
-		ccPicture.editChannels(basicR, modR, basicG, modG, basicB, modB);
+		double modA = Double.parseDouble(multiplierFields[3].getText());
+		boolean allowOverflow = allowOverflowBox.isSelected();
+		ccPicture.editChannels(basicR, modR, basicG, modG, basicB, modB, basicA, modA, allowOverflow);
 		ccImageViewer.setImage(ccPicture.getAwtImage());
 		ccImageViewerLabel.repaint();
 	}
