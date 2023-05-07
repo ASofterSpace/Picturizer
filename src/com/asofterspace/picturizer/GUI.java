@@ -82,6 +82,9 @@ public class GUI extends MainWindow {
 	private ImageIcon imageViewer;
 	private JLabel imageViewerLabel;
 	private Image picture;
+	private Image undoablePicture3;
+	private Image undoablePicture2;
+	private Image undoablePicture1;
 	private Image undoablePicture;
 	private Image redoablePicture;
 
@@ -690,6 +693,30 @@ public class GUI extends MainWindow {
 		});
 		dampen.add(undampenWeakly);
 
+		JMenuItem dampenWeakly1 = new JMenuItem("1.1 - Dampen Extremely Slightly");
+		dampenWeakly1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.dampen(1.1f);
+				refreshMainView();
+			}
+		});
+		dampen.add(dampenWeakly1);
+
+		JMenuItem dampenWeakly25 = new JMenuItem("1.25 - Dampen Very Slightly");
+		dampenWeakly25.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.dampen(1.25f);
+				refreshMainView();
+			}
+		});
+		dampen.add(dampenWeakly25);
+
 		JMenuItem dampenWeakly = new JMenuItem("1.5 - Dampen Slightly");
 		dampenWeakly.addActionListener(new ActionListener() {
 			@Override
@@ -820,6 +847,190 @@ public class GUI extends MainWindow {
 			}
 		});
 		intensify.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Create Map of Extremes and Non-Intense Pixels");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.createMapOfExtremes(foregroundColor, backgroundColor);
+				refreshMainView();
+			}
+		});
+		intensify.add(curMenuItem);
+
+		JMenu mixing = new JMenu("Mixing");
+		menu.add(mixing);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image 90:10 (old:new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImage(otherPic, 0.1f);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image 75:25 (old:new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImage(otherPic, 0.25f);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image 66:33 (old:new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImage(otherPic, 0.3333f);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image 60:40 (old:new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImage(otherPic, 0.4f);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image 50:50 (old:new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImage(otherPic, 0.5f);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image 40:60 (old:new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImage(otherPic, 0.6f);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image 33:66 (old:new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImage(otherPic, 0.6666f);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image 25:75 (old:new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImage(otherPic, 0.75f);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image 10:90 (old:new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImage(otherPic, 0.9f);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image from Left (old) to Right (new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImageLeftToRight(otherPic);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image from Right (old) to Left (new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImageRightToLeft(otherPic);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image from Top (old) to Bottom (new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImageTopToBottom(otherPic);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image from Bottom (old) to Top (new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImageBottomToTop(otherPic);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
 
 		/*
 		TODO:
@@ -1521,6 +1732,9 @@ public class GUI extends MainWindow {
 	}
 
 	private void saveCurPicForUndo() {
+		undoablePicture3 = undoablePicture2;
+		undoablePicture2 = undoablePicture1;
+		undoablePicture1 = undoablePicture;
 		undoablePicture = picture;
 		redoablePicture = null;
 	}
@@ -1555,7 +1769,9 @@ public class GUI extends MainWindow {
 		}
 		redoablePicture = picture;
 		picture = undoablePicture;
-		undoablePicture = null;
+		undoablePicture = undoablePicture1;
+		undoablePicture1 = undoablePicture2;
+		undoablePicture2 = undoablePicture3;
 		refreshMainView();
 	}
 
@@ -1563,6 +1779,9 @@ public class GUI extends MainWindow {
 		if (redoablePicture == null) {
 			return;
 		}
+		undoablePicture3 = undoablePicture2;
+		undoablePicture2 = undoablePicture1;
+		undoablePicture1 = undoablePicture;
 		undoablePicture = picture;
 		picture = redoablePicture;
 		redoablePicture = null;
