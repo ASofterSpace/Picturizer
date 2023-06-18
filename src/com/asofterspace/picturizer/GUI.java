@@ -1211,6 +1211,28 @@ public class GUI extends MainWindow {
 
 		JMenu huh = new JMenu("?");
 
+		JMenuItem showFGColorCode = new JMenuItem("Show Foreground Color Code");
+		showFGColorCode.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String msg = "Hex Code: " + foregroundColor.toHexString() + "\n" +
+					"rgba Code: " + foregroundColor.toString();
+				JOptionPane.showMessageDialog(mainFrame, msg, "Color", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		huh.add(showFGColorCode);
+
+		JMenuItem showBGColorCode = new JMenuItem("Show Background Color Code");
+		showBGColorCode.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String msg = "Hex Code: " + backgroundColor.toHexString() + "\n" +
+					"rgba Code: " + backgroundColor.toString();
+				JOptionPane.showMessageDialog(mainFrame, msg, "Color", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		huh.add(showBGColorCode);
+
 		JMenuItem openConfigPath = new JMenuItem("Open Config Path");
 		openConfigPath.addActionListener(new ActionListener() {
 			@Override
