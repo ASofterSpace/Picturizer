@@ -541,6 +541,8 @@ public class GUI extends MainWindow {
 		});
 		adjustPixels.add(replaceStragglersIshWithForeground);
 
+		addPixelLevelDiffMapButtons(adjustPixels);
+
 		JMenu adjustColors = new JMenu("Adjust Colors");
 		menu.add(adjustColors);
 
@@ -860,6 +862,8 @@ public class GUI extends MainWindow {
 		});
 		intensify.add(curMenuItem);
 
+		addPixelLevelDiffMapButtons(intensify);
+
 		JMenu mixing = new JMenu("Mixing");
 		menu.add(mixing);
 
@@ -1027,6 +1031,32 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = picture.copy();
 				picture.intermixImageBottomToTop(otherPic);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image (applying min)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImageMin(otherPic);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Mix in Previous Image (applying max)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.intermixImageMax(otherPic);
 				refreshMainView();
 			}
 		});
@@ -1262,6 +1292,33 @@ public class GUI extends MainWindow {
 		parent.setJMenuBar(menu);
 
 		return menu;
+	}
+
+	private void addPixelLevelDiffMapButtons(JMenuItem parentItem) {
+
+		JMenuItem curMenuItem = new JMenuItem("Create Map of Pixel-Level Differences");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.createMapOfDifferences();
+				refreshMainView();
+			}
+		});
+		parentItem.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Create Map of Pixel-Level Differences (Black/White)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.createMapOfDifferencesBW();
+				refreshMainView();
+			}
+		});
+		parentItem.add(curMenuItem);
 	}
 
 	// magic numbers within this function correspond to mouse listener in the createMainPanel() function below
