@@ -1062,6 +1062,19 @@ public class GUI extends MainWindow {
 		});
 		mixing.add(curMenuItem);
 
+		curMenuItem = new JMenuItem("Mask out Previous Image (every same pixel becomes BG color)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.maskOutImage(otherPic, backgroundColor);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
 		/*
 		TODO:
 		add commandline options to be able to just automatically apply this or that editing directly... well... from the commandline :D
