@@ -490,6 +490,30 @@ public class GUI extends MainWindow {
 		});
 		adjustPixels.add(replaceBackgroundForeground);
 
+		JMenuItem replaceAnythingButFgWithBg = new JMenuItem("Replace Anything but Foreground Color with Background Color");
+		replaceAnythingButFgWithBg.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.replaceColorsExcept(foregroundColor, backgroundColor);
+				refreshMainView();
+			}
+		});
+		adjustPixels.add(replaceAnythingButFgWithBg);
+
+		JMenuItem replaceAnythingButMcWithFg = new JMenuItem("Replace Anything but Most Common Color with Foreground Color");
+		replaceAnythingButMcWithFg.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.replaceColorsExcept(picture.getMostCommonColor(), foregroundColor);
+				refreshMainView();
+			}
+		});
+		adjustPixels.add(replaceAnythingButMcWithFg);
+
 		JMenuItem replaceMostCommonForeground = new JMenuItem("Replace Most Common Color with Foreground Color");
 		replaceMostCommonForeground.addActionListener(new ActionListener() {
 			@Override
