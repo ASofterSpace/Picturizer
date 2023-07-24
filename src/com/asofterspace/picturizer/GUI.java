@@ -8,7 +8,6 @@ import com.asofterspace.toolbox.configuration.ConfigFile;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.gui.MainWindow;
-import com.asofterspace.toolbox.gui.MenuItemForMainMenu;
 import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageFile;
@@ -65,6 +64,12 @@ public class GUI extends MainWindow {
 	private final static String CONFIG_KEY_TOP = "mainFrameTop";
 	private final static String CONFIG_KEY_LAST_DIRECTORY = "lastDirectory";
 
+	final static String ADJUST_CHANNEL_GUI_STR = "Adjust Channels Manually in Detail...";
+
+	private final static String TOOL_SELECTED_START_STR = ">> ";
+	private final static String TOOL_SELECTED_END_STR = " <<";
+	private final static String TOOL_TEXTS_PIPETTE = "Set Foreground to a Particular Color (Pipette Tool)";
+
 	private String lastPicturePath;
 
 	private JPanel mainPanel;
@@ -72,6 +77,7 @@ public class GUI extends MainWindow {
 	private JScrollPane mainPanelRight;
 
 	private JMenuItem close;
+	private JMenuItem setForegroundToPipette;
 
 	private ConfigFile configuration;
 
@@ -97,6 +103,7 @@ public class GUI extends MainWindow {
 	private ImageFileCtrl imageFileCtrl;
 	private Image colorpickerImg;
 
+	private Tool activeTool = null;
 	private ColorRGBA foregroundColor = ColorRGBA.BLACK;
 	private ColorRGBA backgroundColor = ColorRGBA.WHITE;
 	private ColorRGBA windowBackgroundColor = new ColorRGBA(Color.gray);
@@ -389,17 +396,6 @@ public class GUI extends MainWindow {
 		});
 		edit.add(paste);
 
-		MenuItemForMainMenu editChannelsManually = new MenuItemForMainMenu("Edit Channels");
-		editChannelsManually.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (channelChangeGUI == null) {
-					channelChangeGUI = new ChannelChangeGUI(GUI.this);
-				}
-				channelChangeGUI.show();
-			}
-		});
-		menu.add(editChannelsManually);
 
 		JMenu colors = new JMenu("Colors");
 		menu.add(colors);
@@ -413,7 +409,23 @@ public class GUI extends MainWindow {
 		});
 		colors.add(switchForeAndBack);
 
-		JMenuItem setForegroundToColorPickerGUI = new JMenuItem("Set Foreground to a Particular Color");
+		colors.addSeparator();
+
+		setForegroundToPipette = new JMenuItem(TOOL_TEXTS_PIPETTE);
+		setForegroundToPipette.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.PIPETTE) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.PIPETTE;
+				}
+				refreshTools();
+			}
+		});
+		colors.add(setForegroundToPipette);
+
+		JMenuItem setForegroundToColorPickerGUI = new JMenuItem("Set Foreground to a Particular Color (GUI Menu)");
 		setForegroundToColorPickerGUI.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -426,7 +438,7 @@ public class GUI extends MainWindow {
 		});
 		colors.add(setForegroundToColorPickerGUI);
 
-		JMenuItem setBackgroundToColorPickerGUI = new JMenuItem("Set Background to a Particular Color");
+		JMenuItem setBackgroundToColorPickerGUI = new JMenuItem("Set Background to a Particular Color (GUI Menu)");
 		setBackgroundToColorPickerGUI.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -438,6 +450,8 @@ public class GUI extends MainWindow {
 			}
 		});
 		colors.add(setBackgroundToColorPickerGUI);
+
+		colors.addSeparator();
 
 		JMenuItem setForegroundToMostCommon = new JMenuItem("Set Foreground to Most Common Color");
 		setForegroundToMostCommon.addActionListener(new ActionListener() {
@@ -475,7 +489,8 @@ public class GUI extends MainWindow {
 		});
 		colors.add(setBackgroundToMostCommonSur);
 
-		JMenu adjustPixels = new JMenu("Pixel-Level");
+
+		JMenu adjustPixels = new JMenu("Pixels");
 		menu.add(adjustPixels);
 
 		JMenuItem replaceBackgroundForeground = new JMenuItem("Replace Background Color with Foreground Color");
@@ -489,6 +504,56 @@ public class GUI extends MainWindow {
 			}
 		});
 		adjustPixels.add(replaceBackgroundForeground);
+
+		JMenuItem replaceVCBackgroundForeground = new JMenuItem("Replace Very-Close-to-Background Color with Foreground Color");
+		replaceVCBackgroundForeground.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.replaceColors(backgroundColor, foregroundColor, 24);
+				refreshMainView();
+			}
+		});
+		adjustPixels.add(replaceVCBackgroundForeground);
+
+		JMenuItem replaceCBackgroundForeground = new JMenuItem("Replace Close-to-Background Color with Foreground Color");
+		replaceCBackgroundForeground.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.replaceColors(backgroundColor, foregroundColor, 64);
+				refreshMainView();
+			}
+		});
+		adjustPixels.add(replaceCBackgroundForeground);
+
+		JMenuItem replaceSBackgroundForeground = new JMenuItem("Replace Similar-ish-to-Background Color with Foreground Color");
+		replaceSBackgroundForeground.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.replaceColors(backgroundColor, foregroundColor, 128);
+				refreshMainView();
+			}
+		});
+		adjustPixels.add(replaceSBackgroundForeground);
+
+		JMenuItem replaceVSBackgroundForeground = new JMenuItem("Replace Vaguely-Similar-ish-to-Background Color with Foreground Color");
+		replaceVSBackgroundForeground.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.replaceColors(backgroundColor, foregroundColor, 255);
+				refreshMainView();
+			}
+		});
+		adjustPixels.add(replaceVSBackgroundForeground);
+
+		adjustPixels.addSeparator();
 
 		JMenuItem replaceAnythingButFgWithBg = new JMenuItem("Replace Anything but Foreground Color with Background Color");
 		replaceAnythingButFgWithBg.addActionListener(new ActionListener() {
@@ -513,6 +578,8 @@ public class GUI extends MainWindow {
 			}
 		});
 		adjustPixels.add(replaceAnythingButMcWithFg);
+
+		adjustPixels.addSeparator();
 
 		JMenuItem replaceMostCommonForeground = new JMenuItem("Replace Most Common Color with Foreground Color");
 		replaceMostCommonForeground.addActionListener(new ActionListener() {
@@ -539,6 +606,8 @@ public class GUI extends MainWindow {
 			}
 		});
 		adjustPixels.add(replaceMostCommonSurroundingForeground);
+
+		adjustPixels.addSeparator();
 
 		JMenuItem replaceStragglersWithForeground = new JMenuItem("Replace Stragglers (Single Pixels) based on Background Color with Foreground Color");
 		replaceStragglersWithForeground.addActionListener(new ActionListener() {
@@ -567,7 +636,8 @@ public class GUI extends MainWindow {
 
 		addPixelLevelDiffMapButtons(adjustPixels);
 
-		JMenu adjustColors = new JMenu("Adjust Colors");
+
+		JMenu adjustColors = new JMenu("Channels");
 		menu.add(adjustColors);
 
 		JMenuItem removeAbsoluteColors = new JMenuItem("Remove Colors by Absolute Brightness");
@@ -652,6 +722,20 @@ public class GUI extends MainWindow {
 		});
 		adjustColors.add(bakeCurrentView);
 
+		adjustColors.addSeparator();
+
+		JMenuItem channelAdjust = new JMenuItem(ADJUST_CHANNEL_GUI_STR);
+		channelAdjust.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (channelChangeGUI == null) {
+					channelChangeGUI = new ChannelChangeGUI(GUI.this);
+				}
+				channelChangeGUI.show();
+			}
+		});
+		adjustColors.add(channelAdjust);
+
 
 		JMenu invert = new JMenu("Invert");
 		menu.add(invert);
@@ -691,6 +775,7 @@ public class GUI extends MainWindow {
 			}
 		});
 		invert.add(invertBrightness2);
+
 
 		JMenu dampen = new JMenu("Dampen");
 		menu.add(dampen);
@@ -874,6 +959,8 @@ public class GUI extends MainWindow {
 		});
 		intensify.add(curMenuItem);
 
+		intensify.addSeparator();
+
 		curMenuItem = new JMenuItem("Create Map of Extremes and Non-Intense Pixels");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
@@ -1008,6 +1095,8 @@ public class GUI extends MainWindow {
 		});
 		mixing.add(curMenuItem);
 
+		mixing.addSeparator();
+
 		curMenuItem = new JMenuItem("Mix in Previous Image from Left (old) to Right (new)");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
@@ -1060,6 +1149,8 @@ public class GUI extends MainWindow {
 		});
 		mixing.add(curMenuItem);
 
+		mixing.addSeparator();
+
 		curMenuItem = new JMenuItem("Mix in Previous Image (applying min)");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
@@ -1085,6 +1176,8 @@ public class GUI extends MainWindow {
 			}
 		});
 		mixing.add(curMenuItem);
+
+		mixing.addSeparator();
 
 		curMenuItem = new JMenuItem("Mask out Previous Image (every same pixel becomes BG color)");
 		curMenuItem.addActionListener(new ActionListener() {
@@ -1300,6 +1393,8 @@ public class GUI extends MainWindow {
 		});
 		huh.add(showBGColorCode);
 
+		huh.addSeparator();
+
 		JMenuItem openConfigPath = new JMenuItem("Open Config Path");
 		openConfigPath.addActionListener(new ActionListener() {
 			@Override
@@ -1426,12 +1521,14 @@ public class GUI extends MainWindow {
 			public void mouseClicked(MouseEvent e) {
 				int x = e.getX();
 				int y = e.getY() - ((mainPanelLeftViewerLabel.getHeight() - mainPanelLeftImg.getHeight()) / 2);
+
+				// System.out.println("LeftViewer x: " + x + " y: " + y);
+
 				if ((x >= 52) && (x < 72) && (y >= 8) && (y < 28)) {
 					switchForeAndBackColor();
 				}
 
 				if ((x >= 0) && (x < 80) && (y >= 40) && (y < 168)) {
-					System.out.println(e.getModifiersEx() + "");
 					if (e.getModifiersEx() == 0) {
 						setForegroundColor(colorpickerImg.getPixelSafely(x, y - 40));
 					} else {
@@ -1451,6 +1548,40 @@ public class GUI extends MainWindow {
 		imageViewerLabel = new JLabel(imageViewer);
 		imageViewerLabel.setBackground(Color.gray);
 		imageViewerLabel.setOpaque(true);
+		imageViewerLabel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int lw = imageViewerLabel.getWidth();
+				int lh = imageViewerLabel.getHeight();
+				int iw = imageViewer.getIconWidth();
+				int ih = imageViewer.getIconHeight();
+				int offsetX = 0;
+				int offsetY = 0;
+				if (lw > iw) {
+					offsetX = (lw - iw) / 2;
+				}
+				if (lh > ih) {
+					offsetY = (lh - ih) / 2;
+				}
+				int x = e.getX() - offsetX;
+				int y = e.getY() - offsetY;
+
+				// System.out.println("ImageViewer x: " + x + ", y: " + y);
+
+				if (activeTool != null) {
+					switch (activeTool) {
+						case PIPETTE:
+							ColorRGBA newColor = picture.getPixelSafely(x, y);
+							if (newColor != null) {
+								setForegroundColor(newColor);
+								activeTool = null;
+								refreshTools();
+							}
+							break;
+					}
+				}
+			}
+		});
 
 		mainPanelRight = new JScrollPane(imageViewerLabel);
 		mainPanelRight.setBorder(BorderFactory.createEmptyBorder());
@@ -1902,6 +2033,18 @@ public class GUI extends MainWindow {
 		picture = redoablePicture;
 		redoablePicture = null;
 		refreshMainView();
+	}
+
+	private void refreshTools() {
+		adjustToolTitle(setForegroundToPipette, TOOL_TEXTS_PIPETTE, activeTool == Tool.PIPETTE);
+	}
+
+	private void adjustToolTitle(JMenuItem item, String itemText, boolean isActive) {
+		if (isActive) {
+			item.setText(TOOL_SELECTED_START_STR + itemText + TOOL_SELECTED_END_STR);
+		} else {
+			item.setText(itemText);
+		}
 	}
 
 }

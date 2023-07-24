@@ -14,8 +14,8 @@ import javax.swing.SwingUtilities;
 public class Main {
 
 	public final static String PROGRAM_TITLE = "Picturizer";
-	public final static String VERSION_NUMBER = "0.0.0.8(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
-	public final static String VERSION_DATE = "9. November 2019 - 7. May 2023";
+	public final static String VERSION_NUMBER = "0.0.0.9(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
+	public final static String VERSION_DATE = "9. November 2019 - 24. July 2023";
 
 	private static ConfigFile config;
 

@@ -55,7 +55,7 @@ public class ChannelChangeGUI {
 	private JDialog createGUI() {
 
 		// Create the window
-		final JDialog ccDialog = new JDialog(gui.getMainFrame(), "Edit Channels Manually", true);
+		final JDialog ccDialog = new JDialog(gui.getMainFrame(), GUI.ADJUST_CHANNEL_GUI_STR, true);
 		GridBagLayout ccDialogLayout = new GridBagLayout();
 		ccDialog.setLayout(ccDialogLayout);
 		ccDialog.getRootPane().setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
