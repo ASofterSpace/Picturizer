@@ -493,6 +493,32 @@ public class GUI extends MainWindow {
 		JMenu adjustPixels = new JMenu("Pixels");
 		menu.add(adjustPixels);
 
+		JMenuItem replaceEvWithForeground = new JMenuItem("Replace Everything with Foreground Color");
+		replaceEvWithForeground.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.clear(foregroundColor);
+				refreshMainView();
+			}
+		});
+		adjustPixels.add(replaceEvWithForeground);
+
+		JMenuItem replaceEvWithBackground = new JMenuItem("Replace Everything with Background Color");
+		replaceEvWithBackground.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.clear(backgroundColor);
+				refreshMainView();
+			}
+		});
+		adjustPixels.add(replaceEvWithBackground);
+
+		adjustPixels.addSeparator();
+
 		JMenuItem replaceBackgroundForeground = new JMenuItem("Replace Background Color with Foreground Color");
 		replaceBackgroundForeground.addActionListener(new ActionListener() {
 			@Override
@@ -1453,8 +1479,24 @@ public class GUI extends MainWindow {
 		parentItem.add(curMenuItem);
 	}
 
+	private void drawBlackWhiteBackground(int left, int top, int right, int bottom, int colFieldThirdSize) {
+		// fill with black
+		mainPanelLeftImg.drawRectangle(left, top, right, bottom, ColorRGBA.BLACK);
+
+		// draw five white rectangles to achieve an overall tiled look
+		mainPanelLeftImg.drawRectangle(left, top, left + colFieldThirdSize - 1, top + colFieldThirdSize - 1, ColorRGBA.WHITE);
+		mainPanelLeftImg.drawRectangle(left + colFieldThirdSize, top + colFieldThirdSize,
+			left + (2*colFieldThirdSize) - 1, top + (2*colFieldThirdSize) - 1, ColorRGBA.WHITE);
+		mainPanelLeftImg.drawRectangle(left + (2*colFieldThirdSize), top + (2*colFieldThirdSize), right, bottom, ColorRGBA.WHITE);
+		mainPanelLeftImg.drawRectangle(left, top + (2*colFieldThirdSize), left + colFieldThirdSize - 1, bottom, ColorRGBA.WHITE);
+		mainPanelLeftImg.drawRectangle(left + (2*colFieldThirdSize), top, right, top + colFieldThirdSize - 1, ColorRGBA.WHITE);
+	}
+
 	// magic numbers within this function correspond to mouse listener in the createMainPanel() function below
 	private void refreshLeftView() {
+
+		int colFieldSize = 21;
+		int colFieldThirdSize = colFieldSize / 3;
 
 		// background overall
 		mainPanelLeftImg.drawRectangle(0, 0, 79, 199, windowBackgroundColor);
@@ -1462,26 +1504,30 @@ public class GUI extends MainWindow {
 		// background color
 		int left = 12;
 		int top = 12;
-		int right = left + 20;
-		int bottom = top + 20;
-		mainPanelLeftImg.drawRectangle(left, top, right, bottom, backgroundColor);
+		int right = left + colFieldSize;
+		int bottom = top + colFieldSize;
+		drawBlackWhiteBackground(left, top, right, bottom, colFieldThirdSize);
+		mainPanelLeftImg.drawRectangleWithTransparency(left, top, right, bottom, backgroundColor);
 
 		// foreground color
-		left = 5;
-		top = 5;
-		right = left + 20;
-		bottom = top + 20;
-		mainPanelLeftImg.drawRectangle(left, top, right, bottom, foregroundColor);
+		left = 2;
+		top = 2;
+		right = left + colFieldSize;
+		bottom = top + colFieldSize;
+		drawBlackWhiteBackground(left, top, right, bottom, colFieldThirdSize);
+		mainPanelLeftImg.drawRectangleWithTransparency(left, top, right, bottom, foregroundColor);
 
 		// color switcher
 		left = 52;
 		top = 8;
-		right = left + 20;
-		bottom = top + 20;
-		mainPanelLeftImg.drawRectangle(left, top, right, bottom, backgroundColor);
+		right = left + colFieldSize;
+		bottom = top + colFieldSize;
+		ColorRGBA bgColNoTrans = backgroundColor.getWithoutTransparency();
+		ColorRGBA fgColNoTrans = foregroundColor.getWithoutTransparency();
+		mainPanelLeftImg.drawRectangle(left, top, right, bottom, bgColNoTrans);
 		for (int x = left; x <= right; x++) {
 			for (int y = 1 + top + right - x; y <= bottom; y++) {
-				mainPanelLeftImg.setPixel(x, y, foregroundColor);
+				mainPanelLeftImg.setPixel(x, y, fgColNoTrans);
 			}
 		}
 
