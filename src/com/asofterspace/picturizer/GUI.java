@@ -931,6 +931,19 @@ public class GUI extends MainWindow {
 		});
 		darkenBrighten.add(curMenuItem);
 
+		curMenuItem = new JMenuItem("1.75 - Brighten Strongly Above Brightness Cutoff");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				int cutoff = 256+256;
+				picture = picture.copy();
+				picture.editChannelsAboveCutoff("R", 1.75, "G", 1.75, "B", 1.75, ColorRGBA.DEFAULT_ALLOW_OVERFLOW, cutoff);
+				refreshMainView();
+			}
+		});
+		darkenBrighten.add(curMenuItem);
+
 		JMenu intensify = new JMenu("Intensify");
 		menu.add(intensify);
 
