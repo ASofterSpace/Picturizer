@@ -6,5 +6,10 @@ package com.asofterspace.picturizer;
 
 
 public enum Tool {
-	PIPETTE;
+
+	// pipette to set foreground color
+	PIPETTE_FG,
+
+	// pipette to set background color
+	PIPETTE_BG;
 }

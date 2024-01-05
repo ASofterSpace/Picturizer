@@ -68,7 +68,8 @@ public class GUI extends MainWindow {
 
 	private final static String TOOL_SELECTED_START_STR = ">> ";
 	private final static String TOOL_SELECTED_END_STR = " <<";
-	private final static String TOOL_TEXTS_PIPETTE = "Set Foreground to a Particular Color (Pipette Tool)";
+	private final static String TOOL_TEXTS_PIPETTE_FG = "Set Foreground to a Particular Color (Pipette Tool)";
+	private final static String TOOL_TEXTS_PIPETTE_BG = "Set Background to a Particular Color (Pipette Tool)";
 
 	private String lastPicturePath;
 
@@ -78,6 +79,7 @@ public class GUI extends MainWindow {
 
 	private JMenuItem close;
 	private JMenuItem setForegroundToPipette;
+	private JMenuItem setBackgroundToPipette;
 
 	private ConfigFile configuration;
 
@@ -397,6 +399,20 @@ public class GUI extends MainWindow {
 		edit.add(paste);
 
 
+		JMenu tools = new JMenu("Tools");
+		menu.add(tools);
+
+		JMenuItem unsetTool = new JMenuItem("Unset Currently Used Tool");
+		unsetTool.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				activeTool = null;
+				refreshTools();
+			}
+		});
+		tools.add(unsetTool);
+
+
 		JMenu colors = new JMenu("Colors");
 		menu.add(colors);
 
@@ -411,19 +427,33 @@ public class GUI extends MainWindow {
 
 		colors.addSeparator();
 
-		setForegroundToPipette = new JMenuItem(TOOL_TEXTS_PIPETTE);
+		setForegroundToPipette = new JMenuItem(TOOL_TEXTS_PIPETTE_FG);
 		setForegroundToPipette.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.PIPETTE) {
+				if (activeTool == Tool.PIPETTE_FG) {
 					activeTool = null;
 				} else {
-					activeTool = Tool.PIPETTE;
+					activeTool = Tool.PIPETTE_FG;
 				}
 				refreshTools();
 			}
 		});
 		colors.add(setForegroundToPipette);
+
+		setBackgroundToPipette = new JMenuItem(TOOL_TEXTS_PIPETTE_BG);
+		setBackgroundToPipette.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.PIPETTE_BG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.PIPETTE_BG;
+				}
+				refreshTools();
+			}
+		});
+		colors.add(setBackgroundToPipette);
 
 		JMenuItem setForegroundToColorPickerGUI = new JMenuItem("Set Foreground to a Particular Color (GUI Menu)");
 		setForegroundToColorPickerGUI.addActionListener(new ActionListener() {
@@ -1629,12 +1659,18 @@ public class GUI extends MainWindow {
 
 				if (activeTool != null) {
 					switch (activeTool) {
-						case PIPETTE:
+
+						case PIPETTE_FG:
 							ColorRGBA newColor = picture.getPixelSafely(x, y);
 							if (newColor != null) {
 								setForegroundColor(newColor);
-								activeTool = null;
-								refreshTools();
+							}
+							break;
+
+						case PIPETTE_BG:
+							newColor = picture.getPixelSafely(x, y);
+							if (newColor != null) {
+								setBackgroundColor(newColor);
 							}
 							break;
 					}
@@ -2095,7 +2131,8 @@ public class GUI extends MainWindow {
 	}
 
 	private void refreshTools() {
-		adjustToolTitle(setForegroundToPipette, TOOL_TEXTS_PIPETTE, activeTool == Tool.PIPETTE);
+		adjustToolTitle(setForegroundToPipette, TOOL_TEXTS_PIPETTE_FG, activeTool == Tool.PIPETTE_FG);
+		adjustToolTitle(setBackgroundToPipette, TOOL_TEXTS_PIPETTE_BG, activeTool == Tool.PIPETTE_BG);
 	}
 
 	private void adjustToolTitle(JMenuItem item, String itemText, boolean isActive) {
