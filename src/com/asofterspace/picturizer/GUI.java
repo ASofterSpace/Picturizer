@@ -282,17 +282,15 @@ public class GUI extends MainWindow {
 		});
 		newFile.add(qrCodeFramed);
 
-		JMenuItem newGrid = new JMenuItem("Empty Grid to Align Images");
-		newGrid.addActionListener(new ActionListener() {
+		JMenuItem newGrid1 = new JMenuItem("Empty Grid to Align Images");
+		newGrid1.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (createGridGUI == null) {
-					createGridGUI = new CreateGridGUI(GUI.this);
-				}
-				createGridGUI.show(foregroundColor, backgroundColor);
+				boolean createNew = true;
+				showGridGUI(createNew);
 			}
 		});
-		newFile.add(newGrid);
+		newFile.add(newGrid1);
 
 
 		JMenuItem openFile = new JMenuItem("Open");
@@ -411,6 +409,30 @@ public class GUI extends MainWindow {
 			}
 		});
 		tools.add(unsetTool);
+
+
+		JMenu grid = new JMenu("Grid");
+		menu.add(grid);
+
+		JMenuItem newGrid2 = new JMenuItem("Create Empty Grid to Align Images");
+		newGrid2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean createNew = true;
+				showGridGUI(createNew);
+			}
+		});
+		grid.add(newGrid2);
+
+		JMenuItem copyToGrid = new JMenuItem("Copy Current Image Multiple Times into Grid");
+		copyToGrid.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean createNew = false;
+				showGridGUI(createNew);
+			}
+		});
+		grid.add(copyToGrid);
 
 
 		JMenu colors = new JMenu("Colors");
@@ -2141,6 +2163,15 @@ public class GUI extends MainWindow {
 		} else {
 			item.setText(itemText);
 		}
+	}
+
+	private void showGridGUI(boolean createNew) {
+
+		if (createGridGUI == null) {
+			createGridGUI = new CreateGridGUI(GUI.this);
+		}
+
+		createGridGUI.show(createNew, foregroundColor, backgroundColor, picture);
 	}
 
 }

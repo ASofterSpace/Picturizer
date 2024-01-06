@@ -37,9 +37,16 @@ public class CreateGridGUI {
 
 	private JTextField inputFieldAmountHorz;
 	private JTextField inputFieldAmountVert;
+	private JLabel explanationLabelWidth;
 	private JTextField inputFieldWidth;
+	private JLabel explanationLabelHeight;
 	private JTextField inputFieldHeight;
 	private JTextField inputFieldLineThickness;
+
+	// whether we create a new image (true) or align an existing image into a grid (false)
+	private boolean modeCreateNewImage = true;
+
+	private Image imageToBeCopied;
 
 
 	public CreateGridGUI(GUI gui) {
@@ -52,13 +59,13 @@ public class CreateGridGUI {
 		this.inputFieldHeight = new JTextField();
 		this.inputFieldLineThickness = new JTextField();
 
-		this.dialog = createGUI();
+		createGUI();
 	}
 
 	private JDialog createGUI() {
 
 		// Create the window
-		final JDialog dialog = new JDialog(gui.getMainFrame(), "Create an Empty Grid to Align Images", true);
+		this.dialog = new JDialog(gui.getMainFrame(), "", true);
 		GridBagLayout dialogLayout = new GridBagLayout();
 		dialog.setLayout(dialogLayout);
 		dialog.getRootPane().setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -78,22 +85,22 @@ public class CreateGridGUI {
 		inputFieldAmountVert.setPreferredSize(new Dimension(75, 20));
 		dialog.add(inputFieldAmountVert, new Arrangement(0, 3, 1.0, 0.0));
 
-		JLabel explanationLabel1 = new JLabel();
-		explanationLabel1.setText("Enter the width of the individual pictures in px:");
-		dialog.add(explanationLabel1, new Arrangement(0, 4, 1.0, 0.0));
+		explanationLabelWidth = new JLabel();
+		explanationLabelWidth.setText("Enter the width of the individual pictures in px:");
+		dialog.add(explanationLabelWidth, new Arrangement(0, 4, 1.0, 0.0));
 
 		inputFieldWidth.setPreferredSize(new Dimension(75, 20));
 		dialog.add(inputFieldWidth, new Arrangement(0, 5, 1.0, 0.0));
 
-		JLabel explanationLabel2 = new JLabel();
-		explanationLabel2.setText("Enter the height of the individual pictures in px:");
-		dialog.add(explanationLabel2, new Arrangement(0, 6, 1.0, 0.0));
+		explanationLabelHeight = new JLabel();
+		explanationLabelHeight.setText("Enter the height of the individual pictures in px:");
+		dialog.add(explanationLabelHeight, new Arrangement(0, 6, 1.0, 0.0));
 
 		inputFieldHeight.setPreferredSize(new Dimension(75, 20));
 		dialog.add(inputFieldHeight, new Arrangement(0, 7, 1.0, 0.0));
 
 		JLabel explanationLabel3 = new JLabel();
-		explanationLabel3.setText("Enter the width of gridlines between pictures in px:");
+		explanationLabel3.setText("Enter the width of gridlines between pictures in px - zero is fine:");
 		dialog.add(explanationLabel3, new Arrangement(0, 8, 1.0, 0.0));
 
 		inputFieldLineThickness.setPreferredSize(new Dimension(75, 20));
@@ -108,28 +115,36 @@ public class CreateGridGUI {
 		JButton okButton = new JButton("OK, create grid");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Integer horz = StrUtils.strToInt(inputFieldAmountHorz.getText());
-				Integer vert = StrUtils.strToInt(inputFieldAmountVert.getText());
-				Integer width = StrUtils.strToInt(inputFieldWidth.getText());
-				Integer height = StrUtils.strToInt(inputFieldHeight.getText());
-				Integer lineThickness = StrUtils.strToInt(inputFieldLineThickness.getText());
+				Integer horz = StrUtils.strToInt(inputFieldAmountHorz.getText(), 1);
+				Integer vert = StrUtils.strToInt(inputFieldAmountVert.getText(), 1);
+				Integer width = StrUtils.strToInt(inputFieldWidth.getText(), 0);
+				Integer height = StrUtils.strToInt(inputFieldHeight.getText(), 0);
+				Integer lineThickness = StrUtils.strToInt(inputFieldLineThickness.getText(), 0);
+
 				if ((horz != null) && (vert != null) &&
 					(width != null) && (height != null) && (lineThickness != null)) {
 					int fullWidth = (horz * width) + ((horz + 1) * lineThickness);
 					int fullHeight = (vert * height) + ((vert + 1) * lineThickness);
 					Image gridPic = new Image(fullWidth, fullHeight);
 					gridPic.drawRectangle(0, 0, fullWidth - 1, fullHeight - 1, backgroundColor);
+
 					for (int x = 0; x < horz; x++) {
 						for (int y = 0; y < vert; y++) {
 							int offsetX = lineThickness + (x * (width + lineThickness));
 							int offsetY = lineThickness + (y * (height + lineThickness));
-							gridPic.drawRectangle(offsetX, offsetY,
-								offsetX + width - 1, offsetY + height - 1, foregroundColor);
+
+							if (modeCreateNewImage) {
+								gridPic.drawRectangle(offsetX, offsetY,
+									offsetX + width - 1, offsetY + height - 1, foregroundColor);
+							} else {
+								gridPic.draw(imageToBeCopied, offsetX, offsetY);
+							}
 						}
 					}
+
 					gui.setPicture(gridPic);
+					dialog.dispose();
 				}
-				dialog.dispose();
 			}
 		});
 		buttonRow.add(okButton);
@@ -151,10 +166,39 @@ public class CreateGridGUI {
 		return dialog;
 	}
 
-	public void show(ColorRGBA foregroundColor, ColorRGBA backgroundColor) {
-		GuiUtils.centerAndShowWindow(dialog);
+	public void show(boolean modeCreateNewImage, ColorRGBA foregroundColor, ColorRGBA backgroundColor, Image currentImg) {
+		this.modeCreateNewImage = modeCreateNewImage;
 		this.foregroundColor = foregroundColor;
 		this.backgroundColor = backgroundColor;
+		this.imageToBeCopied = currentImg;
+
+		GuiUtils.centerAndShowWindow(dialog);
+
+		if (modeCreateNewImage) {
+			dialog.setTitle("Create an Empty Grid to Align Images");
+
+			// use existing image width and height as default, unless this dialog had been opened and filled
+			// before - in that case, keep the values that were in here before!
+			if ("".equals(inputFieldWidth.getText())) {
+				inputFieldWidth.setText("" + currentImg.getWidth());
+			}
+			if ("".equals(inputFieldHeight.getText())) {
+				inputFieldHeight.setText("" + currentImg.getHeight());
+			}
+
+		} else {
+
+			dialog.setTitle("Copy Existing Image Multiple Times into Grid");
+
+			// use existing image width and height
+			inputFieldWidth.setText("" + currentImg.getWidth());
+			inputFieldHeight.setText("" + currentImg.getHeight());
+		}
+
+		explanationLabelWidth.setVisible(modeCreateNewImage);
+		inputFieldWidth.setVisible(modeCreateNewImage);
+		explanationLabelHeight.setVisible(modeCreateNewImage);
+		inputFieldHeight.setVisible(modeCreateNewImage);
 	}
 
 }
