@@ -99,6 +99,7 @@ public class GUI extends MainWindow {
 	private QrGUI qrGUI = null;
 	private ChannelChangeGUI channelChangeGUI = null;
 	private CreateGridGUI createGridGUI = null;
+	private ExpandShrinkGUI expandShrinkGUI = null;
 	private ColorPickerGUI colorPickerGUI = null;
 	private boolean colorToBePickedIsForeground = true;
 
@@ -395,6 +396,26 @@ public class GUI extends MainWindow {
 			}
 		});
 		edit.add(paste);
+
+		edit.addSeparator();
+
+		JMenuItem expandShrinkImgArea = new JMenuItem("Expand / Shrink Image Area");
+		expandShrinkImgArea.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showExpandShrinkGUI();
+			}
+		});
+		edit.add(expandShrinkImgArea);
+
+		JMenuItem resizeImgArea = new JMenuItem("Resize Image Area");
+		resizeImgArea.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GuiUtils.notify("Resize not yet implemented!");
+			}
+		});
+		edit.add(resizeImgArea);
 
 
 		JMenu tools = new JMenu("Tools");
@@ -2172,6 +2193,15 @@ public class GUI extends MainWindow {
 		}
 
 		createGridGUI.show(createNew, foregroundColor, backgroundColor, picture);
+	}
+
+	private void showExpandShrinkGUI() {
+
+		if (expandShrinkGUI == null) {
+			expandShrinkGUI = new ExpandShrinkGUI(GUI.this);
+		}
+
+		expandShrinkGUI.show(foregroundColor, backgroundColor, picture);
 	}
 
 }

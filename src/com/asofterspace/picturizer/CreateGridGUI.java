@@ -125,8 +125,7 @@ public class CreateGridGUI {
 					(width != null) && (height != null) && (lineThickness != null)) {
 					int fullWidth = (horz * width) + ((horz + 1) * lineThickness);
 					int fullHeight = (vert * height) + ((vert + 1) * lineThickness);
-					Image gridPic = new Image(fullWidth, fullHeight);
-					gridPic.drawRectangle(0, 0, fullWidth - 1, fullHeight - 1, backgroundColor);
+					Image gridPic = new Image(fullWidth, fullHeight, backgroundColor);
 
 					for (int x = 0; x < horz; x++) {
 						for (int y = 0; y < vert; y++) {
