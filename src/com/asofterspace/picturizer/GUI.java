@@ -739,7 +739,7 @@ public class GUI extends MainWindow {
 		JMenu adjustColors = new JMenu("Channels");
 		menu.add(adjustColors);
 
-		JMenuItem removeAbsoluteColors = new JMenuItem("Remove Colors by Absolute Brightness");
+		JMenuItem removeAbsoluteColors = new JMenuItem("Remove Colors by Absolute Brightness (to Grayscale)");
 		removeAbsoluteColors.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -751,7 +751,7 @@ public class GUI extends MainWindow {
 		});
 		adjustColors.add(removeAbsoluteColors);
 
-		JMenuItem removePerceivedColors = new JMenuItem("Remove Colors by Perceived Brightness");
+		JMenuItem removePerceivedColors = new JMenuItem("Remove Colors by Perceived Brightness (to Grayscale)");
 		removePerceivedColors.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -762,6 +762,32 @@ public class GUI extends MainWindow {
 			}
 		});
 		adjustColors.add(removePerceivedColors);
+
+		JMenuItem removeAbsoluteColorsBW = new JMenuItem("Remove Colors by Absolute Brightness (to Black/White)");
+		removeAbsoluteColorsBW.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.removeColors();
+				picture.makeBlackAndWhite();
+				refreshMainView();
+			}
+		});
+		adjustColors.add(removeAbsoluteColorsBW);
+
+		JMenuItem removePerceivedColorsBW = new JMenuItem("Remove Colors by Perceived Brightness (to Black/White)");
+		removePerceivedColorsBW.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.removePerceivedColors();
+				picture.makeBlackAndWhite();
+				refreshMainView();
+			}
+		});
+		adjustColors.add(removePerceivedColorsBW);
 
 		adjustColors.addSeparator();
 
