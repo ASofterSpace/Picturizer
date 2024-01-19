@@ -1330,6 +1330,21 @@ public class GUI extends MainWindow {
 		});
 		mixing.add(curMenuItem);
 
+		mixing.addSeparator();
+
+		curMenuItem = new JMenuItem("Interlace Previous Image 50:50 (old:new)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image otherPic = undoablePicture;
+				saveCurPicForUndo();
+				picture = picture.copy();
+				picture.interlaceImage(otherPic);
+				refreshMainView();
+			}
+		});
+		mixing.add(curMenuItem);
+
 		/*
 		TODO:
 		add commandline options to be able to just automatically apply this or that editing directly... well... from the commandline :D
