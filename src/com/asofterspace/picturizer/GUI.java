@@ -36,6 +36,7 @@ import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -79,6 +80,8 @@ public class GUI extends MainWindow {
 
 	private JMenuItem close;
 	private JMenuItem setForegroundToPipette;
+	private JMenuItem setForegroundToPipette4;
+	private JMenuItem setForegroundToPipette12;
 	private JMenuItem setBackgroundToPipette;
 
 	private ConfigFile configuration;
@@ -110,6 +113,8 @@ public class GUI extends MainWindow {
 	private ColorRGBA foregroundColor = ColorRGBA.BLACK;
 	private ColorRGBA backgroundColor = ColorRGBA.WHITE;
 	private ColorRGBA windowBackgroundColor = new ColorRGBA(Color.gray);
+
+	private int pipetteSize = 1;
 
 	private final static Directory TEMP_DIR = new Directory("temp");
 
@@ -474,20 +479,52 @@ public class GUI extends MainWindow {
 		setForegroundToPipette.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.PIPETTE_FG) {
+				if ((activeTool == Tool.PIPETTE_FG) && (pipetteSize == 1)) {
 					activeTool = null;
 				} else {
 					activeTool = Tool.PIPETTE_FG;
+					pipetteSize = 1;
 				}
 				refreshTools();
 			}
 		});
 		colors.add(setForegroundToPipette);
 
+		setForegroundToPipette4 = new JMenuItem(TOOL_TEXTS_PIPETTE_FG + " + 4 Pixels Around");
+		setForegroundToPipette4.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if ((activeTool == Tool.PIPETTE_FG) && (pipetteSize == 5)) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.PIPETTE_FG;
+					pipetteSize = 5;
+				}
+				refreshTools();
+			}
+		});
+		colors.add(setForegroundToPipette4);
+
+		setForegroundToPipette12 = new JMenuItem(TOOL_TEXTS_PIPETTE_FG + " + 12 Pixels Around");
+		setForegroundToPipette12.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if ((activeTool == Tool.PIPETTE_FG) && (pipetteSize == 13)) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.PIPETTE_FG;
+					pipetteSize = 13;
+				}
+				refreshTools();
+			}
+		});
+		colors.add(setForegroundToPipette12);
+
 		setBackgroundToPipette = new JMenuItem(TOOL_TEXTS_PIPETTE_BG);
 		setBackgroundToPipette.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				pipetteSize = 1;
 				if (activeTool == Tool.PIPETTE_BG) {
 					activeTool = null;
 				} else {
@@ -1745,16 +1782,35 @@ public class GUI extends MainWindow {
 					switch (activeTool) {
 
 						case PIPETTE_FG:
-							ColorRGBA newColor = picture.getPixelSafely(x, y);
-							if (newColor != null) {
-								setForegroundColor(newColor);
-							}
-							break;
-
 						case PIPETTE_BG:
-							newColor = picture.getPixelSafely(x, y);
+							ColorRGBA newColor = picture.getPixelSafely(x, y);
+
+							if (pipetteSize > 1) {
+								List<ColorRGBA> pixMix = new ArrayList<>();
+								pixMix.add(newColor);
+								pixMix.add(picture.getPixelSafely(x+1, y));
+								pixMix.add(picture.getPixelSafely(x-1, y));
+								pixMix.add(picture.getPixelSafely(x, y+1));
+								pixMix.add(picture.getPixelSafely(x, y-1));
+								if (pipetteSize > 5) {
+									pixMix.add(picture.getPixelSafely(x+2, y));
+									pixMix.add(picture.getPixelSafely(x-2, y));
+									pixMix.add(picture.getPixelSafely(x, y+2));
+									pixMix.add(picture.getPixelSafely(x, y-2));
+									pixMix.add(picture.getPixelSafely(x+1, y+1));
+									pixMix.add(picture.getPixelSafely(x+1, y-1));
+									pixMix.add(picture.getPixelSafely(x-1, y+1));
+									pixMix.add(picture.getPixelSafely(x-1, y-1));
+								}
+								newColor = ColorRGBA.mixPix(pixMix);
+							}
+
 							if (newColor != null) {
-								setBackgroundColor(newColor);
+								if (activeTool == Tool.PIPETTE_FG) {
+									setForegroundColor(newColor);
+								} else {
+									setBackgroundColor(newColor);
+								}
 							}
 							break;
 					}
@@ -2215,7 +2271,9 @@ public class GUI extends MainWindow {
 	}
 
 	private void refreshTools() {
-		adjustToolTitle(setForegroundToPipette, TOOL_TEXTS_PIPETTE_FG, activeTool == Tool.PIPETTE_FG);
+		adjustToolTitle(setForegroundToPipette, TOOL_TEXTS_PIPETTE_FG, (activeTool == Tool.PIPETTE_FG) && (pipetteSize == 1));
+		adjustToolTitle(setForegroundToPipette4, TOOL_TEXTS_PIPETTE_FG + " + 4 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (pipetteSize == 5));
+		adjustToolTitle(setForegroundToPipette12, TOOL_TEXTS_PIPETTE_FG + " + 12 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (pipetteSize == 13));
 		adjustToolTitle(setBackgroundToPipette, TOOL_TEXTS_PIPETTE_BG, activeTool == Tool.PIPETTE_BG);
 	}
 
