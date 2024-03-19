@@ -11,5 +11,13 @@ public enum Tool {
 	PIPETTE_FG,
 
 	// pipette to set background color
-	PIPETTE_BG;
+	PIPETTE_BG,
+
+	// draw rectangle with foreground / background color
+	DRAW_RECTANGLE_FG,
+	DRAW_RECTANGLE_BG,
+
+	// draw area with foreground / background color
+	DRAW_AREA_FG,
+	DRAW_AREA_BG;
 }

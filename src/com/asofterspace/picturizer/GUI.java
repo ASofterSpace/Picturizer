@@ -15,6 +15,7 @@ import com.asofterspace.toolbox.images.ImageFileCtrl;
 import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.pdf.PdfImageHandler;
+import com.asofterspace.toolbox.utils.Pair;
 import com.asofterspace.toolbox.Utils;
 
 import java.awt.AWTException;
@@ -71,6 +72,10 @@ public class GUI extends MainWindow {
 	private final static String TOOL_SELECTED_END_STR = " <<";
 	private final static String TOOL_TEXTS_PIPETTE_FG = "Set Foreground to a Particular Color (Pipette Tool)";
 	private final static String TOOL_TEXTS_PIPETTE_BG = "Set Background to a Particular Color (Pipette Tool)";
+	private final static String TOOL_TEXTS_RECTANGLE_FG = "Draw Rectangle with Foreground Color";
+	private final static String TOOL_TEXTS_RECTANGLE_BG = "Draw Rectangle with Background Color";
+	private final static String TOOL_TEXTS_AREA_FG = "Draw Area with Foreground Color";
+	private final static String TOOL_TEXTS_AREA_BG = "Draw Area with Background Color";
 
 	private String lastPicturePath;
 
@@ -83,6 +88,10 @@ public class GUI extends MainWindow {
 	private JMenuItem setForegroundToPipette4;
 	private JMenuItem setForegroundToPipette12;
 	private JMenuItem setBackgroundToPipette;
+	private JMenuItem drawRectangleFG;
+	private JMenuItem drawRectangleBG;
+	private JMenuItem drawAreaFG;
+	private JMenuItem drawAreaBG;
 
 	private ConfigFile configuration;
 
@@ -115,6 +124,8 @@ public class GUI extends MainWindow {
 	private ColorRGBA windowBackgroundColor = new ColorRGBA(Color.gray);
 
 	private int pipetteSize = 1;
+	private List<Pair<Integer, Integer>> lastDrawPoints = new ArrayList<>();
+	private Image pictureBeforePointDrawing;
 
 	private final static Directory TEMP_DIR = new Directory("temp");
 
@@ -598,6 +609,66 @@ public class GUI extends MainWindow {
 			}
 		});
 		colors.add(setBackgroundToMostCommonSur);
+
+
+		JMenu draw = new JMenu("Draw");
+		menu.add(draw);
+
+		drawRectangleFG = new JMenuItem(TOOL_TEXTS_RECTANGLE_FG);
+		drawRectangleFG.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_RECTANGLE_FG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_RECTANGLE_FG;
+				}
+				refreshTools();
+			}
+		});
+		draw.add(drawRectangleFG);
+
+		drawRectangleBG = new JMenuItem(TOOL_TEXTS_RECTANGLE_BG);
+		drawRectangleBG.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_RECTANGLE_BG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_RECTANGLE_BG;
+				}
+				refreshTools();
+			}
+		});
+		draw.add(drawRectangleBG);
+
+		drawAreaFG = new JMenuItem(TOOL_TEXTS_AREA_FG);
+		drawAreaFG.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_AREA_FG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_AREA_FG;
+				}
+				refreshTools();
+			}
+		});
+		draw.add(drawAreaFG);
+
+		drawAreaBG = new JMenuItem(TOOL_TEXTS_AREA_BG);
+		drawAreaBG.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_AREA_BG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_AREA_BG;
+				}
+				refreshTools();
+			}
+		});
+		draw.add(drawAreaBG);
 
 
 		JMenu adjustPixels = new JMenu("Pixels");
@@ -1813,6 +1884,53 @@ public class GUI extends MainWindow {
 								}
 							}
 							break;
+
+						case DRAW_RECTANGLE_FG:
+						case DRAW_RECTANGLE_BG:
+							Pair<Integer, Integer> newPoint = new Pair<>(x, y);
+							if (lastDrawPoints.size() > 0) {
+								Pair<Integer, Integer> prevPoint = lastDrawPoints.get(0);
+								lastDrawPoints = new ArrayList<>();
+								lastDrawPoints.add(prevPoint);
+								lastDrawPoints.add(newPoint);
+								picture = pictureBeforePointDrawing.copy();
+								ColorRGBA drawColor = foregroundColor;
+								if (activeTool == Tool.DRAW_RECTANGLE_BG) {
+									drawColor = backgroundColor;
+								}
+								int x1 = lastDrawPoints.get(0).getX();
+								int x2 = lastDrawPoints.get(1).getX();
+								int y1 = lastDrawPoints.get(0).getY();
+								int y2 = lastDrawPoints.get(1).getY();
+								if (x2 < x1) {
+									x2 = lastDrawPoints.get(0).getX();
+									x1 = lastDrawPoints.get(1).getX();
+								}
+								if (y2 < y1) {
+									y2 = lastDrawPoints.get(0).getY();
+									y1 = lastDrawPoints.get(1).getY();
+								}
+								picture.drawRectangle(x1, y1, x2, y2, drawColor);
+								refreshMainView();
+							} else {
+								lastDrawPoints.add(newPoint);
+							}
+							break;
+
+						case DRAW_AREA_FG:
+						case DRAW_AREA_BG:
+							newPoint = new Pair<>(x, y);
+							lastDrawPoints.add(newPoint);
+							if (lastDrawPoints.size() > 2) {
+								picture = pictureBeforePointDrawing.copy();
+								ColorRGBA drawColor = foregroundColor;
+								if (activeTool == Tool.DRAW_AREA_BG) {
+									drawColor = backgroundColor;
+								}
+								picture.drawArea(lastDrawPoints, drawColor);
+								refreshMainView();
+							}
+							break;
 					}
 				}
 			}
@@ -2271,10 +2389,26 @@ public class GUI extends MainWindow {
 	}
 
 	private void refreshTools() {
+		if (activeTool != null) {
+			switch (activeTool) {
+				case DRAW_RECTANGLE_FG:
+				case DRAW_RECTANGLE_BG:
+				case DRAW_AREA_FG:
+				case DRAW_AREA_BG:
+					this.lastDrawPoints = new ArrayList<>();
+					pictureBeforePointDrawing = picture.copy();
+					break;
+			}
+		}
+
 		adjustToolTitle(setForegroundToPipette, TOOL_TEXTS_PIPETTE_FG, (activeTool == Tool.PIPETTE_FG) && (pipetteSize == 1));
 		adjustToolTitle(setForegroundToPipette4, TOOL_TEXTS_PIPETTE_FG + " + 4 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (pipetteSize == 5));
 		adjustToolTitle(setForegroundToPipette12, TOOL_TEXTS_PIPETTE_FG + " + 12 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (pipetteSize == 13));
 		adjustToolTitle(setBackgroundToPipette, TOOL_TEXTS_PIPETTE_BG, activeTool == Tool.PIPETTE_BG);
+		adjustToolTitle(drawRectangleFG, TOOL_TEXTS_RECTANGLE_FG, activeTool == Tool.DRAW_RECTANGLE_FG);
+		adjustToolTitle(drawRectangleBG, TOOL_TEXTS_RECTANGLE_BG, activeTool == Tool.DRAW_RECTANGLE_BG);
+		adjustToolTitle(drawAreaFG, TOOL_TEXTS_AREA_FG, activeTool == Tool.DRAW_AREA_FG);
+		adjustToolTitle(drawAreaBG, TOOL_TEXTS_AREA_BG, activeTool == Tool.DRAW_AREA_BG);
 	}
 
 	private void adjustToolTitle(JMenuItem item, String itemText, boolean isActive) {
