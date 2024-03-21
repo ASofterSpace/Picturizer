@@ -2320,7 +2320,7 @@ public class GUI extends MainWindow {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				currentLayerIndex = layerList.locationToIndex(e.getPoint());
+				currentLayerIndex = picture.getLayerAmount() - layerList.locationToIndex(e.getPoint()) - 1;
 				refreshLayerView();
 			}
 
@@ -2970,9 +2970,9 @@ public class GUI extends MainWindow {
 				if (captionStr.length() > 9) {
 					captionStr = captionStr.substring(0, 9) + "...";
 				}
-				result[i] = "TXT#" + i + ": " + captionStr;
+				result[amount - i - 1] = "TXT#" + i + ": " + captionStr;
 			} else {
-				result[i] = "IMG#" + i;
+				result[amount - i - 1] = "IMG#" + i;
 			}
 		}
 		return result;
@@ -2987,7 +2987,7 @@ public class GUI extends MainWindow {
 		}
 		layerList.setListData(getLayerCaptionArray());
 		if (picture.getLayerAmount() > 0) {
-			layerList.setSelectedIndex(currentLayerIndex);
+			layerList.setSelectedIndex(picture.getLayerAmount() - currentLayerIndex - 1);
 		}
 		textLayerPanel.setVisible(false);
 		imgLayerPanel.setVisible(false);
