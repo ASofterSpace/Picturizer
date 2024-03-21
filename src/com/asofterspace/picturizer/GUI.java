@@ -21,6 +21,7 @@ import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.pdf.PdfImageHandler;
 import com.asofterspace.toolbox.utils.Pair;
+import com.asofterspace.toolbox.utils.StrUtils;
 import com.asofterspace.toolbox.Utils;
 
 import java.awt.AWTException;
@@ -51,6 +52,7 @@ import javax.swing.BorderFactory;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -90,6 +92,18 @@ public class GUI extends MainWindow {
 	private JPanel mainPanel;
 	private JScrollPane mainPanelLeft;
 	private JScrollPane mainPanelRight;
+	private JPanel imgLayerPanel;
+	private JLabel imgLayerLabel;
+	private JTextField imgLayerOffsetXInput;
+	private JTextField imgLayerOffsetYInput;
+	private JPanel textLayerPanel;
+	private JLabel textLayerLabel;
+	private JTextField textLayerOffsetXInput;
+	private JTextField textLayerOffsetYInput;
+	private JTextField textLayerFontNameInput;
+	private JTextField textLayerFontSizeInput;
+	private JTextField textLayerColorInput;
+	private JTextField textLayerTextInput;
 
 	private JMenuItem saveAgain;
 	private JMenuItem exportAgain;
@@ -1796,6 +1810,15 @@ public class GUI extends MainWindow {
 		});
 		view.add(bgBlue);
 
+		JMenuItem bgPurple = new JMenuItem("Set Window BG to Purple");
+		bgPurple.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setWindowBackgroundColor((new ColorRGBA(80, 0, 110)).toColor());
+			}
+		});
+		view.add(bgPurple);
+
 
 		JMenu huh = new JMenu("?");
 
@@ -1882,18 +1905,22 @@ public class GUI extends MainWindow {
 			case KeyEvent.VK_UP:
 				getCurrentLayer().move(0, -modifier);
 				refreshMainView();
+				refreshLayerView();
 				break;
 			case KeyEvent.VK_DOWN:
 				getCurrentLayer().move(0, modifier);
 				refreshMainView();
+				refreshLayerView();
 				break;
 			case KeyEvent.VK_LEFT:
 				getCurrentLayer().move(-modifier, 0);
 				refreshMainView();
+				refreshLayerView();
 				break;
 			case KeyEvent.VK_RIGHT:
 				getCurrentLayer().move(modifier, 0);
 				refreshMainView();
+				refreshLayerView();
 				break;
 		 }
 	}
@@ -1999,6 +2026,88 @@ public class GUI extends MainWindow {
 		GridBagLayout mainPanelLayout = new GridBagLayout();
 		mainPanel.setLayout(mainPanelLayout);
 
+
+		textLayerPanel = new JPanel();
+		textLayerPanel.setPreferredSize(new Dimension(100, 20));
+		GridBagLayout textLayerPanelLayout = new GridBagLayout();
+		textLayerPanel.setLayout(textLayerPanelLayout);
+		textLayerPanel.setBorder(BorderFactory.createEmptyBorder());
+		mainPanel.add(textLayerPanel, new Arrangement(0, 0, 1.0, 0.0));
+
+		textLayerLabel = new JLabel();
+		textLayerPanel.add(textLayerLabel, new Arrangement(0, 0, 0.0, 1.0));
+
+		textLayerOffsetXInput = new JTextField();
+		textLayerPanel.add(textLayerOffsetXInput, new Arrangement(1, 0, 0.1, 1.0));
+
+		textLayerOffsetYInput = new JTextField();
+		textLayerPanel.add(textLayerOffsetYInput, new Arrangement(2, 0, 0.1, 1.0));
+
+		textLayerFontNameInput = new JTextField();
+		textLayerPanel.add(textLayerFontNameInput, new Arrangement(3, 0, 0.2, 1.0));
+
+		textLayerFontSizeInput = new JTextField();
+		textLayerPanel.add(textLayerFontSizeInput, new Arrangement(4, 0, 0.05, 1.0));
+
+		textLayerColorInput = new JTextField();
+		textLayerPanel.add(textLayerColorInput, new Arrangement(5, 0, 0.2, 1.0));
+
+		textLayerTextInput = new JTextField();
+		textLayerPanel.add(textLayerTextInput, new Arrangement(6, 0, 1.0, 1.0));
+
+		JButton textLayerApplyBtn = new JButton("Apply");
+		textLayerApplyBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageLayerBasedOnText txtLayer = getCurrentTextLayer();
+				txtLayer.setOffsetX(StrUtils.strToInt(textLayerOffsetXInput.getText(), 0));
+				txtLayer.setOffsetY(StrUtils.strToInt(textLayerOffsetYInput.getText(), 0));
+				txtLayer.setFontName(textLayerFontNameInput.getText());
+				txtLayer.setFontSize(StrUtils.strToInt(textLayerFontSizeInput.getText(), 10));
+				txtLayer.setTextColor(ColorRGBA.fromString(textLayerColorInput.getText()));
+				txtLayer.setText(textLayerTextInput.getText());
+				refreshMainView();
+			}
+		});
+		textLayerPanel.add(textLayerApplyBtn, new Arrangement(7, 0, 0.0, 1.0));
+
+
+		imgLayerPanel = new JPanel();
+		imgLayerPanel.setPreferredSize(new Dimension(100, 20));
+		GridBagLayout imgLayerPanelLayout = new GridBagLayout();
+		imgLayerPanel.setLayout(imgLayerPanelLayout);
+		imgLayerPanel.setBorder(BorderFactory.createEmptyBorder());
+		mainPanel.add(imgLayerPanel, new Arrangement(0, 0, 1.0, 0.0));
+
+		imgLayerLabel = new JLabel();
+		imgLayerPanel.add(imgLayerLabel, new Arrangement(0, 0, 0.0, 1.0));
+
+		imgLayerOffsetXInput = new JTextField();
+		imgLayerPanel.add(imgLayerOffsetXInput, new Arrangement(1, 0, 0.1, 1.0));
+
+		imgLayerOffsetYInput = new JTextField();
+		imgLayerPanel.add(imgLayerOffsetYInput, new Arrangement(2, 0, 0.1, 1.0));
+
+		JButton imgLayerApplyBtn = new JButton("Apply");
+		imgLayerApplyBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageLayerBasedOnImage imgLayer = getCurrentImageLayer();
+				imgLayer.setOffsetX(StrUtils.strToInt(imgLayerOffsetXInput.getText(), 0));
+				imgLayer.setOffsetY(StrUtils.strToInt(imgLayerOffsetYInput.getText(), 0));
+				refreshMainView();
+			}
+		});
+		imgLayerPanel.add(imgLayerApplyBtn, new Arrangement(3, 0, 0.0, 1.0));
+
+
+		JPanel mainLowerPanel = new JPanel();
+		mainLowerPanel.setPreferredSize(new Dimension(800, 500));
+		GridBagLayout mainLowerPanelLayout = new GridBagLayout();
+		mainLowerPanel.setLayout(mainLowerPanelLayout);
+		mainLowerPanel.setBorder(BorderFactory.createEmptyBorder());
+		mainPanel.add(mainLowerPanel, new Arrangement(0, 1, 1.0, 1.0));
+
 		mainPanelLeftImg = new Image(80, 200, ColorRGBA.WHITE);
 		mainPanelLeftViewer = new ImageIcon();
 		mainPanelLeftViewer.setImage(mainPanelLeftImg.getAwtImage());
@@ -2031,7 +2140,7 @@ public class GUI extends MainWindow {
 		mainPanelLeft = new JScrollPane(mainPanelLeftViewerLabel);
 		mainPanelLeft.setPreferredSize(new Dimension(80, 1));
 		mainPanelLeft.setBorder(BorderFactory.createEmptyBorder());
-		mainPanel.add(mainPanelLeft, new Arrangement(0, 0, 0.0, 1.0));
+		mainLowerPanel.add(mainPanelLeft, new Arrangement(0, 0, 0.0, 1.0));
 
 		imageViewer = new ImageIcon();
 		imageViewerLabel = new JLabel(imageViewer);
@@ -2154,7 +2263,7 @@ public class GUI extends MainWindow {
 		mainPanelRight = new JScrollPane(imageViewerLabel);
 		mainPanelRight.setBorder(BorderFactory.createEmptyBorder());
 
-		mainPanel.add(mainPanelRight, new Arrangement(1, 0, 1.0, 1.0));
+		mainLowerPanel.add(mainPanelRight, new Arrangement(1, 0, 1.0, 1.0));
 
 		parent.add(mainPanel, BorderLayout.CENTER);
 
@@ -2774,10 +2883,27 @@ public class GUI extends MainWindow {
 		if (currentLayerIndex < 0) {
 			currentLayerIndex = 0;
 		}
+		textLayerPanel.setVisible(false);
+		imgLayerPanel.setVisible(false);
 		ImageLayer layer = picture.getLayer(currentLayerIndex);
 		if (layer != null) {
 			if (layer instanceof ImageLayerBasedOnText) {
-				// TODO :: show fontname and fontsize input at the top if the current layer is a text layer
+				ImageLayerBasedOnText txtLayer = (ImageLayerBasedOnText) layer;
+				textLayerLabel.setText("TXT#" + currentLayerIndex);
+				textLayerOffsetXInput.setText(""+txtLayer.getOffsetX());
+				textLayerOffsetYInput.setText(""+txtLayer.getOffsetY());
+				textLayerFontNameInput.setText(txtLayer.getFontName());
+				textLayerFontSizeInput.setText(""+txtLayer.getFontSize());
+				textLayerColorInput.setText(txtLayer.getTextColor().toString());
+				textLayerTextInput.setText(txtLayer.getText());
+				textLayerPanel.setVisible(true);
+			}
+			if (layer instanceof ImageLayerBasedOnImage) {
+				ImageLayerBasedOnImage imgLayer = (ImageLayerBasedOnImage) layer;
+				imgLayerLabel.setText("IMG#" + currentLayerIndex);
+				imgLayerOffsetXInput.setText(""+imgLayer.getOffsetX());
+				imgLayerOffsetYInput.setText(""+imgLayer.getOffsetY());
+				imgLayerPanel.setVisible(true);
 			}
 		}
 	}
