@@ -37,6 +37,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.GridBagLayout;
 import java.awt.image.BufferedImage;
 import java.awt.Point;
@@ -56,6 +57,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -91,6 +93,7 @@ public class GUI extends MainWindow {
 
 	private JPanel mainPanel;
 	private JScrollPane mainPanelLeft;
+	private JList<String> layerList;
 	private JScrollPane mainPanelRight;
 	private JPanel imgLayerPanel;
 	private JLabel imgLayerLabel;
@@ -593,6 +596,7 @@ public class GUI extends MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				picture.moveLayerFullyUp(currentLayerIndex);
 				currentLayerIndex = picture.getLayerAmount() - 1;
+				refreshMainView();
 				refreshLayerView();
 			}
 		});
@@ -602,7 +606,10 @@ public class GUI extends MainWindow {
 		moveLayerUp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GuiUtils.complain("Not yet implemented!");
+				picture.moveLayerOneUp(currentLayerIndex);
+				currentLayerIndex++;
+				refreshMainView();
+				refreshLayerView();
 			}
 		});
 		layers.add(moveLayerUp);
@@ -611,7 +618,10 @@ public class GUI extends MainWindow {
 		moveLayerDown.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GuiUtils.complain("Not yet implemented!");
+				picture.moveLayerOneDown(currentLayerIndex);
+				currentLayerIndex--;
+				refreshMainView();
+				refreshLayerView();
 			}
 		});
 		layers.add(moveLayerDown);
@@ -622,6 +632,7 @@ public class GUI extends MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				picture.moveLayerFullyDown(currentLayerIndex);
 				currentLayerIndex = 0;
+				refreshMainView();
 				refreshLayerView();
 			}
 		});
@@ -2304,6 +2315,33 @@ public class GUI extends MainWindow {
 
 		mainLowerPanel.add(mainPanelRight, new Arrangement(1, 0, 1.0, 1.0));
 
+		layerList = new JList<String>(getLayerCaptionArray());
+		layerList.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				currentLayerIndex = layerList.locationToIndex(e.getPoint());
+				refreshLayerView();
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
+		});
+		mainLowerPanel.add(layerList, new Arrangement(2, 0, 0.0, 1.0));
+
 		parent.add(mainPanel, BorderLayout.CENTER);
 
 		return mainPanel;
@@ -2638,6 +2676,7 @@ public class GUI extends MainWindow {
 				}
 				refreshMainView();
 				refreshTitleBarAndSaveExportItems();
+				refreshLayerView();
 
 				break;
 
@@ -2719,6 +2758,9 @@ public class GUI extends MainWindow {
 	}
 
 	private void saveImageToFile(ImageMultiLayered picture, File selectedFile) {
+		if (!selectedFile.getFilename().toLowerCase().endsWith(".pic")) {
+			selectedFile = new File(selectedFile.getFilename() + ".pic");
+		}
 		PicFile picFile = new PicFile(selectedFile);
 		picFile.assign(picture);
 		picFile.save();
@@ -2915,12 +2957,37 @@ public class GUI extends MainWindow {
 		return new ImageLayerBasedOnText(0, 0, "", "", 1, foregroundColor);
 	}
 
+	private String[] getLayerCaptionArray() {
+		if (picture == null) {
+			return new String[0];
+		}
+		int amount = picture.getLayerAmount();
+		String[] result = new String[amount];
+		for (int i = 0; i < amount; i++) {
+			ImageLayer layer = picture.getLayer(i);
+			if (layer instanceof ImageLayerBasedOnText) {
+				String captionStr = ((ImageLayerBasedOnText) layer).getText();
+				if (captionStr.length() > 9) {
+					captionStr = captionStr.substring(0, 9) + "...";
+				}
+				result[i] = "TXT#" + i + ": " + captionStr;
+			} else {
+				result[i] = "IMG#" + i;
+			}
+		}
+		return result;
+	}
+
 	private void refreshLayerView() {
 		if (currentLayerIndex >= picture.getLayerAmount()) {
 			currentLayerIndex = picture.getLayerAmount() - 1;
 		}
 		if (currentLayerIndex < 0) {
 			currentLayerIndex = 0;
+		}
+		layerList.setListData(getLayerCaptionArray());
+		if (picture.getLayerAmount() > 0) {
+			layerList.setSelectedIndex(currentLayerIndex);
 		}
 		textLayerPanel.setVisible(false);
 		imgLayerPanel.setVisible(false);
