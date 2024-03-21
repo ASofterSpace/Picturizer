@@ -488,9 +488,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture.deleteLayer(currentLayerIndex);
 				setPictureUndoTakenCareOf(picture);
-				if (currentLayerIndex >= picture.getLayerAmount()) {
-					currentLayerIndex = picture.getLayerAmount() - 1;
-				}
+				refreshLayerView();
 			}
 		});
 		layers.add(delLayer);
@@ -505,6 +503,7 @@ public class GUI extends MainWindow {
 				picture.addLayer(layer);
 				currentLayerIndex = picture.getLayerAmount() - 1;
 				setPictureUndoTakenCareOf(picture);
+				refreshLayerView();
 			}
 		});
 		layers.add(addImgLayer);
@@ -518,6 +517,7 @@ public class GUI extends MainWindow {
 				picture.addLayer(layer);
 				currentLayerIndex = picture.getLayerAmount() - 1;
 				setPictureUndoTakenCareOf(picture);
+				refreshLayerView();
 			}
 		});
 		layers.add(addImgLayerClipbrd);
@@ -527,10 +527,11 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				ImageLayerBasedOnText layer = new ImageLayerBasedOnText(0, 0, "Hello!");
+				ImageLayerBasedOnText layer = new ImageLayerBasedOnText(0, 0, "Hello!", "Calibri", 32, foregroundColor);
 				picture.addLayer(layer);
 				currentLayerIndex = picture.getLayerAmount() - 1;
 				setPictureUndoTakenCareOf(picture);
+				refreshLayerView();
 			}
 		});
 		layers.add(addTextLayer);
@@ -543,6 +544,7 @@ public class GUI extends MainWindow {
 				picture.addLayer(getCurrentLayer());
 				currentLayerIndex = picture.getLayerAmount() - 1;
 				setPictureUndoTakenCareOf(picture);
+				refreshLayerView();
 			}
 		});
 		layers.add(duplicateLayer);
@@ -554,9 +556,7 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				currentLayerIndex++;
-				if (currentLayerIndex >= picture.getLayerAmount()) {
-					currentLayerIndex = picture.getLayerAmount() - 1;
-				}
+				refreshLayerView();
 			}
 		});
 		layers.add(selLayerUp);
@@ -566,20 +566,20 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				currentLayerIndex--;
-				if (currentLayerIndex < 0) {
-					currentLayerIndex = 0;
-				}
+				refreshLayerView();
 			}
 		});
 		layers.add(selLayerDown);
 
 		layers.addSeparator();
 
-		JMenuItem moveLayerAllUp = new JMenuItem("Move Selected Layer All Layers Up");
+		JMenuItem moveLayerAllUp = new JMenuItem("Move Selected Layer All Layers Up / Front");
 		moveLayerAllUp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GuiUtils.complain("Not yet implemented!");
+				picture.moveLayerFullyUp(currentLayerIndex);
+				currentLayerIndex = picture.getLayerAmount() - 1;
+				refreshLayerView();
 			}
 		});
 		layers.add(moveLayerAllUp);
@@ -602,14 +602,42 @@ public class GUI extends MainWindow {
 		});
 		layers.add(moveLayerDown);
 
-		JMenuItem moveLayerAllDown = new JMenuItem("Move Selected Layer All Layers Down");
+		JMenuItem moveLayerAllDown = new JMenuItem("Move Selected Layer All Layers Down / Back");
 		moveLayerAllDown.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GuiUtils.complain("Not yet implemented!");
+				picture.moveLayerFullyDown(currentLayerIndex);
+				currentLayerIndex = 0;
+				refreshLayerView();
 			}
 		});
 		layers.add(moveLayerAllDown);
+
+		layers.addSeparator();
+
+		JMenuItem moveTo00 = new JMenuItem("Move Selected Layer to (0, 0)");
+		moveTo00.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				getCurrentLayer().moveTo(0, 0);
+				refreshMainView();
+			}
+		});
+		layers.add(moveTo00);
+
+		JMenuItem moveToCenter = new JMenuItem("Move Selected Layer to Center");
+		moveToCenter.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageLayer curLayer = getCurrentLayer();
+				curLayer.moveTo(
+					(picture.getWidth() - curLayer.getWidth()) / 2,
+					(picture.getHeight() - curLayer.getHeight()) / 2
+				);
+				refreshMainView();
+			}
+		});
+		layers.add(moveToCenter);
 
 		layers.addSeparator();
 
@@ -2404,9 +2432,7 @@ public class GUI extends MainWindow {
 
 		setPictureUndoTakenCareOf(newPicture);
 
-		if (currentLayerIndex >= newPicture.getLayerAmount()) {
-			currentLayerIndex = newPicture.getLayerAmount() - 1;
-		}
+		refreshLayerView();
 	}
 
 	private void setPictureUndoTakenCareOf(ImageMultiLayered newPicture) {
@@ -2709,7 +2735,7 @@ public class GUI extends MainWindow {
 		if (layer != null) {
 			return layer;
 		}
-		return new ImageLayerBasedOnText(0, 0, "");
+		return new ImageLayerBasedOnText(0, 0, "", "", 1, foregroundColor);
 	}
 
 	private ImageLayerBasedOnImage getCurrentImageLayer() {
@@ -2738,7 +2764,21 @@ public class GUI extends MainWindow {
 
 		GuiUtils.complain("The currently selected layer is not a text layer!");
 		// return a layer not attached to anything to that requests to this are just ignored - as the complaining is already done...
-		return new ImageLayerBasedOnText(0, 0, "");
+		return new ImageLayerBasedOnText(0, 0, "", "", 1, foregroundColor);
 	}
 
+	private void refreshLayerView() {
+		if (currentLayerIndex >= picture.getLayerAmount()) {
+			currentLayerIndex = picture.getLayerAmount() - 1;
+		}
+		if (currentLayerIndex < 0) {
+			currentLayerIndex = 0;
+		}
+		ImageLayer layer = picture.getLayer(currentLayerIndex);
+		if (layer != null) {
+			if (layer instanceof ImageLayerBasedOnText) {
+				// TODO :: show fontname and fontsize input at the top if the current layer is a text layer
+			}
+		}
+	}
 }
