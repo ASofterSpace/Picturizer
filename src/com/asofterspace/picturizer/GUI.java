@@ -12,6 +12,11 @@ import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageFile;
 import com.asofterspace.toolbox.images.ImageFileCtrl;
+import com.asofterspace.toolbox.images.ImageLayer;
+import com.asofterspace.toolbox.images.ImageLayerBasedOnImage;
+import com.asofterspace.toolbox.images.ImageLayerBasedOnText;
+import com.asofterspace.toolbox.images.ImageMultiLayered;
+import com.asofterspace.toolbox.images.PicFile;
 import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.pdf.PdfImageHandler;
@@ -77,12 +82,15 @@ public class GUI extends MainWindow {
 	private final static String TOOL_TEXTS_AREA_FG = "Draw Area with Foreground Color";
 	private final static String TOOL_TEXTS_AREA_BG = "Draw Area with Background Color";
 
-	private String lastPicturePath;
+	private String lastSavePath;
+	private String lastExportPath;
 
 	private JPanel mainPanel;
 	private JScrollPane mainPanelLeft;
 	private JScrollPane mainPanelRight;
 
+	private JMenuItem saveAgain;
+	private JMenuItem exportAgain;
 	private JMenuItem close;
 	private JMenuItem setForegroundToPipette;
 	private JMenuItem setForegroundToPipette4;
@@ -101,12 +109,12 @@ public class GUI extends MainWindow {
 
 	private ImageIcon imageViewer;
 	private JLabel imageViewerLabel;
-	private Image picture;
-	private Image undoablePicture3;
-	private Image undoablePicture2;
-	private Image undoablePicture1;
-	private Image undoablePicture;
-	private Image redoablePicture;
+	private ImageMultiLayered picture;
+	private ImageMultiLayered undoablePicture3;
+	private ImageMultiLayered undoablePicture2;
+	private ImageMultiLayered undoablePicture1;
+	private ImageMultiLayered undoablePicture;
+	private ImageMultiLayered redoablePicture;
 
 	private QrGUI qrGUI = null;
 	private ChannelChangeGUI channelChangeGUI = null;
@@ -123,9 +131,12 @@ public class GUI extends MainWindow {
 	private ColorRGBA backgroundColor = ColorRGBA.WHITE;
 	private ColorRGBA windowBackgroundColor = new ColorRGBA(Color.gray);
 
+	private int currentLayerIndex = 0;
 	private int pipetteSize = 1;
 	private List<Pair<Integer, Integer>> lastDrawPoints = new ArrayList<>();
 	private Image pictureBeforePointDrawing;
+
+	private boolean savedSinceLastChange = true;
 
 	private final static Directory TEMP_DIR = new Directory("temp");
 
@@ -310,7 +321,7 @@ public class GUI extends MainWindow {
 		newFile.add(newGrid1);
 
 
-		JMenuItem openFile = new JMenuItem("Open");
+		JMenuItem openFile = new JMenuItem("Open / Import...");
 		openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 		openFile.addActionListener(new ActionListener() {
 			@Override
@@ -324,10 +335,42 @@ public class GUI extends MainWindow {
 		saveFileAs.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				saveFileAs();
+				boolean exporting = false;
+				saveOrExportFile(exporting);
 			}
 		});
 		file.add(saveFileAs);
+
+		saveAgain = new JMenuItem("");
+		openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+		saveAgain.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveFileAgain();
+			}
+		});
+		saveAgain.setEnabled(false);
+		file.add(saveAgain);
+
+		JMenuItem exportFileTo = new JMenuItem("Export To...");
+		exportFileTo.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean exporting = true;
+				saveOrExportFile(exporting);
+			}
+		});
+		file.add(exportFileTo);
+
+		exportAgain = new JMenuItem("");
+		exportAgain.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				exportFileAgain();
+			}
+		});
+		exportAgain.setEnabled(false);
+		file.add(exportAgain);
 
 		file.addSeparator();
 
@@ -384,9 +427,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
 				picture.clear();
-				refreshMainView();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		edit.add(clear);
@@ -398,7 +440,7 @@ public class GUI extends MainWindow {
 		copy.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				picture.copyToClipboard();
+				picture.bake().copyToClipboard();
 			}
 		});
 		edit.add(copy);
@@ -432,6 +474,126 @@ public class GUI extends MainWindow {
 			}
 		});
 		edit.add(resizeImgArea);
+
+
+		JMenu layers = new JMenu("Layers");
+		menu.add(layers);
+
+		JMenuItem delLayer = new JMenuItem("Delete Current Layer");
+		delLayer.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture.deleteLayer(currentLayerIndex);
+				setPictureUndoTakenCareOf(picture);
+				if (currentLayerIndex >= picture.getLayerAmount()) {
+					currentLayerIndex = picture.getLayerAmount() - 1;
+				}
+			}
+		});
+		layers.add(delLayer);
+
+		JMenuItem addImgLayer = new JMenuItem("Add Image Layer");
+		addImgLayer.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0,
+					new Image(picture.getWidth(), picture.getHeight(), backgroundColor));
+				picture.addLayer(layer);
+				setPictureUndoTakenCareOf(picture);
+			}
+		});
+		layers.add(addImgLayer);
+
+		JMenuItem addTextLayer = new JMenuItem("Add Text Layer");
+		addTextLayer.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				ImageLayerBasedOnText layer = new ImageLayerBasedOnText(0, 0, "Hello!");
+				picture.addLayer(layer);
+				setPictureUndoTakenCareOf(picture);
+			}
+		});
+		layers.add(addTextLayer);
+
+		layers.addSeparator();
+
+		JMenuItem selLayerUp = new JMenuItem("Select One Layer Up");
+		selLayerUp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentLayerIndex++;
+				if (currentLayerIndex >= picture.getLayerAmount()) {
+					currentLayerIndex = picture.getLayerAmount() - 1;
+				}
+			}
+		});
+		layers.add(selLayerUp);
+
+		JMenuItem selLayerDown = new JMenuItem("Select One Layer Down");
+		selLayerDown.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				currentLayerIndex--;
+				if (currentLayerIndex < 0) {
+					currentLayerIndex = 0;
+				}
+			}
+		});
+		layers.add(selLayerDown);
+
+		layers.addSeparator();
+
+		JMenuItem moveLayerAllUp = new JMenuItem("Move Selected Layer All Layers Up");
+		moveLayerAllUp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GuiUtils.complain("Not yet implemented!");
+			}
+		});
+		layers.add(moveLayerAllUp);
+
+		JMenuItem moveLayerUp = new JMenuItem("Move Selected Layer One Layer Up");
+		moveLayerUp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GuiUtils.complain("Not yet implemented!");
+			}
+		});
+		layers.add(moveLayerUp);
+
+		JMenuItem moveLayerDown = new JMenuItem("Move Selected Layer One Layer Down");
+		moveLayerDown.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GuiUtils.complain("Not yet implemented!");
+			}
+		});
+		layers.add(moveLayerDown);
+
+		JMenuItem moveLayerAllDown = new JMenuItem("Move Selected Layer All Layers Down");
+		moveLayerAllDown.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GuiUtils.complain("Not yet implemented!");
+			}
+		});
+		layers.add(moveLayerAllDown);
+
+		layers.addSeparator();
+
+		JMenuItem bakeAllLayers = new JMenuItem("Bake All Layers Into One");
+		bakeAllLayers.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				picture = new ImageMultiLayered(picture.bake());
+				setPictureUndoTakenCareOf(picture);
+			}
+		});
+		layers.add(bakeAllLayers);
 
 
 		JMenu tools = new JMenu("Tools");
@@ -578,7 +740,7 @@ public class GUI extends MainWindow {
 		setForegroundToMostCommon.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				setForegroundColor(picture.getMostCommonColor());
+				setForegroundColor(picture.bake().getMostCommonColor());
 			}
 		});
 		colors.add(setForegroundToMostCommon);
@@ -587,7 +749,7 @@ public class GUI extends MainWindow {
 		setBackgroundToMostCommon.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				setBackgroundColor(picture.getMostCommonColor());
+				setBackgroundColor(picture.bake().getMostCommonColor());
 			}
 		});
 		colors.add(setBackgroundToMostCommon);
@@ -596,7 +758,7 @@ public class GUI extends MainWindow {
 		setForegroundToMostCommonSur.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				setForegroundColor(picture.getMostCommonSurroundingColor());
+				setForegroundColor(picture.bake().getMostCommonSurroundingColor());
 			}
 		});
 		colors.add(setForegroundToMostCommonSur);
@@ -605,7 +767,7 @@ public class GUI extends MainWindow {
 		setBackgroundToMostCommonSur.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				setBackgroundColor(picture.getMostCommonSurroundingColor());
+				setBackgroundColor(picture.bake().getMostCommonSurroundingColor());
 			}
 		});
 		colors.add(setBackgroundToMostCommonSur);
@@ -679,9 +841,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.clear(foregroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().clear(foregroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceEvWithForeground);
@@ -691,9 +852,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.clear(backgroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().clear(backgroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceEvWithBackground);
@@ -705,9 +865,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.replaceColors(backgroundColor, foregroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceColors(backgroundColor, foregroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceBackgroundForeground);
@@ -717,9 +876,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.replaceColors(backgroundColor, foregroundColor, 24);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceColors(backgroundColor, foregroundColor, 24);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceVCBackgroundForeground);
@@ -729,9 +887,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.replaceColors(backgroundColor, foregroundColor, 64);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceColors(backgroundColor, foregroundColor, 64);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceCBackgroundForeground);
@@ -741,9 +898,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.replaceColors(backgroundColor, foregroundColor, 128);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceColors(backgroundColor, foregroundColor, 128);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceSBackgroundForeground);
@@ -753,9 +909,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.replaceColors(backgroundColor, foregroundColor, 255);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceColors(backgroundColor, foregroundColor, 255);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceVSBackgroundForeground);
@@ -767,9 +922,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.replaceColorsExcept(foregroundColor, backgroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceColorsExcept(foregroundColor, backgroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceAnythingButFgWithBg);
@@ -779,9 +933,9 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.replaceColorsExcept(picture.getMostCommonColor(), foregroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceColorsExcept(
+					getCurrentImageLayer().getImage().getMostCommonColor(), foregroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceAnythingButMcWithFg);
@@ -793,10 +947,9 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				ColorRGBA mostCommonCol = picture.getMostCommonColor();
-				picture.replaceColors(mostCommonCol, foregroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceColors(
+					getCurrentImageLayer().getImage().getMostCommonColor(), foregroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceMostCommonForeground);
@@ -806,10 +959,9 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				ColorRGBA mostCommonSurroundCol = picture.getMostCommonSurroundingColor();
-				picture.replaceColors(mostCommonSurroundCol, foregroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceColors(
+					getCurrentImageLayer().getImage().getMostCommonSurroundingColor(), foregroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceMostCommonSurroundingForeground);
@@ -821,9 +973,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.replaceStragglersWith(backgroundColor, foregroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceStragglersWith(backgroundColor, foregroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceStragglersWithForeground);
@@ -833,10 +984,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				ColorRGBA mostCommonSurroundCol = picture.getMostCommonSurroundingColor();
-				picture.replaceStragglersIshWith(backgroundColor, foregroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().replaceStragglersIshWith(backgroundColor, foregroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustPixels.add(replaceStragglersIshWithForeground);
@@ -852,9 +1001,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.removeColors();
-				refreshMainView();
+				getCurrentImageLayer().getImage().removeColors();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustColors.add(removeAbsoluteColors);
@@ -864,9 +1012,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.removePerceivedColors();
-				refreshMainView();
+				getCurrentImageLayer().getImage().removePerceivedColors();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustColors.add(removePerceivedColors);
@@ -876,10 +1023,9 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.removeColors();
-				picture.makeBlackAndWhite();
-				refreshMainView();
+				getCurrentImageLayer().getImage().removeColors();
+				getCurrentImageLayer().getImage().makeBlackAndWhite();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustColors.add(removeAbsoluteColorsBW);
@@ -889,10 +1035,9 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.removePerceivedColors();
-				picture.makeBlackAndWhite();
-				refreshMainView();
+				getCurrentImageLayer().getImage().removePerceivedColors();
+				getCurrentImageLayer().getImage().makeBlackAndWhite();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustColors.add(removePerceivedColorsBW);
@@ -907,9 +1052,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.extractBlackToAlpha();
-				refreshMainView();
+				getCurrentImageLayer().getImage().extractBlackToAlpha();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustColors.add(extractBlackToAlpha);
@@ -919,9 +1063,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.extractBackgroundColorToAlpha();
-				refreshMainView();
+				getCurrentImageLayer().getImage().extractBackgroundColorToAlpha();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustColors.add(extractBgColToAlpha);
@@ -936,9 +1079,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.removeAlpha();
-				refreshMainView();
+				getCurrentImageLayer().getImage().removeAlpha();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		adjustColors.add(removeAlpha);
@@ -947,10 +1089,12 @@ public class GUI extends MainWindow {
 		bakeCurrentView.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				/*
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.bakeAlpha(new ColorRGBA(imageViewerLabel.getBackground()));
-				refreshMainView();
+				getCurrentImageLayer().getImage().bakeAlpha(new ColorRGBA(imageViewerLabel.getBackground()));
+				setPictureUndoTakenCareOf(picture);
+				*/
+				GuiUtils.complain("TODO: this needs more logic now with layers - instead of baking in bg color, we should get all layers up to this one, and bake the layers, and extract? but still on that bg color below it all? arghs!");
 			}
 		});
 		adjustColors.add(bakeCurrentView);
@@ -978,9 +1122,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.invert();
-				refreshMainView();
+				getCurrentImageLayer().getImage().invert();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		invert.add(invertColors);
@@ -990,9 +1133,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.invertBrightness1();
-				refreshMainView();
+				getCurrentImageLayer().getImage().invertBrightness1();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		invert.add(invertBrightness);
@@ -1002,9 +1144,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.invertBrightness2();
-				refreshMainView();
+				getCurrentImageLayer().getImage().invertBrightness2();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		invert.add(invertBrightness2);
@@ -1018,9 +1159,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.dampen(0.25f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().dampen(0.25f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		dampen.add(undampenStrongly);
@@ -1030,9 +1170,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.dampen(0.75f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().dampen(0.75f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		dampen.add(undampenWeakly);
@@ -1042,9 +1181,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.dampen(1.1f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().dampen(1.1f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		dampen.add(dampenWeakly1);
@@ -1054,9 +1192,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.dampen(1.25f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().dampen(1.25f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		dampen.add(dampenWeakly25);
@@ -1066,9 +1203,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.dampen(1.5f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().dampen(1.5f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		dampen.add(dampenWeakly);
@@ -1078,9 +1214,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.dampen(2);
-				refreshMainView();
+				getCurrentImageLayer().getImage().dampen(2);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		dampen.add(dampenStrongly);
@@ -1095,9 +1230,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.editChannels("R", 0.25, "G", 0.25, "B", 0.25);
-				refreshMainView();
+				getCurrentImageLayer().getImage().editChannels("R", 0.25, "G", 0.25, "B", 0.25);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		darkenBrighten.add(curMenuItem);
@@ -1107,9 +1241,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.editChannels("R", 0.75, "G", 0.75, "B", 0.75);
-				refreshMainView();
+				getCurrentImageLayer().getImage().editChannels("R", 0.75, "G", 0.75, "B", 0.75);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		darkenBrighten.add(curMenuItem);
@@ -1119,9 +1252,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.editChannels("R", 1.25, "G", 1.25, "B", 1.25);
-				refreshMainView();
+				getCurrentImageLayer().getImage().editChannels("R", 1.25, "G", 1.25, "B", 1.25);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		darkenBrighten.add(curMenuItem);
@@ -1131,9 +1263,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.editChannels("R", 1.75, "G", 1.75, "B", 1.75);
-				refreshMainView();
+				getCurrentImageLayer().getImage().editChannels("R", 1.75, "G", 1.75, "B", 1.75);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		darkenBrighten.add(curMenuItem);
@@ -1144,9 +1275,9 @@ public class GUI extends MainWindow {
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
 				int cutoff = 256+256;
-				picture = picture.copy();
-				picture.editChannelsAboveCutoff("R", 1.75, "G", 1.75, "B", 1.75, ColorRGBA.DEFAULT_ALLOW_OVERFLOW, cutoff);
-				refreshMainView();
+				getCurrentImageLayer().getImage().editChannelsAboveCutoff(
+					"R", 1.75, "G", 1.75, "B", 1.75, ColorRGBA.DEFAULT_ALLOW_OVERFLOW, cutoff);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		darkenBrighten.add(curMenuItem);
@@ -1165,9 +1296,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intensify();
-				refreshMainView();
+				getCurrentImageLayer().getImage().intensify();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		intensify.add(curMenuItem);
@@ -1183,9 +1313,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intensifySlightly();
-				refreshMainView();
+				getCurrentImageLayer().getImage().intensifySlightly();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		intensify.add(curMenuItem);
@@ -1198,9 +1327,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intensifyExtremes();
-				refreshMainView();
+				getCurrentImageLayer().getImage().intensifyExtremes();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		intensify.add(curMenuItem);
@@ -1212,9 +1340,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.createMapOfExtremes(foregroundColor, backgroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().createMapOfExtremes(foregroundColor, backgroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		intensify.add(curMenuItem);
@@ -1228,11 +1355,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImage(otherPic, 0.1f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.1f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1241,11 +1367,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImage(otherPic, 0.25f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.25f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1254,11 +1379,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImage(otherPic, 0.3333f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.3333f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1267,11 +1391,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImage(otherPic, 0.4f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.4f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1280,11 +1403,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImage(otherPic, 0.5f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.5f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1293,11 +1415,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImage(otherPic, 0.6f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.6f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1306,11 +1427,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImage(otherPic, 0.6666f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.6666f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1319,11 +1439,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImage(otherPic, 0.75f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.75f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1332,11 +1451,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImage(otherPic, 0.9f);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.9f);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1347,11 +1465,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImageLeftToRight(otherPic);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImageLeftToRight(otherPic);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1360,11 +1477,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImageRightToLeft(otherPic);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImageRightToLeft(otherPic);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1373,11 +1489,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImageTopToBottom(otherPic);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImageTopToBottom(otherPic);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1386,11 +1501,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImageBottomToTop(otherPic);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImageBottomToTop(otherPic);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1401,11 +1515,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImageMin(otherPic);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImageMin(otherPic);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1414,11 +1527,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.intermixImageMax(otherPic);
-				refreshMainView();
+				getCurrentImageLayer().getImage().intermixImageMax(otherPic);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1429,11 +1541,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.maskOutImage(otherPic, backgroundColor);
-				refreshMainView();
+				getCurrentImageLayer().getImage().maskOutImage(otherPic, backgroundColor);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1444,11 +1555,10 @@ public class GUI extends MainWindow {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture;
+				Image otherPic = undoablePicture.bake();
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.interlaceImage(otherPic);
-				refreshMainView();
+				getCurrentImageLayer().getImage().interlaceImage(otherPic);
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		mixing.add(curMenuItem);
@@ -1694,9 +1804,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.createMapOfDifferences();
-				refreshMainView();
+				getCurrentImageLayer().getImage().createMapOfDifferences();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		parentItem.add(curMenuItem);
@@ -1706,9 +1815,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture = picture.copy();
-				picture.createMapOfDifferencesBW();
-				refreshMainView();
+				getCurrentImageLayer().getImage().createMapOfDifferencesBW();
+				setPictureUndoTakenCareOf(picture);
 			}
 		});
 		parentItem.add(curMenuItem);
@@ -1854,24 +1962,25 @@ public class GUI extends MainWindow {
 
 						case PIPETTE_FG:
 						case PIPETTE_BG:
-							ColorRGBA newColor = picture.getPixelSafely(x, y);
+							Image curImg = picture.bake();
+							ColorRGBA newColor = curImg.getPixelSafely(x, y);
 
 							if (pipetteSize > 1) {
 								List<ColorRGBA> pixMix = new ArrayList<>();
 								pixMix.add(newColor);
-								pixMix.add(picture.getPixelSafely(x+1, y));
-								pixMix.add(picture.getPixelSafely(x-1, y));
-								pixMix.add(picture.getPixelSafely(x, y+1));
-								pixMix.add(picture.getPixelSafely(x, y-1));
+								pixMix.add(curImg.getPixelSafely(x+1, y));
+								pixMix.add(curImg.getPixelSafely(x-1, y));
+								pixMix.add(curImg.getPixelSafely(x, y+1));
+								pixMix.add(curImg.getPixelSafely(x, y-1));
 								if (pipetteSize > 5) {
-									pixMix.add(picture.getPixelSafely(x+2, y));
-									pixMix.add(picture.getPixelSafely(x-2, y));
-									pixMix.add(picture.getPixelSafely(x, y+2));
-									pixMix.add(picture.getPixelSafely(x, y-2));
-									pixMix.add(picture.getPixelSafely(x+1, y+1));
-									pixMix.add(picture.getPixelSafely(x+1, y-1));
-									pixMix.add(picture.getPixelSafely(x-1, y+1));
-									pixMix.add(picture.getPixelSafely(x-1, y-1));
+									pixMix.add(curImg.getPixelSafely(x+2, y));
+									pixMix.add(curImg.getPixelSafely(x-2, y));
+									pixMix.add(curImg.getPixelSafely(x, y+2));
+									pixMix.add(curImg.getPixelSafely(x, y-2));
+									pixMix.add(curImg.getPixelSafely(x+1, y+1));
+									pixMix.add(curImg.getPixelSafely(x+1, y-1));
+									pixMix.add(curImg.getPixelSafely(x-1, y+1));
+									pixMix.add(curImg.getPixelSafely(x-1, y-1));
 								}
 								newColor = ColorRGBA.mixPix(pixMix);
 							}
@@ -1893,7 +2002,6 @@ public class GUI extends MainWindow {
 								lastDrawPoints = new ArrayList<>();
 								lastDrawPoints.add(prevPoint);
 								lastDrawPoints.add(newPoint);
-								picture = pictureBeforePointDrawing.copy();
 								ColorRGBA drawColor = foregroundColor;
 								if (activeTool == Tool.DRAW_RECTANGLE_BG) {
 									drawColor = backgroundColor;
@@ -1910,8 +2018,10 @@ public class GUI extends MainWindow {
 									y2 = lastDrawPoints.get(0).getY();
 									y1 = lastDrawPoints.get(1).getY();
 								}
-								picture.drawRectangle(x1, y1, x2, y2, drawColor);
-								refreshMainView();
+								Image drawImg = pictureBeforePointDrawing.copy();
+								drawImg.drawRectangle(x1, y1, x2, y2, drawColor);
+								getCurrentImageLayer().setImage(drawImg);
+								setPictureUndoTakenCareOf(picture);
 							} else {
 								lastDrawPoints.add(newPoint);
 							}
@@ -1922,13 +2032,14 @@ public class GUI extends MainWindow {
 							newPoint = new Pair<>(x, y);
 							lastDrawPoints.add(newPoint);
 							if (lastDrawPoints.size() > 2) {
-								picture = pictureBeforePointDrawing.copy();
 								ColorRGBA drawColor = foregroundColor;
 								if (activeTool == Tool.DRAW_AREA_BG) {
 									drawColor = backgroundColor;
 								}
-								picture.drawArea(lastDrawPoints, drawColor);
-								refreshMainView();
+								Image drawImg = pictureBeforePointDrawing.copy();
+								drawImg.drawArea(lastDrawPoints, drawColor);
+								getCurrentImageLayer().setImage(drawImg);
+								setPictureUndoTakenCareOf(picture);
 							}
 							break;
 					}
@@ -1946,8 +2057,33 @@ public class GUI extends MainWindow {
 		return mainPanel;
 	}
 
-	private void refreshTitleBar() {
-		mainFrame.setTitle(Main.PROGRAM_TITLE + " - " + lastPicturePath);
+	private void refreshTitleBarAndSaveExportItems() {
+
+		String lastSavePathStr = lastSavePath;
+		if (lastSavePathStr == null) {
+			saveAgain.setEnabled(false);
+			saveAgain.setText("Save Again");
+			lastSavePathStr = "(unsaved)";
+		} else {
+			saveAgain.setEnabled(true);
+			saveAgain.setText("Save Again as " + lastSavePathStr);
+		}
+		String lastExportPathStr = lastExportPath;
+		if (lastExportPathStr == null) {
+			exportAgain.setEnabled(false);
+			exportAgain.setText("Export Again");
+			lastExportPathStr = "(unexported)";
+		} else {
+			exportAgain.setEnabled(true);
+			exportAgain.setText("Export Again as " + lastExportPathStr);
+		}
+
+		String unsavedStr = "";
+		if (!savedSinceLastChange) {
+			unsavedStr += "UNSAVED - ";
+		}
+
+		mainFrame.setTitle(Main.PROGRAM_TITLE + " - " + unsavedStr + "Pic: " + lastSavePathStr + " Exp: " + lastExportPathStr);
 	}
 
 	private void createNewEmptyFile() {
@@ -2028,7 +2164,7 @@ public class GUI extends MainWindow {
 	private void createPicFromPDF2() {
 
 		// take the first picture (from the top of the page)
-		Image origPic = picture.copy();
+		Image origPic = picture.bake();
 
 		int origPicHeight = origPic.getHeight();
 
@@ -2084,7 +2220,7 @@ public class GUI extends MainWindow {
 				break;
 			}
 		}
-		saveImageToFile(origPic, tempFile);
+		exportImageToFile(origPic, tempFile);
 	}
 
 	private void createPicFromScreenshot(ColorRGBA background) {
@@ -2177,20 +2313,34 @@ public class GUI extends MainWindow {
 		}
 	}
 
-	public Image getPicture() {
-		return picture.copy();
+	public Image getPictureBaked() {
+		return picture.bake();
 	}
 
-	public void setPicture(Image newPicture) {
+	public void setPicture(Image newImage) {
+
+		setPicture(new ImageMultiLayered(newImage));
+	}
+
+	public void setPicture(ImageMultiLayered newPicture) {
 
 		saveCurPicForUndo();
+
+		setPictureUndoTakenCareOf(newPicture);
+
+		if (currentLayerIndex >= newPicture.getLayerAmount()) {
+			currentLayerIndex = newPicture.getLayerAmount() - 1;
+		}
+	}
+
+	private void setPictureUndoTakenCareOf(ImageMultiLayered newPicture) {
 
 		picture = newPicture;
 
 		refreshMainView();
 
-		lastPicturePath = "Unsaved Picture";
-		refreshTitleBar();
+		savedSinceLastChange = false;
+		refreshTitleBarAndSaveExportItems();
 	}
 
 	private void openFile() {
@@ -2227,11 +2377,17 @@ public class GUI extends MainWindow {
 
 				File selectedFile = new File(augFilePicker.getSelectedFile());
 				saveCurPicForUndo();
-				picture = imageFileCtrl.loadImageFromFile(selectedFile);
+				String selFilename = selectedFile.getCanonicalFilename();
+				if (selFilename.toLowerCase().endsWith(".pic")) {
+					lastSavePath = selFilename;
+					PicFile picFile = new PicFile(selFilename);
+					picture = picFile.getImageMultiLayered();
+				} else {
+					lastExportPath = selFilename;
+					picture = new ImageMultiLayered(imageFileCtrl.loadImageFromFile(selectedFile));
+				}
 				refreshMainView();
-
-				lastPicturePath = selectedFile.getCanonicalFilename();
-				refreshTitleBar();
+				refreshTitleBarAndSaveExportItems();
 
 				break;
 
@@ -2241,7 +2397,7 @@ public class GUI extends MainWindow {
 		}
 	}
 
-	private void saveFileAs() {
+	private void saveOrExportFile(boolean exporting) {
 
 		JFileChooser augFilePicker;
 
@@ -2254,11 +2410,15 @@ public class GUI extends MainWindow {
 			augFilePicker = new JFileChooser();
 		}
 
-		augFilePicker.setDialogTitle("Save as Picture File");
+		if (exporting) {
+			augFilePicker.setDialogTitle("Export as Image File");
+		} else {
+			augFilePicker.setDialogTitle("Save as Image File");
+		}
 		augFilePicker.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		augFilePicker.setMultiSelectionEnabled(false);
 
-		addSaveFileFilters(augFilePicker);
+		addSaveOrExportFileFilters(augFilePicker, exporting);
 
 		int result = augFilePicker.showSaveDialog(mainFrame);
 
@@ -2289,7 +2449,12 @@ public class GUI extends MainWindow {
 						}
 					}
 				}
-				saveImageToFile(picture, selectedFile);
+
+				if (exporting) {
+					exportImageToFile(picture.bake(), selectedFile);
+				} else {
+					saveImageToFile(picture, selectedFile);
+				}
 
 				break;
 
@@ -2299,13 +2464,31 @@ public class GUI extends MainWindow {
 		}
 	}
 
-	private void saveImageToFile(Image picture, File selectedFile) {
+	private void saveFileAgain() {
+		saveImageToFile(picture, new File(lastSavePath));
+	}
+
+	private void saveImageToFile(ImageMultiLayered picture, File selectedFile) {
+		PicFile picFile = new PicFile(selectedFile);
+		picFile.assign(picture);
+		picFile.save();
+		lastSavePath = selectedFile.getCanonicalFilename();
+		savedSinceLastChange = true;
+		refreshTitleBarAndSaveExportItems();
+	}
+
+	private void exportFileAgain() {
+		exportImageToFile(picture.bake(), new File(lastExportPath));
+	}
+
+	private void exportImageToFile(Image picture, File selectedFile) {
 		imageFileCtrl.saveImageToFile(picture, selectedFile);
-		lastPicturePath = selectedFile.getCanonicalFilename();
-		refreshTitleBar();
+		lastExportPath = selectedFile.getCanonicalFilename();
+		refreshTitleBarAndSaveExportItems();
 	}
 
 	private void addOpenFileFilters(JFileChooser fileChooser) {
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Picturizer Picture (*.pic)", "pic"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG files (*.jpg, *.jpeg)", "jpg", "jpeg"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Bitmap files (*.bmp)", "bmp"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Network Graphics (*.png)", "png"));
@@ -2315,17 +2498,21 @@ public class GUI extends MainWindow {
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Document Format (*.pdf)", "pdf"));
 	}
 
-	private void addSaveFileFilters(JFileChooser fileChooser) {
-		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG files (*.jpg, *.jpeg)", "jpg", "jpeg"));
-		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Bitmap files (*.bmp)", "bmp"));
-		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Network Graphics (*.png)", "png"));
-		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Bitmap (*.pbm)", "pbm"));
-		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Gray Map (*.pgm)", "pgm"));
-		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Pixel Map (*.ppm)", "ppm"));
+	private void addSaveOrExportFileFilters(JFileChooser fileChooser, boolean exporting) {
+		if (exporting) {
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG files (*.jpg, *.jpeg)", "jpg", "jpeg"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Bitmap files (*.bmp)", "bmp"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Network Graphics (*.png)", "png"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Bitmap (*.pbm)", "pbm"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Gray Map (*.pgm)", "pgm"));
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Pixel Map (*.ppm)", "ppm"));
+		} else {
+			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Picturizer Picture (*.pic)", "pic"));
+		}
 	}
 
 	private void refreshMainView() {
-		imageViewer.setImage(picture.getAwtImage());
+		imageViewer.setImage(picture.bake().getAwtImage());
 		// imageViewerLabel.repaint();
 		mainPanelRight.revalidate();
 		mainPanelRight.repaint();
@@ -2335,7 +2522,11 @@ public class GUI extends MainWindow {
 		undoablePicture3 = undoablePicture2;
 		undoablePicture2 = undoablePicture1;
 		undoablePicture1 = undoablePicture;
-		undoablePicture = picture;
+		if (picture == null) {
+			undoablePicture = null;
+		} else {
+			undoablePicture = picture.copy();
+		}
 		redoablePicture = null;
 	}
 
@@ -2396,7 +2587,7 @@ public class GUI extends MainWindow {
 				case DRAW_AREA_FG:
 				case DRAW_AREA_BG:
 					this.lastDrawPoints = new ArrayList<>();
-					pictureBeforePointDrawing = picture.copy();
+					pictureBeforePointDrawing = getCurrentImageLayer().getImage().copy();
 					break;
 			}
 		}
@@ -2425,7 +2616,7 @@ public class GUI extends MainWindow {
 			createGridGUI = new CreateGridGUI(GUI.this);
 		}
 
-		createGridGUI.show(createNew, foregroundColor, backgroundColor, picture);
+		createGridGUI.show(createNew, foregroundColor, backgroundColor, picture.bake());
 	}
 
 	private void showExpandShrinkGUI() {
@@ -2434,7 +2625,36 @@ public class GUI extends MainWindow {
 			expandShrinkGUI = new ExpandShrinkGUI(GUI.this);
 		}
 
-		expandShrinkGUI.show(foregroundColor, backgroundColor, picture);
+		expandShrinkGUI.show(foregroundColor, backgroundColor, picture.bake());
+	}
+
+	private ImageLayerBasedOnImage getCurrentImageLayer() {
+		ImageLayer layer = picture.getLayer(currentLayerIndex);
+		if (layer != null) {
+			if (layer instanceof ImageLayerBasedOnImage) {
+				ImageLayerBasedOnImage imgLayer = (ImageLayerBasedOnImage) layer;
+				return imgLayer;
+			}
+		}
+
+		GuiUtils.complain("The currently selected layer is not an image layer!");
+		// return a layer not attached to anything to that requests to this are just ignored - as the complaining is already done...
+		Image tempImg = new Image(picture.getWidth(), picture.getHeight());
+		return new ImageLayerBasedOnImage(0, 0, tempImg);
+	}
+
+	private ImageLayerBasedOnText getCurrentTextLayer() {
+		ImageLayer layer = picture.getLayer(currentLayerIndex);
+		if (layer != null) {
+			if (layer instanceof ImageLayerBasedOnText) {
+				ImageLayerBasedOnText txtLayer = (ImageLayerBasedOnText) layer;
+				return txtLayer;
+			}
+		}
+
+		GuiUtils.complain("The currently selected layer is not a text layer!");
+		// return a layer not attached to anything to that requests to this are just ignored - as the complaining is already done...
+		return new ImageLayerBasedOnText(0, 0, "");
 	}
 
 }
