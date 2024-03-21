@@ -133,8 +133,15 @@ public class CreateGridGUI {
 							int offsetY = lineThickness + (y * (height + lineThickness));
 
 							if (modeCreateNewImage) {
+								ColorRGBA drawColor = foregroundColor;
+								// if the line thickness is zero, chequer it instead so that the grid is visible anyway
+								if (lineThickness == 0) {
+									if ((x + y) % 2 == 0) {
+										drawColor = backgroundColor;
+									}
+								}
 								gridPic.drawRectangle(offsetX, offsetY,
-									offsetX + width - 1, offsetY + height - 1, foregroundColor);
+									offsetX + width - 1, offsetY + height - 1, drawColor);
 							} else {
 								gridPic.draw(imageToBeCopied, offsetX, offsetY);
 							}

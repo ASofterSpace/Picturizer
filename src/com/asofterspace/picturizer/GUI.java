@@ -629,15 +629,53 @@ public class GUI extends MainWindow {
 
 		layers.addSeparator();
 
-		JMenuItem moveTo00 = new JMenuItem("Move Selected Layer to (0, 0)");
-		moveTo00.addActionListener(new ActionListener() {
+		JMenuItem moveToLeft = new JMenuItem("Move Selected Layer to Left");
+		moveToLeft.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				getCurrentLayer().moveTo(0, 0);
+				ImageLayer curLayer = getCurrentLayer();
+				curLayer.moveTo(0, curLayer.getOffsetY());
 				refreshMainView();
+				refreshLayerView();
 			}
 		});
-		layers.add(moveTo00);
+		layers.add(moveToLeft);
+
+		JMenuItem moveToRight = new JMenuItem("Move Selected Layer to Right");
+		moveToRight.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageLayer curLayer = getCurrentLayer();
+				curLayer.moveTo(picture.getWidth() - curLayer.getWidth(), curLayer.getOffsetY());
+				refreshMainView();
+				refreshLayerView();
+			}
+		});
+		layers.add(moveToRight);
+
+		JMenuItem moveToTop = new JMenuItem("Move Selected Layer to Top");
+		moveToTop.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageLayer curLayer = getCurrentLayer();
+				curLayer.moveTo(curLayer.getOffsetX(), 0);
+				refreshMainView();
+				refreshLayerView();
+			}
+		});
+		layers.add(moveToTop);
+
+		JMenuItem moveToBottom = new JMenuItem("Move Selected Layer to Bottom");
+		moveToBottom.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageLayer curLayer = getCurrentLayer();
+				curLayer.moveTo(curLayer.getOffsetX(), picture.getHeight() - curLayer.getHeight());
+				refreshMainView();
+				refreshLayerView();
+			}
+		});
+		layers.add(moveToBottom);
 
 		JMenuItem moveToCenter = new JMenuItem("Move Selected Layer to Center");
 		moveToCenter.addActionListener(new ActionListener() {
@@ -649,6 +687,7 @@ public class GUI extends MainWindow {
 					(picture.getHeight() - curLayer.getHeight()) / 2
 				);
 				refreshMainView();
+				refreshLayerView();
 			}
 		});
 		layers.add(moveToCenter);
