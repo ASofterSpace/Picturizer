@@ -1179,6 +1179,17 @@ public class GUI extends MainWindow {
 		});
 		adjustColors.add(extractBlackToAlpha);
 
+		JMenuItem extractWhiteToAlpha = new JMenuItem("Extract White to Alpha");
+		extractWhiteToAlpha.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				getCurrentImageLayer().getImage().extractWhiteToAlpha();
+				setPictureUndoTakenCareOf(picture);
+			}
+		});
+		adjustColors.add(extractWhiteToAlpha);
+
 		JMenuItem extractBgColToAlpha = new JMenuItem("Extract Background Color to Alpha");
 		extractBgColToAlpha.addActionListener(new ActionListener() {
 			@Override
