@@ -345,7 +345,8 @@ public class GUI extends MainWindow {
 		openFile.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openFile();
+				boolean returnImage = false;
+				openFile(returnImage);
 			}
 		});
 		file.add(openFile);
@@ -524,6 +525,22 @@ public class GUI extends MainWindow {
 			}
 		});
 		layers.add(addImgLayer);
+
+		JMenuItem addImgLayerFile = new JMenuItem("Add Image Layer (Opening Existing File)");
+		addImgLayerFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				boolean returnImage = true;
+				Image img = openFile(returnImage);
+				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0, img);
+				picture.addLayer(layer);
+				currentLayerIndex = picture.getLayerAmount() - 1;
+				setPictureUndoTakenCareOf(picture);
+				refreshLayerView();
+			}
+		});
+		layers.add(addImgLayerFile);
 
 		JMenuItem addImgLayerClipbrd = new JMenuItem("Add Image Layer (Pasting from Clipboard)");
 		addImgLayerClipbrd.addActionListener(new ActionListener() {
@@ -2642,7 +2659,7 @@ public class GUI extends MainWindow {
 		refreshTitleBarAndSaveExportItems();
 	}
 
-	private void openFile() {
+	private Image openFile(boolean returnImage) {
 
 		// TODO :: de-localize the JFileChooser (by default it seems localized, which is inconsistent when the rest of the program is in English...)
 		// (while you're at it, make Öffnen into Save for the save dialog, but keep it as Open for the open dialog... ^^)
@@ -2681,9 +2698,16 @@ public class GUI extends MainWindow {
 					lastSavePath = selFilename;
 					PicFile picFile = new PicFile(selFilename);
 					picture = picFile.getImageMultiLayered();
+					if (returnImage) {
+						return picture.bake();
+					}
 				} else {
 					lastExportPath = selFilename;
-					picture = new ImageMultiLayered(imageFileCtrl.loadImageFromFile(selectedFile));
+					Image img = imageFileCtrl.loadImageFromFile(selectedFile);
+					if (returnImage) {
+						return img;
+					}
+					picture = new ImageMultiLayered(img);
 				}
 				refreshMainView();
 				refreshTitleBarAndSaveExportItems();
@@ -2695,6 +2719,8 @@ public class GUI extends MainWindow {
 				// cancel was pressed... do nothing for now
 				break;
 		}
+
+		return null;
 	}
 
 	private void saveOrExportFile(boolean exporting) {
