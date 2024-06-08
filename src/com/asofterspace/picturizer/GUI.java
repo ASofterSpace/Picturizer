@@ -491,10 +491,19 @@ public class GUI extends MainWindow {
 		resizeImgArea.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				showResizeGUI();
+				showResizeGUI(false);
 			}
 		});
 		edit.add(resizeImgArea);
+
+		JMenuItem resampleImgArea = new JMenuItem("Resample Image Area");
+		resampleImgArea.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showResizeGUI(true);
+			}
+		});
+		edit.add(resampleImgArea);
 
 
 		JMenu layers = new JMenu("Layers");
@@ -2958,13 +2967,13 @@ public class GUI extends MainWindow {
 		expandShrinkGUI.show(foregroundColor, backgroundColor, picture.bake());
 	}
 
-	private void showResizeGUI() {
+	private void showResizeGUI(boolean resample) {
 
 		if (resizeGUI == null) {
 			resizeGUI = new ResizeGUI(GUI.this);
 		}
 
-		resizeGUI.show(picture.bake());
+		resizeGUI.show(picture.bake(), resample);
 	}
 
 	private ImageLayer getCurrentLayer() {

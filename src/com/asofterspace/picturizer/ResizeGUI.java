@@ -33,6 +33,8 @@ public class ResizeGUI {
 
 	private Image baseImage;
 
+	private boolean resample;
+
 	private JTextField inputFieldWidth;
 	private JTextField inputFieldHeight;
 
@@ -81,7 +83,11 @@ public class ResizeGUI {
 				int newHeight = StrUtils.strToInt(inputFieldHeight.getText(), 0);
 
 				Image newPic = baseImage.copy();
-				newPic.resize(newWidth, newHeight);
+				if (resample) {
+					newPic.resample(newWidth, newHeight);
+				} else {
+					newPic.resize(newWidth, newHeight);
+				}
 				gui.setPicture(newPic);
 				dialog.dispose();
 			}
@@ -105,8 +111,9 @@ public class ResizeGUI {
 		return dialog;
 	}
 
-	public void show(Image currentImg) {
+	public void show(Image currentImg, boolean resample) {
 		this.baseImage = currentImg;
+		this.resample = resample;
 
 		GuiUtils.centerAndShowWindow(dialog);
 
