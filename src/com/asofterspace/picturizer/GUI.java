@@ -139,6 +139,7 @@ public class GUI extends MainWindow {
 	private ChannelChangeGUI channelChangeGUI = null;
 	private CreateGridGUI createGridGUI = null;
 	private ExpandShrinkGUI expandShrinkGUI = null;
+	private ResizeGUI resizeGUI = null;
 	private ColorPickerGUI colorPickerGUI = null;
 	private boolean colorToBePickedIsForeground = true;
 
@@ -490,7 +491,7 @@ public class GUI extends MainWindow {
 		resizeImgArea.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				GuiUtils.notify("Resize not yet implemented!");
+				showResizeGUI();
 			}
 		});
 		edit.add(resizeImgArea);
@@ -2955,6 +2956,15 @@ public class GUI extends MainWindow {
 		}
 
 		expandShrinkGUI.show(foregroundColor, backgroundColor, picture.bake());
+	}
+
+	private void showResizeGUI() {
+
+		if (resizeGUI == null) {
+			resizeGUI = new ResizeGUI(GUI.this);
+		}
+
+		resizeGUI.show(picture.bake());
 	}
 
 	private ImageLayer getCurrentLayer() {
