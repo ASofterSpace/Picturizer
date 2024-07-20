@@ -1309,6 +1309,17 @@ public class GUI extends MainWindow {
 		});
 		invert.add(invertBrightness2);
 
+		JMenuItem invertBrightness3 = new JMenuItem("Invert Brightness (Keeping Colors, Approach 3)");
+		invertBrightness3.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveCurPicForUndo();
+				getCurrentImageLayer().getImage().invertBrightness3();
+				setPictureUndoTakenCareOf(picture);
+			}
+		});
+		invert.add(invertBrightness3);
+
 
 		JMenu dampen = new JMenu("Dampen");
 		menu.add(dampen);
