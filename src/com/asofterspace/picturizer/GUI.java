@@ -121,6 +121,7 @@ public class GUI extends MainWindow {
 	private JMenuItem drawAreaBG;
 
 	private ConfigFile configuration;
+	private String fileToOpenAfterStartup;
 
 	private Image mainPanelLeftImg;
 	private ImageIcon mainPanelLeftViewer;
@@ -161,8 +162,9 @@ public class GUI extends MainWindow {
 	private final static Directory TEMP_DIR = new Directory("temp");
 
 
-	public GUI(ConfigFile configFile) {
+	public GUI(ConfigFile configFile, String fileToOpen) {
 		this.configuration = configFile;
+		this.fileToOpenAfterStartup = fileToOpen;
 
 		// we want to handle as many image formats as we can...
 		// even opening images from PDF files, if possible :)
@@ -171,6 +173,11 @@ public class GUI extends MainWindow {
 
 		colorpickerImg = imageFileCtrl.loadImageFromFile(new File(
 			 System.getProperty("java.class.path") + "/../res/colorpicker.png"));
+
+		// enable anti-aliasing for swing
+		System.setProperty("swing.aatext", "true");
+		// enable anti-aliasing for awt
+		System.setProperty("awt.useSystemAAFontSettings", "on");
 	}
 
 	@Override
@@ -225,6 +232,11 @@ public class GUI extends MainWindow {
 				refreshLeftView();
 
 				refreshMainView();
+
+				if (fileToOpenAfterStartup != null) {
+					boolean returnImage = false;
+					openImageFile(new File(fileToOpenAfterStartup), returnImage);
+				}
 			}
 		});
 
@@ -2712,34 +2724,38 @@ public class GUI extends MainWindow {
 				configuration.set(CONFIG_KEY_LAST_DIRECTORY, augFilePicker.getCurrentDirectory().getAbsolutePath());
 				configuration.create();
 
-				File selectedFile = new File(augFilePicker.getSelectedFile());
-				saveCurPicForUndo();
-				String selFilename = selectedFile.getCanonicalFilename();
-				if (selFilename.toLowerCase().endsWith(".pic")) {
-					lastSavePath = selFilename;
-					PicFile picFile = new PicFile(selFilename);
-					picture = picFile.getImageMultiLayered();
-					if (returnImage) {
-						return picture.bake();
-					}
-				} else {
-					lastExportPath = selFilename;
-					Image img = imageFileCtrl.loadImageFromFile(selectedFile);
-					if (returnImage) {
-						return img;
-					}
-					picture = new ImageMultiLayered(img);
-				}
-				refreshMainView();
-				refreshTitleBarAndSaveExportItems();
-				refreshLayerView();
-
-				break;
+				return openImageFile(new File(augFilePicker.getSelectedFile()), returnImage);
 
 			case JFileChooser.CANCEL_OPTION:
 				// cancel was pressed... do nothing for now
 				break;
 		}
+
+		return null;
+	}
+
+	private Image openImageFile(File imageFile, boolean returnImage) {
+
+		saveCurPicForUndo();
+		String selFilename = imageFile.getCanonicalFilename();
+		if (selFilename.toLowerCase().endsWith(".pic")) {
+			lastSavePath = selFilename;
+			PicFile picFile = new PicFile(selFilename);
+			picture = picFile.getImageMultiLayered();
+			if (returnImage) {
+				return picture.bake();
+			}
+		} else {
+			lastExportPath = selFilename;
+			Image img = imageFileCtrl.loadImageFromFile(imageFile);
+			if (returnImage) {
+				return img;
+			}
+			picture = new ImageMultiLayered(img);
+		}
+		refreshMainView();
+		refreshTitleBarAndSaveExportItems();
+		refreshLayerView();
 
 		return null;
 	}

@@ -14,8 +14,8 @@ import javax.swing.SwingUtilities;
 public class Main {
 
 	public final static String PROGRAM_TITLE = "Picturizer";
-	public final static String VERSION_NUMBER = "0.0.1.7(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
-	public final static String VERSION_DATE = "9. November 2019 - 20. July 2024";
+	public final static String VERSION_NUMBER = "0.0.1.8(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
+	public final static String VERSION_DATE = "9. November 2019 - 29. December 2024";
 
 	private static ConfigFile config;
 
@@ -27,6 +27,8 @@ public class Main {
 		Utils.setVersionNumber(VERSION_NUMBER);
 		Utils.setVersionDate(VERSION_DATE);
 
+		String fileToOpen = null;
+
 		if (args.length > 0) {
 			if (args[0].equals("--version")) {
 				System.out.println(Utils.getFullProgramIdentifierWithDate());
@@ -37,6 +39,8 @@ public class Main {
 				System.out.println("version " + Utils.getVersionNumber());
 				return;
 			}
+
+			fileToOpen = args[0];
 		}
 
 		System.out.println("Starting the Picturizer...");
@@ -45,7 +49,7 @@ public class Main {
 		boolean onlyUseDefaultIfBroken = true;
 		config = new ConfigFile("settings", true, Record.emptyObject(), onlyUseDefaultIfBroken);
 
-		SwingUtilities.invokeLater(new GUI(config));
+		SwingUtilities.invokeLater(new GUI(config, fileToOpen));
 
 		System.out.println("Picturizer out. Have a fun day! :)");
 	}
