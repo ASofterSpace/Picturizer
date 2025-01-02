@@ -5,6 +5,7 @@
 package com.asofterspace.picturizer;
 
 import com.asofterspace.toolbox.configuration.ConfigFile;
+import com.asofterspace.toolbox.io.IoUtils;
 import com.asofterspace.toolbox.utils.Record;
 import com.asofterspace.toolbox.Utils;
 
@@ -27,8 +28,6 @@ public class Main {
 		Utils.setVersionNumber(VERSION_NUMBER);
 		Utils.setVersionDate(VERSION_DATE);
 
-		String fileToOpen = null;
-
 		if (args.length > 0) {
 			if (args[0].equals("--version")) {
 				System.out.println(Utils.getFullProgramIdentifierWithDate());
@@ -39,21 +38,9 @@ public class Main {
 				System.out.println("version " + Utils.getVersionNumber());
 				return;
 			}
-
-			// when several arguments are given, assume that it is just one file whose name contains spaces
-			if (args.length > 1) {
-				StringBuilder fileToOpenBuilder = new StringBuilder();
-				String sep = "";
-				for (int i = 0; i < args.length; i++) {
-					fileToOpenBuilder.append(sep);
-					fileToOpenBuilder.append(args[i]);
-					sep = " ";
-				}
-				fileToOpen = fileToOpenBuilder.toString();
-			} else {
-				fileToOpen = args[0];
-			}
 		}
+
+		String fileToOpen = IoUtils.assembleArgumentsIntoOne(args);
 
 		if (fileToOpen == null) {
 			System.out.println("Pictures, wheee! \\o/");
