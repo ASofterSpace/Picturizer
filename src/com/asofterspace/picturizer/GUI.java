@@ -92,7 +92,7 @@ public class GUI extends MainWindow {
 	private String lastExportPath;
 
 	private JPanel mainPanel;
-	private JScrollPane mainPanelLeft;
+	private JPanel mainPanelLeft;
 	private JList<String> layerList;
 	private JScrollPane mainPanelRight;
 	private JPanel imgLayerPanel;
@@ -107,6 +107,9 @@ public class GUI extends MainWindow {
 	private JTextField textLayerFontSizeInput;
 	private JTextField textLayerColorInput;
 	private JTextField textLayerTextInput;
+	private JPanel mainLowerPanelLeft;
+	private JLabel curPosXLabel;
+	private JLabel curPosYLabel;
 
 	private JMenuItem saveAgain;
 	private JMenuItem exportAgain;
@@ -2267,6 +2270,14 @@ public class GUI extends MainWindow {
 		mainLowerPanel.setBorder(BorderFactory.createEmptyBorder());
 		mainPanel.add(mainLowerPanel, new Arrangement(0, 1, 1.0, 1.0));
 
+		mainLowerPanelLeft = new JPanel();
+		GridBagLayout mainLowerPanelLeftLayout = new GridBagLayout();
+		mainLowerPanelLeft.setLayout(mainLowerPanelLeftLayout);
+		mainLowerPanelLeft.setBorder(BorderFactory.createEmptyBorder());
+		mainLowerPanelLeft.setBackground(windowBackgroundColor.toColor());
+		mainLowerPanelLeft.setOpaque(true);
+		mainLowerPanel.add(mainLowerPanelLeft, new Arrangement(0, 0, 0.0, 1.0));
+
 		mainPanelLeftImg = new Image(80, 200, ColorRGBA.WHITE);
 		mainPanelLeftViewer = new ImageIcon();
 		mainPanelLeftViewer.setImage(mainPanelLeftImg.getAwtImage());
@@ -2296,10 +2307,16 @@ public class GUI extends MainWindow {
 			}
 		});
 
-		mainPanelLeft = new JScrollPane(mainPanelLeftViewerLabel);
+		mainPanelLeft = new JPanel();
+		mainPanelLeft.add(mainPanelLeftViewerLabel);
 		mainPanelLeft.setPreferredSize(new Dimension(80, 1));
 		mainPanelLeft.setBorder(BorderFactory.createEmptyBorder());
-		mainLowerPanel.add(mainPanelLeft, new Arrangement(0, 0, 0.0, 1.0));
+		mainLowerPanelLeft.add(mainPanelLeft, new Arrangement(0, 0, 1.0, 1.0));
+
+		curPosXLabel = new JLabel();
+		mainLowerPanelLeft.add(curPosXLabel, new Arrangement(0, 1, 1.0, 0.0));
+		curPosYLabel = new JLabel();
+		mainLowerPanelLeft.add(curPosYLabel, new Arrangement(0, 2, 1.0, 0.0));
 
 		imageViewer = new ImageIcon();
 		imageViewerLabel = new JLabel(imageViewer);
@@ -2312,20 +2329,8 @@ public class GUI extends MainWindow {
 				// request focus so that key events are forwarded there for moving layers around
 				// menu.requestFocusInWindow();
 
-				int lw = imageViewerLabel.getWidth();
-				int lh = imageViewerLabel.getHeight();
-				int iw = imageViewer.getIconWidth();
-				int ih = imageViewer.getIconHeight();
-				int offsetX = 0;
-				int offsetY = 0;
-				if (lw > iw) {
-					offsetX = (lw - iw) / 2;
-				}
-				if (lh > ih) {
-					offsetY = (lh - ih) / 2;
-				}
-				int x = e.getX() - offsetX;
-				int y = e.getY() - offsetY;
+				int x = getX(e);
+				int y = getY(e);
 
 				// System.out.println("ImageViewer x: " + x + ", y: " + y);
 
@@ -2416,12 +2421,43 @@ public class GUI extends MainWindow {
 							break;
 					}
 				}
+
+				mouseMoved(e);
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				int x = getX(e);
+				int y = getY(e);
+
+				curPosXLabel.setText(" X: " + x);
+				curPosYLabel.setText(" Y: " + y);
+				mainPanelLeft.repaint();
+			}
+
+			private int getX(MouseEvent e) {
+				int lw = imageViewerLabel.getWidth();
+				int iw = imageViewer.getIconWidth();
+				int offsetX = 0;
+				if (lw > iw) {
+					offsetX = (lw - iw) / 2;
+				}
+				return e.getX() - offsetX;
+			}
+
+			private int getY(MouseEvent e) {
+				int lh = imageViewerLabel.getHeight();
+				int ih = imageViewer.getIconHeight();
+				int offsetY = 0;
+				if (lh > ih) {
+					offsetY = (lh - ih) / 2;
+				}
+				return e.getY() - offsetY;
 			}
 		});
 
 		mainPanelRight = new JScrollPane(imageViewerLabel);
 		mainPanelRight.setBorder(BorderFactory.createEmptyBorder());
-
 		mainLowerPanel.add(mainPanelRight, new Arrangement(1, 0, 1.0, 1.0));
 
 		layerList = new JList<String>(getLayerCaptionArray());
@@ -2784,8 +2820,9 @@ public class GUI extends MainWindow {
 
 	private Image openImageFile(File imageFile, boolean returnImage) {
 
-		saveCurPicForUndo();
 		String selFilename = imageFile.getCanonicalFilename();
+
+		saveCurPicForUndo();
 		if (selFilename.toLowerCase().endsWith(".pic")) {
 			lastSavePath = selFilename;
 			PicFile picFile = new PicFile(selFilename);
@@ -2965,6 +3002,7 @@ public class GUI extends MainWindow {
 		windowBackgroundColor = new ColorRGBA(newBgColor);
 		imageViewerLabel.setBackground(newBgColor);
 		mainPanelLeftViewerLabel.setBackground(newBgColor);
+		mainLowerPanelLeft.setBackground(newBgColor);
 		refreshLeftView();
 	}
 

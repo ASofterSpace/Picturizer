@@ -43,15 +43,17 @@ public class Main {
 			fileToOpen = args[0];
 		}
 
-		System.out.println("Starting the Picturizer...");
+		if (fileToOpen == null) {
+			System.out.println("Pictures, wheee! \\o/");
+		} else {
+			System.out.println("Playing with '" + fileToOpen + "'...");
+		}
 
 		// load config
 		boolean onlyUseDefaultIfBroken = true;
 		config = new ConfigFile("settings", true, Record.emptyObject(), onlyUseDefaultIfBroken);
 
 		SwingUtilities.invokeLater(new GUI(config, fileToOpen));
-
-		System.out.println("Picturizer out. Have a fun day! :)");
 	}
 
 }
