@@ -40,7 +40,19 @@ public class Main {
 				return;
 			}
 
-			fileToOpen = args[0];
+			// when several arguments are given, assume that it is just one file whose name contains spaces
+			if (args.length > 1) {
+				StringBuilder fileToOpenBuilder = new StringBuilder();
+				String sep = "";
+				for (int i = 0; i < args.length; i++) {
+					fileToOpenBuilder.append(sep);
+					fileToOpenBuilder.append(args[i]);
+					sep = " ";
+				}
+				fileToOpen = fileToOpenBuilder.toString();
+			} else {
+				fileToOpen = args[0];
+			}
 		}
 
 		if (fileToOpen == null) {
