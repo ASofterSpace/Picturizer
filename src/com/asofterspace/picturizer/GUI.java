@@ -110,6 +110,8 @@ public class GUI extends MainWindow {
 	private JPanel mainLowerPanelLeft;
 	private JLabel curPosXLabel;
 	private JLabel curPosYLabel;
+	private JLabel curPosWLabel;
+	private JLabel curPosHLabel;
 
 	private JMenuItem saveAgain;
 	private JMenuItem exportAgain;
@@ -2354,6 +2356,10 @@ public class GUI extends MainWindow {
 		mainLowerPanelLeft.add(curPosXLabel, new Arrangement(0, 1, 1.0, 0.0));
 		curPosYLabel = new JLabel();
 		mainLowerPanelLeft.add(curPosYLabel, new Arrangement(0, 2, 1.0, 0.0));
+		curPosWLabel = new JLabel();
+		mainLowerPanelLeft.add(curPosWLabel, new Arrangement(0, 3, 1.0, 0.0));
+		curPosHLabel = new JLabel();
+		mainLowerPanelLeft.add(curPosHLabel, new Arrangement(0, 4, 1.0, 0.0));
 
 		imageViewer = new ImageIcon();
 		imageViewerLabel = new JLabel(imageViewer);
@@ -2474,6 +2480,8 @@ public class GUI extends MainWindow {
 
 				curPosXLabel.setText(" X: " + x);
 				curPosYLabel.setText(" Y: " + y);
+				curPosWLabel.setText(" W: " + picture.getWidth());
+				curPosHLabel.setText(" H: " + picture.getHeight());
 				mainPanelLeft.repaint();
 			}
 
