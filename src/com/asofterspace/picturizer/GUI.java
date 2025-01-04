@@ -159,6 +159,10 @@ public class GUI extends MainWindow {
 	private int pipetteSize = 1;
 	private List<Pair<Integer, Integer>> lastDrawPoints = new ArrayList<>();
 	private Image pictureBeforePointDrawing;
+	private int prevClickX = 0;
+	private int prevClickY = 0;
+	private int lastClickX = 0;
+	private int lastClickY = 0;
 
 	private boolean savedSinceLastChange = true;
 
@@ -471,7 +475,7 @@ public class GUI extends MainWindow {
 
 		edit.addSeparator();
 
-		JMenuItem copy = new JMenuItem("Copy");
+		JMenuItem copy = new JMenuItem("Copy All");
 		copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
 		copy.addActionListener(new ActionListener() {
 			@Override
@@ -480,6 +484,20 @@ public class GUI extends MainWindow {
 			}
 		});
 		edit.add(copy);
+
+		JMenuItem copyClickedArea = new JMenuItem("Copy Area Bounded by Last Two Clicks");
+		copyClickedArea.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int top = Math.min(prevClickY, lastClickY);
+				int right = Math.max(prevClickX, lastClickX);
+				int bottom = Math.max(prevClickY, lastClickY);
+				int left = Math.min(prevClickX, lastClickX);
+
+				picture.bake().copy(top, right, bottom, left).copyToClipboard();
+			}
+		});
+		edit.add(copyClickedArea);
 
 		JMenuItem paste = new JMenuItem("Paste");
 		paste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
@@ -628,6 +646,25 @@ public class GUI extends MainWindow {
 			}
 		});
 		layers.add(addImgLayerClipbrd);
+
+		JMenuItem addImgLayerClickedArea = new JMenuItem("Add Image Layer (Based on Area Bounded by Last Two Clicks)");
+		addImgLayerClickedArea.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int top = Math.min(prevClickY, lastClickY);
+				int right = Math.max(prevClickX, lastClickX);
+				int bottom = Math.max(prevClickY, lastClickY);
+				int left = Math.min(prevClickX, lastClickX);
+
+				saveCurPicForUndo();
+				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(left, top, picture.bake().copy(top, right, bottom, left));
+				picture.addLayer(layer);
+				currentLayerIndex = picture.getLayerAmount() - 1;
+				setPictureUndoTakenCareOf(picture);
+				refreshLayerView();
+			}
+		});
+		layers.add(addImgLayerClickedArea);
 
 		JMenuItem addTextLayer = new JMenuItem("Add Text Layer");
 		addTextLayer.addActionListener(new ActionListener() {
@@ -2333,6 +2370,11 @@ public class GUI extends MainWindow {
 				int y = getY(e);
 
 				// System.out.println("ImageViewer x: " + x + ", y: " + y);
+
+				prevClickX = lastClickX;
+				prevClickY = lastClickY;
+				lastClickX = x;
+				lastClickY = y;
 
 				if (activeTool != null) {
 					switch (activeTool) {
