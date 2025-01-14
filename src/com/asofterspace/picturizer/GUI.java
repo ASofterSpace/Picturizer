@@ -83,6 +83,7 @@ public class GUI extends MainWindow {
 	private final static String TOOL_SELECTED_END_STR = " <<";
 	private final static String TOOL_TEXTS_PIPETTE_FG = "Set Foreground to a Particular Color (Pipette Tool)";
 	private final static String TOOL_TEXTS_PIPETTE_BG = "Set Background to a Particular Color (Pipette Tool)";
+	private final static String TOOL_TEXTS_PEN_FG = "Draw Using Pen with Foreground Color, Size: ";
 	private final static String TOOL_TEXTS_RECTANGLE_FG = "Draw Rectangle with Foreground Color";
 	private final static String TOOL_TEXTS_RECTANGLE_BG = "Draw Rectangle with Background Color";
 	private final static String TOOL_TEXTS_AREA_FG = "Draw Area with Foreground Color";
@@ -120,6 +121,10 @@ public class GUI extends MainWindow {
 	private JMenuItem setForegroundToPipette4;
 	private JMenuItem setForegroundToPipette12;
 	private JMenuItem setBackgroundToPipette;
+	private JMenuItem drawPenFG1;
+	private JMenuItem drawPenFG2;
+	private JMenuItem drawPenFG4;
+	private JMenuItem drawPenFG8;
 	private JMenuItem drawRectangleFG;
 	private JMenuItem drawRectangleBG;
 	private JMenuItem drawAreaFG;
@@ -158,9 +163,10 @@ public class GUI extends MainWindow {
 	private ColorRGBA windowBackgroundColor = new ColorRGBA(Color.gray);
 
 	private int currentLayerIndex = 0;
-	private int pipetteSize = 1;
+	private int activeToolSize = 1;
 	private List<Pair<Integer, Integer>> lastDrawPoints = new ArrayList<>();
 	private Image pictureBeforePointDrawing;
+	private Image drawPicture;
 	private int prevClickX = 0;
 	private int prevClickY = 0;
 	private int lastClickX = 0;
@@ -902,11 +908,11 @@ public class GUI extends MainWindow {
 		setForegroundToPipette.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if ((activeTool == Tool.PIPETTE_FG) && (pipetteSize == 1)) {
+				if ((activeTool == Tool.PIPETTE_FG) && (activeToolSize == 1)) {
 					activeTool = null;
 				} else {
 					activeTool = Tool.PIPETTE_FG;
-					pipetteSize = 1;
+					activeToolSize = 1;
 				}
 				refreshTools();
 			}
@@ -917,11 +923,11 @@ public class GUI extends MainWindow {
 		setForegroundToPipette4.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if ((activeTool == Tool.PIPETTE_FG) && (pipetteSize == 5)) {
+				if ((activeTool == Tool.PIPETTE_FG) && (activeToolSize == 5)) {
 					activeTool = null;
 				} else {
 					activeTool = Tool.PIPETTE_FG;
-					pipetteSize = 5;
+					activeToolSize = 5;
 				}
 				refreshTools();
 			}
@@ -932,11 +938,11 @@ public class GUI extends MainWindow {
 		setForegroundToPipette12.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if ((activeTool == Tool.PIPETTE_FG) && (pipetteSize == 13)) {
+				if ((activeTool == Tool.PIPETTE_FG) && (activeToolSize == 13)) {
 					activeTool = null;
 				} else {
 					activeTool = Tool.PIPETTE_FG;
-					pipetteSize = 13;
+					activeToolSize = 13;
 				}
 				refreshTools();
 			}
@@ -947,7 +953,7 @@ public class GUI extends MainWindow {
 		setBackgroundToPipette.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				pipetteSize = 1;
+				activeToolSize = 1;
 				if (activeTool == Tool.PIPETTE_BG) {
 					activeTool = null;
 				} else {
@@ -1025,6 +1031,66 @@ public class GUI extends MainWindow {
 
 		JMenu draw = new JMenu("Draw");
 		menu.add(draw);
+
+		drawPenFG1 = new JMenuItem(TOOL_TEXTS_PEN_FG+"1");
+		drawPenFG1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_PEN_FG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_PEN_FG;
+				}
+				activeToolSize = 1;
+				refreshTools();
+			}
+		});
+		draw.add(drawPenFG1);
+
+		drawPenFG2 = new JMenuItem(TOOL_TEXTS_PEN_FG+"2");
+		drawPenFG2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_PEN_FG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_PEN_FG;
+				}
+				activeToolSize = 2;
+				refreshTools();
+			}
+		});
+		draw.add(drawPenFG2);
+
+		drawPenFG4 = new JMenuItem(TOOL_TEXTS_PEN_FG+"4");
+		drawPenFG4.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_PEN_FG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_PEN_FG;
+				}
+				activeToolSize = 4;
+				refreshTools();
+			}
+		});
+		draw.add(drawPenFG4);
+
+		drawPenFG8 = new JMenuItem(TOOL_TEXTS_PEN_FG+"8");
+		drawPenFG8.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_PEN_FG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_PEN_FG;
+				}
+				activeToolSize = 8;
+				refreshTools();
+			}
+		});
+		draw.add(drawPenFG8);
 
 		drawRectangleFG = new JMenuItem(TOOL_TEXTS_RECTANGLE_FG);
 		drawRectangleFG.addActionListener(new ActionListener() {
@@ -2390,14 +2456,14 @@ public class GUI extends MainWindow {
 							Image curImg = picture.bake();
 							ColorRGBA newColor = curImg.getPixelSafely(x, y);
 
-							if (pipetteSize > 1) {
+							if (activeToolSize > 1) {
 								List<ColorRGBA> pixMix = new ArrayList<>();
 								pixMix.add(newColor);
 								pixMix.add(curImg.getPixelSafely(x+1, y));
 								pixMix.add(curImg.getPixelSafely(x-1, y));
 								pixMix.add(curImg.getPixelSafely(x, y+1));
 								pixMix.add(curImg.getPixelSafely(x, y-1));
-								if (pipetteSize > 5) {
+								if (activeToolSize > 5) {
 									pixMix.add(curImg.getPixelSafely(x+2, y));
 									pixMix.add(curImg.getPixelSafely(x-2, y));
 									pixMix.add(curImg.getPixelSafely(x, y+2));
@@ -2417,6 +2483,12 @@ public class GUI extends MainWindow {
 									setBackgroundColor(newColor);
 								}
 							}
+							break;
+
+						case DRAW_PEN_FG:
+							drawPicture.drawPen(x, y, foregroundColor, activeToolSize);
+							getCurrentImageLayer().setImage(drawPicture);
+							setPictureUndoTakenCareOf(picture);
 							break;
 
 						case DRAW_RECTANGLE_FG:
@@ -3084,6 +3156,7 @@ public class GUI extends MainWindow {
 	private void refreshTools() {
 		if (activeTool != null) {
 			switch (activeTool) {
+				case DRAW_PEN_FG:
 				case DRAW_RECTANGLE_FG:
 				case DRAW_RECTANGLE_BG:
 				case DRAW_AREA_FG:
@@ -3092,12 +3165,19 @@ public class GUI extends MainWindow {
 					pictureBeforePointDrawing = getCurrentImageLayer().getImage().copy();
 					break;
 			}
+			if (activeTool == Tool.DRAW_PEN_FG) {
+				this.drawPicture = pictureBeforePointDrawing;
+			}
 		}
 
-		adjustToolTitle(setForegroundToPipette, TOOL_TEXTS_PIPETTE_FG, (activeTool == Tool.PIPETTE_FG) && (pipetteSize == 1));
-		adjustToolTitle(setForegroundToPipette4, TOOL_TEXTS_PIPETTE_FG + " + 4 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (pipetteSize == 5));
-		adjustToolTitle(setForegroundToPipette12, TOOL_TEXTS_PIPETTE_FG + " + 12 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (pipetteSize == 13));
+		adjustToolTitle(setForegroundToPipette, TOOL_TEXTS_PIPETTE_FG, (activeTool == Tool.PIPETTE_FG) && (activeToolSize == 1));
+		adjustToolTitle(setForegroundToPipette4, TOOL_TEXTS_PIPETTE_FG + " + 4 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (activeToolSize == 5));
+		adjustToolTitle(setForegroundToPipette12, TOOL_TEXTS_PIPETTE_FG + " + 12 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (activeToolSize == 13));
 		adjustToolTitle(setBackgroundToPipette, TOOL_TEXTS_PIPETTE_BG, activeTool == Tool.PIPETTE_BG);
+		adjustToolTitle(drawPenFG1, TOOL_TEXTS_PEN_FG + "1", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 1));
+		adjustToolTitle(drawPenFG2, TOOL_TEXTS_PEN_FG + "2", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 2));
+		adjustToolTitle(drawPenFG4, TOOL_TEXTS_PEN_FG + "4", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 4));
+		adjustToolTitle(drawPenFG8, TOOL_TEXTS_PEN_FG + "8", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 8));
 		adjustToolTitle(drawRectangleFG, TOOL_TEXTS_RECTANGLE_FG, activeTool == Tool.DRAW_RECTANGLE_FG);
 		adjustToolTitle(drawRectangleBG, TOOL_TEXTS_RECTANGLE_BG, activeTool == Tool.DRAW_RECTANGLE_BG);
 		adjustToolTitle(drawAreaFG, TOOL_TEXTS_AREA_FG, activeTool == Tool.DRAW_AREA_FG);
