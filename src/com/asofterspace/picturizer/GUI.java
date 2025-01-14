@@ -84,6 +84,7 @@ public class GUI extends MainWindow {
 	private final static String TOOL_TEXTS_PIPETTE_FG = "Set Foreground to a Particular Color (Pipette Tool)";
 	private final static String TOOL_TEXTS_PIPETTE_BG = "Set Background to a Particular Color (Pipette Tool)";
 	private final static String TOOL_TEXTS_PEN_FG = "Draw Using Pen with Foreground Color, Size: ";
+	private final static String TOOL_TEXTS_LINES_FG = "Draw Using Lines with Foreground Color, Size: ";
 	private final static String TOOL_TEXTS_RECTANGLE_FG = "Draw Rectangle with Foreground Color";
 	private final static String TOOL_TEXTS_RECTANGLE_BG = "Draw Rectangle with Background Color";
 	private final static String TOOL_TEXTS_AREA_FG = "Draw Area with Foreground Color";
@@ -125,6 +126,10 @@ public class GUI extends MainWindow {
 	private JMenuItem drawPenFG2;
 	private JMenuItem drawPenFG4;
 	private JMenuItem drawPenFG8;
+	private JMenuItem drawLinesFG1;
+	private JMenuItem drawLinesFG2;
+	private JMenuItem drawLinesFG4;
+	private JMenuItem drawLinesFG8;
 	private JMenuItem drawRectangleFG;
 	private JMenuItem drawRectangleBG;
 	private JMenuItem drawAreaFG;
@@ -1081,16 +1086,68 @@ public class GUI extends MainWindow {
 		drawPenFG8.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_PEN_FG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_PEN_FG;
-				}
-				activeToolSize = 8;
-				refreshTools();
+				GuiUtils.complain("Not yet implemented!");
 			}
 		});
 		draw.add(drawPenFG8);
+
+		draw.addSeparator();
+
+		drawLinesFG1 = new JMenuItem(TOOL_TEXTS_LINES_FG+"1");
+		drawLinesFG1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_LINES_FG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_LINES_FG;
+				}
+				activeToolSize = 1;
+				refreshTools();
+			}
+		});
+		draw.add(drawLinesFG1);
+
+		drawLinesFG2 = new JMenuItem(TOOL_TEXTS_LINES_FG+"2");
+		drawLinesFG2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_LINES_FG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_LINES_FG;
+				}
+				activeToolSize = 2;
+				refreshTools();
+			}
+		});
+		draw.add(drawLinesFG2);
+
+		drawLinesFG4 = new JMenuItem(TOOL_TEXTS_LINES_FG+"4");
+		drawLinesFG4.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (activeTool == Tool.DRAW_LINES_FG) {
+					activeTool = null;
+				} else {
+					activeTool = Tool.DRAW_LINES_FG;
+				}
+				activeToolSize = 4;
+				refreshTools();
+			}
+		});
+		draw.add(drawLinesFG4);
+
+		drawLinesFG8 = new JMenuItem(TOOL_TEXTS_LINES_FG+"8");
+		drawLinesFG8.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GuiUtils.complain("Not yet implemented!");
+			}
+		});
+		draw.add(drawLinesFG8);
+
+		draw.addSeparator();
 
 		drawRectangleFG = new JMenuItem(TOOL_TEXTS_RECTANGLE_FG);
 		drawRectangleFG.addActionListener(new ActionListener() {
@@ -2491,9 +2548,21 @@ public class GUI extends MainWindow {
 							setPictureUndoTakenCareOf(picture);
 							break;
 
+						case DRAW_LINES_FG:
+							if (lastDrawPoints.size() > 0) {
+								drawPicture.setLineWidth(activeToolSize);
+								drawPicture.drawLine(x, y, lastDrawPoints.get(0).getX(), lastDrawPoints.get(0).getY(), foregroundColor);
+								getCurrentImageLayer().setImage(drawPicture);
+								setPictureUndoTakenCareOf(picture);
+							}
+							Pair<Integer, Integer> newPoint = new Pair<>(x, y);
+							lastDrawPoints = new ArrayList<>();
+							lastDrawPoints.add(newPoint);
+							break;
+
 						case DRAW_RECTANGLE_FG:
 						case DRAW_RECTANGLE_BG:
-							Pair<Integer, Integer> newPoint = new Pair<>(x, y);
+							newPoint = new Pair<>(x, y);
 							if (lastDrawPoints.size() > 0) {
 								Pair<Integer, Integer> prevPoint = lastDrawPoints.get(0);
 								lastDrawPoints = new ArrayList<>();
@@ -3157,6 +3226,7 @@ public class GUI extends MainWindow {
 		if (activeTool != null) {
 			switch (activeTool) {
 				case DRAW_PEN_FG:
+				case DRAW_LINES_FG:
 				case DRAW_RECTANGLE_FG:
 				case DRAW_RECTANGLE_BG:
 				case DRAW_AREA_FG:
@@ -3165,7 +3235,7 @@ public class GUI extends MainWindow {
 					pictureBeforePointDrawing = getCurrentImageLayer().getImage().copy();
 					break;
 			}
-			if (activeTool == Tool.DRAW_PEN_FG) {
+			if ((activeTool == Tool.DRAW_PEN_FG) || (activeTool == Tool.DRAW_LINES_FG)) {
 				this.drawPicture = pictureBeforePointDrawing;
 			}
 		}
@@ -3178,6 +3248,10 @@ public class GUI extends MainWindow {
 		adjustToolTitle(drawPenFG2, TOOL_TEXTS_PEN_FG + "2", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 2));
 		adjustToolTitle(drawPenFG4, TOOL_TEXTS_PEN_FG + "4", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 4));
 		adjustToolTitle(drawPenFG8, TOOL_TEXTS_PEN_FG + "8", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 8));
+		adjustToolTitle(drawLinesFG1, TOOL_TEXTS_LINES_FG + "1", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 1));
+		adjustToolTitle(drawLinesFG2, TOOL_TEXTS_LINES_FG + "2", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 2));
+		adjustToolTitle(drawLinesFG4, TOOL_TEXTS_LINES_FG + "4", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 4));
+		adjustToolTitle(drawLinesFG8, TOOL_TEXTS_LINES_FG + "8", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 8));
 		adjustToolTitle(drawRectangleFG, TOOL_TEXTS_RECTANGLE_FG, activeTool == Tool.DRAW_RECTANGLE_FG);
 		adjustToolTitle(drawRectangleBG, TOOL_TEXTS_RECTANGLE_BG, activeTool == Tool.DRAW_RECTANGLE_BG);
 		adjustToolTitle(drawAreaFG, TOOL_TEXTS_AREA_FG, activeTool == Tool.DRAW_AREA_FG);

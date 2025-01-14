@@ -16,6 +16,9 @@ public enum Tool {
 	// drawing pen with foreground color
 	DRAW_PEN_FG,
 
+	// draw connected lines with foreground color
+	DRAW_LINES_FG,
+
 	// draw rectangle with foreground / background color
 	DRAW_RECTANGLE_FG,
 	DRAW_RECTANGLE_BG,
