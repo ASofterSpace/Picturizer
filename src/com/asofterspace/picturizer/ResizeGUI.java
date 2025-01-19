@@ -84,7 +84,7 @@ public class ResizeGUI {
 
 				Image newPic = baseImage.copy();
 				if (resample) {
-					newPic.resample(newWidth, newHeight);
+					newPic.resampleTo(newWidth, newHeight);
 				} else {
 					newPic.resize(newWidth, newHeight);
 				}
