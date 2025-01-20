@@ -130,7 +130,7 @@ public class GUIMenuEdit {
 
 		edit.addSeparator();
 
-		JMenuItem turnLeft = new JMenuItem("Turn Left");
+		JMenuItem turnLeft = new JMenuItem("Turn Left (all)");
 		turnLeft.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -142,7 +142,7 @@ public class GUIMenuEdit {
 		});
 		edit.add(turnLeft);
 
-		JMenuItem turnRight = new JMenuItem("Turn Right");
+		JMenuItem turnRight = new JMenuItem("Turn Right (all)");
 		turnRight.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -154,7 +154,29 @@ public class GUIMenuEdit {
 		});
 		edit.add(turnRight);
 
-		JMenuItem reflectHorizontally = new JMenuItem("Reflect Horizontally");
+		JMenuItem turnLeftCL = new JMenuItem("Turn Left (current layer)");
+		turnLeftCL.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				gui.getCurrentImageLayer().getImage().rotateLeft();
+				gui.setPictureUndoTakenCareOf(gui.getPicture());
+			}
+		});
+		edit.add(turnLeftCL);
+
+		JMenuItem turnRightCL = new JMenuItem("Turn Right (current layer)");
+		turnRightCL.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				gui.getCurrentImageLayer().getImage().rotateRight();
+				gui.setPictureUndoTakenCareOf(gui.getPicture());
+			}
+		});
+		edit.add(turnRightCL);
+
+		JMenuItem reflectHorizontally = new JMenuItem("Reflect Horizontally (all)");
 		reflectHorizontally.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -165,7 +187,7 @@ public class GUIMenuEdit {
 		});
 		edit.add(reflectHorizontally);
 
-		JMenuItem reflectVertically = new JMenuItem("Reflect Vertically");
+		JMenuItem reflectVertically = new JMenuItem("Reflect Vertically (all)");
 		reflectVertically.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -175,6 +197,30 @@ public class GUIMenuEdit {
 			}
 		});
 		edit.add(reflectVertically);
+
+		JMenuItem reflectHorizontallyCL = new JMenuItem("Reflect Horizontally (current layer)");
+		reflectHorizontallyCL.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				Image img = gui.getPicture().bake();
+				img.reflectHorizontally();
+				gui.setPictureUndoTakenCareOf(new ImageMultiLayered(img));
+			}
+		});
+		edit.add(reflectHorizontallyCL);
+
+		JMenuItem reflectVerticallyCL = new JMenuItem("Reflect Vertically (current layer)");
+		reflectVerticallyCL.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				Image img = gui.getPicture().bake();
+				img.reflectVertically();
+				gui.setPictureUndoTakenCareOf(new ImageMultiLayered(img));
+			}
+		});
+		edit.add(reflectVerticallyCL);
 
 		return edit;
 	}

@@ -298,6 +298,20 @@ public class GUIMenuLayers {
 
 		layers.addSeparator();
 
+		JMenuItem convertCurToImg = new JMenuItem("Convert Current Layer to Image Layer");
+		convertCurToImg.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageLayer curLayer = gui.getCurrentLayer();
+				if (curLayer instanceof ImageLayerBasedOnText) {
+					gui.getPicture().replaceLayer(gui.getCurrentLayerIndex(), curLayer.convertToImageLayerBasedOnImage());
+					gui.refreshMainView();
+					gui.refreshLayerView();
+				}
+			}
+		});
+		layers.add(convertCurToImg);
+
 		JMenuItem bakeAllLayers = new JMenuItem("Bake All Layers Into One");
 		bakeAllLayers.addActionListener(new ActionListener() {
 			@Override
