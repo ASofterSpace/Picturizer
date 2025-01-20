@@ -698,7 +698,7 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveCurPicForUndo();
-				picture.addLayer(getCurrentLayer());
+				picture.addLayer(getCurrentLayer().copy());
 				currentLayerIndex = picture.getLayerAmount() - 1;
 				setPictureUndoTakenCareOf(picture);
 				refreshLayerView();
@@ -852,6 +852,7 @@ public class GUI extends MainWindow {
 				saveCurPicForUndo();
 				picture = new ImageMultiLayered(picture.bake());
 				setPictureUndoTakenCareOf(picture);
+				refreshLayerView();
 			}
 		});
 		layers.add(bakeAllLayers);
@@ -2391,6 +2392,7 @@ public class GUI extends MainWindow {
 				txtLayer.setTextColor(ColorRGBA.fromString(textLayerColorInput.getText()));
 				txtLayer.setText(textLayerTextInput.getText());
 				refreshMainView();
+				refreshLayerView();
 			}
 		});
 		textLayerPanel.add(textLayerApplyBtn, new Arrangement(7, 0, 0.0, 1.0));
@@ -2420,6 +2422,7 @@ public class GUI extends MainWindow {
 				imgLayer.setOffsetX(StrUtils.strToInt(imgLayerOffsetXInput.getText(), 0));
 				imgLayer.setOffsetY(StrUtils.strToInt(imgLayerOffsetYInput.getText(), 0));
 				refreshMainView();
+				refreshLayerView();
 			}
 		});
 		imgLayerPanel.add(imgLayerApplyBtn, new Arrangement(3, 0, 0.0, 1.0));
