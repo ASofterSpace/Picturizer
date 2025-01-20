@@ -24,10 +24,8 @@ import com.asofterspace.toolbox.utils.Pair;
 import com.asofterspace.toolbox.utils.StrUtils;
 import com.asofterspace.toolbox.Utils;
 
-import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,15 +37,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.GridBagLayout;
-import java.awt.image.BufferedImage;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Robot;
-import java.awt.Toolkit;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.filechooser.FileFilter;
@@ -61,11 +54,9 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 
@@ -76,19 +67,6 @@ public class GUI extends MainWindow {
 	private final static String CONFIG_KEY_LEFT = "mainFrameLeft";
 	private final static String CONFIG_KEY_TOP = "mainFrameTop";
 	private final static String CONFIG_KEY_LAST_DIRECTORY = "lastDirectory";
-
-	final static String ADJUST_CHANNEL_GUI_STR = "Adjust Channels Manually in Detail...";
-
-	private final static String TOOL_SELECTED_START_STR = ">> ";
-	private final static String TOOL_SELECTED_END_STR = " <<";
-	private final static String TOOL_TEXTS_PIPETTE_FG = "Set Foreground to a Particular Color (Pipette Tool)";
-	private final static String TOOL_TEXTS_PIPETTE_BG = "Set Background to a Particular Color (Pipette Tool)";
-	private final static String TOOL_TEXTS_PEN_FG = "Draw Using Pen with Foreground Color, Size: ";
-	private final static String TOOL_TEXTS_LINES_FG = "Draw Using Lines with Foreground Color, Size: ";
-	private final static String TOOL_TEXTS_RECTANGLE_FG = "Draw Rectangle with Foreground Color";
-	private final static String TOOL_TEXTS_RECTANGLE_BG = "Draw Rectangle with Background Color";
-	private final static String TOOL_TEXTS_AREA_FG = "Draw Area with Foreground Color";
-	private final static String TOOL_TEXTS_AREA_BG = "Draw Area with Background Color";
 
 	private String lastSavePath;
 	private String lastExportPath;
@@ -115,25 +93,23 @@ public class GUI extends MainWindow {
 	private JLabel curPosWLabel;
 	private JLabel curPosHLabel;
 
-	private JMenuItem saveAgain;
-	private JMenuItem exportAgain;
-	private JMenuItem close;
-	private JMenuItem setForegroundToPipette;
-	private JMenuItem setForegroundToPipette4;
-	private JMenuItem setForegroundToPipette12;
-	private JMenuItem setBackgroundToPipette;
-	private JMenuItem drawPenFG1;
-	private JMenuItem drawPenFG2;
-	private JMenuItem drawPenFG4;
-	private JMenuItem drawPenFG8;
-	private JMenuItem drawLinesFG1;
-	private JMenuItem drawLinesFG2;
-	private JMenuItem drawLinesFG4;
-	private JMenuItem drawLinesFG8;
-	private JMenuItem drawRectangleFG;
-	private JMenuItem drawRectangleBG;
-	private JMenuItem drawAreaFG;
-	private JMenuItem drawAreaBG;
+	GUIMenuFile guiMenuFile;
+	GUIMenuNew guiMenuNew;
+	GUIMenuEdit guiMenuEdit;
+	GUIMenuLayers guiMenuLayers;
+	GUIMenuTools guiMenuTools;
+	GUIMenuGrid guiMenuGrid;
+	GUIMenuColors guiMenuColors;
+	GUIMenuDraw guiMenuDraw;
+	GUIMenuPixels guiMenuPixels;
+	GUIMenuChannels guiMenuChannels;
+	GUIMenuInvert guiMenuInvert;
+	GUIMenuDampen guiMenuDampen;
+	GUIMenuDarkenBrighten guiMenuDarkenBrighten;
+	GUIMenuIntensify guiMenuIntensify;
+	GUIMenuMixing guiMenuMixing;
+	GUIMenuWindow guiMenuWindow;
+	GUIMenuHelp guiMenuHelp;
 
 	private ConfigFile configuration;
 	private String fileToOpenAfterStartup;
@@ -150,14 +126,6 @@ public class GUI extends MainWindow {
 	private ImageMultiLayered undoablePicture1;
 	private ImageMultiLayered undoablePicture;
 	private ImageMultiLayered redoablePicture;
-
-	private QrGUI qrGUI = null;
-	private ChannelChangeGUI channelChangeGUI = null;
-	private CreateGridGUI createGridGUI = null;
-	private ExpandShrinkGUI expandShrinkGUI = null;
-	private ResizeGUI resizeGUI = null;
-	private ColorPickerGUI colorPickerGUI = null;
-	private boolean colorToBePickedIsForeground = true;
 
 	private ImageFileCtrl imageFileCtrl;
 	private Image colorpickerImg;
@@ -178,8 +146,6 @@ public class GUI extends MainWindow {
 	private int lastClickY = 0;
 
 	private boolean savedSinceLastChange = true;
-
-	private final static Directory TEMP_DIR = new Directory("temp");
 
 
 	public GUI(ConfigFile configFile, String fileToOpen) {
@@ -260,1704 +226,47 @@ public class GUI extends MainWindow {
 			}
 		});
 
-		createNewEmptyFile();
+		guiMenuNew.createNewEmptyFile(this);
 	}
 
 	private JMenuBar createMenu(JFrame parent) {
 
 		JMenuBar menu = new JMenuBar();
 
-		JMenu file = new JMenu("File");
-		menu.add(file);
-
-		JMenu newFile = new JMenu("New");
-		menu.add(newFile);
-
-		JMenuItem emptyFile = new JMenuItem("Empty");
-		emptyFile.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createNewEmptyFile();
-			}
-		});
-		newFile.add(emptyFile);
-
-		JMenuItem screenshotFile = new JMenuItem("Screenshot");
-		screenshotFile.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createScreenshot();
-			}
-		});
-		newFile.add(screenshotFile);
-
-		Map<String, Object> screenshotBackgrounds =
-			configuration.getAllContents().getObjectMap("screenshotBackgrounds");
-
-		for (Map.Entry<String, Object> entry : screenshotBackgrounds.entrySet()) {
-			String colorName = entry.getKey();
-			Object value = entry.getValue();
-			if (value != null) {
-				if (value instanceof String) {
-					JMenuItem picFromScreenshot = new JMenuItem("Picture from Screenshot (" + colorName + ")");
-					picFromScreenshot.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							createPicFromScreenshot(ColorRGBA.fromString((String) value));
-						}
-					});
-					newFile.add(picFromScreenshot);
-				}
-			}
-		}
-
-		JMenuItem picFromPDFexplanation = new JMenuItem("Take screenshot, click PDF 1, take second screenshot with tiny overlap, click PDF 2:");
-		newFile.add(picFromPDFexplanation);
-
-		JMenuItem picFromPDF1 = new JMenuItem("Picture from PDF 1");
-		picFromPDF1.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createPicFromPDF1();
-			}
-		});
-		newFile.add(picFromPDF1);
-
-		JMenuItem picFromPDF2 = new JMenuItem("Picture from PDF 2");
-		picFromPDF2.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				createPicFromPDF2();
-			}
-		});
-		newFile.add(picFromPDF2);
-
-		JMenuItem qrCodeCore = new JMenuItem("QR Code Core");
-		qrCodeCore.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (qrGUI == null) {
-					qrGUI = new QrGUI(GUI.this);
-				}
-				qrGUI.setUseFrame(false);
-				qrGUI.setBackgroundColor(backgroundColor);
-				qrGUI.setForegroundColor(foregroundColor);
-				qrGUI.show();
-			}
-		});
-		newFile.add(qrCodeCore);
-
-		JMenuItem qrCodeFramed = new JMenuItem("QR Code Framed");
-		qrCodeFramed.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (qrGUI == null) {
-					qrGUI = new QrGUI(GUI.this);
-				}
-				qrGUI.setUseFrame(true);
-				qrGUI.setBackgroundColor(backgroundColor);
-				qrGUI.setForegroundColor(foregroundColor);
-				qrGUI.show();
-			}
-		});
-		newFile.add(qrCodeFramed);
-
-		JMenuItem newGrid1 = new JMenuItem("Empty Grid to Align Images");
-		newGrid1.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				boolean createNew = true;
-				showGridGUI(createNew);
-			}
-		});
-		newFile.add(newGrid1);
-
-
-		JMenuItem openFile = new JMenuItem("Open / Import...");
-		openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
-		openFile.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				boolean returnImage = false;
-				openFile(returnImage);
-			}
-		});
-		file.add(openFile);
-
-		JMenuItem saveFileAs = new JMenuItem("Save As...");
-		saveFileAs.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				boolean exporting = false;
-				saveOrExportFile(exporting);
-			}
-		});
-		file.add(saveFileAs);
-
-		saveAgain = new JMenuItem("");
-		openFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
-		saveAgain.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveFileAgain();
-			}
-		});
-		saveAgain.setEnabled(false);
-		file.add(saveAgain);
-
-		JMenuItem exportFileTo = new JMenuItem("Export To...");
-		exportFileTo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				boolean exporting = true;
-				saveOrExportFile(exporting);
-			}
-		});
-		file.add(exportFileTo);
-
-		exportAgain = new JMenuItem("");
-		exportAgain.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				exportFileAgain();
-			}
-		});
-		exportAgain.setEnabled(false);
-		file.add(exportAgain);
-
-		file.addSeparator();
-
-		JMenuItem openTempDir = new JMenuItem("Open Temp Directory");
-		openTempDir.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				TEMP_DIR.create();
-				GuiUtils.openFolder(TEMP_DIR);
-			}
-		});
-		file.add(openTempDir);
-
-		file.addSeparator();
-
-		close = new JMenuItem("Exit");
-		close.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK));
-		close.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
-			}
-		});
-		file.add(close);
-
-
-		JMenu edit = new JMenu("Edit");
-		menu.add(edit);
-
-		JMenuItem undo = new JMenuItem("Undo");
-		undo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
-		undo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				undo();
-			}
-		});
-		edit.add(undo);
-
-		JMenuItem redo = new JMenuItem("Redo");
-		redo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
-		redo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				redo();
-			}
-		});
-		edit.add(redo);
-
-		edit.addSeparator();
-
-		JMenuItem clear = new JMenuItem("Clear");
-		clear.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				picture.clear();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		edit.add(clear);
-
-		edit.addSeparator();
-
-		JMenuItem copy = new JMenuItem("Copy All");
-		copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
-		copy.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				picture.bake().copyToClipboard();
-			}
-		});
-		edit.add(copy);
-
-		JMenuItem copyClickedArea = new JMenuItem("Copy Area Bounded by Last Two Clicks");
-		copyClickedArea.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int top = Math.min(prevClickY, lastClickY);
-				int right = Math.max(prevClickX, lastClickX);
-				int bottom = Math.max(prevClickY, lastClickY);
-				int left = Math.min(prevClickX, lastClickX);
-
-				picture.bake().copy(top, right, bottom, left).copyToClipboard();
-			}
-		});
-		edit.add(copyClickedArea);
-
-		JMenuItem paste = new JMenuItem("Paste");
-		paste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
-		paste.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setPicture(Image.createFromClipboard());
-			}
-		});
-		edit.add(paste);
-
-		edit.addSeparator();
-
-		JMenuItem expandShrinkImgArea = new JMenuItem("Expand / Shrink Image Area");
-		expandShrinkImgArea.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showExpandShrinkGUI();
-			}
-		});
-		edit.add(expandShrinkImgArea);
-
-		JMenuItem resizeImgArea = new JMenuItem("Resize Image Area");
-		resizeImgArea.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showResizeGUI(false);
-			}
-		});
-		edit.add(resizeImgArea);
-
-		JMenuItem resampleImgArea = new JMenuItem("Resample Image Area");
-		resampleImgArea.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showResizeGUI(true);
-			}
-		});
-		edit.add(resampleImgArea);
-
-		edit.addSeparator();
-
-		JMenuItem turnLeft = new JMenuItem("Turn Left");
-		turnLeft.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				Image img = picture.bake();
-				img.rotateLeft();
-				setPictureUndoTakenCareOf(new ImageMultiLayered(img));
-			}
-		});
-		edit.add(turnLeft);
-
-		JMenuItem turnRight = new JMenuItem("Turn Right");
-		turnRight.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				Image img = picture.bake();
-				img.rotateRight();
-				setPictureUndoTakenCareOf(new ImageMultiLayered(img));
-			}
-		});
-		edit.add(turnRight);
-
-		JMenuItem reflectHorizontally = new JMenuItem("Reflect Horizontally");
-		reflectHorizontally.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().reflectHorizontally();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		edit.add(reflectHorizontally);
-
-		JMenuItem reflectVertically = new JMenuItem("Reflect Vertically");
-		reflectVertically.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().reflectVertically();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		edit.add(reflectVertically);
-
-
-		JMenu layers = new JMenu("Layers");
-		menu.add(layers);
-
-		JMenuItem delLayer = new JMenuItem("Delete Current Layer");
-		delLayer.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				picture.deleteLayer(currentLayerIndex);
-				setPictureUndoTakenCareOf(picture);
-				refreshLayerView();
-			}
-		});
-		layers.add(delLayer);
-
-		JMenuItem addImgLayer = new JMenuItem("Add Image Layer");
-		addImgLayer.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0,
-					new Image(picture.getWidth(), picture.getHeight(), backgroundColor));
-				picture.addLayer(layer);
-				currentLayerIndex = picture.getLayerAmount() - 1;
-				setPictureUndoTakenCareOf(picture);
-				refreshLayerView();
-			}
-		});
-		layers.add(addImgLayer);
-
-		JMenuItem addImgLayerFile = new JMenuItem("Add Image Layer (Opening Existing File)");
-		addImgLayerFile.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				boolean returnImage = true;
-				Image img = openFile(returnImage);
-				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0, img);
-				picture.addLayer(layer);
-				currentLayerIndex = picture.getLayerAmount() - 1;
-				setPictureUndoTakenCareOf(picture);
-				refreshLayerView();
-			}
-		});
-		layers.add(addImgLayerFile);
-
-		JMenuItem addImgLayerClipbrd = new JMenuItem("Add Image Layer (Pasting from Clipboard)");
-		addImgLayerClipbrd.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0, Image.createFromClipboard());
-				picture.addLayer(layer);
-				currentLayerIndex = picture.getLayerAmount() - 1;
-				setPictureUndoTakenCareOf(picture);
-				refreshLayerView();
-			}
-		});
-		layers.add(addImgLayerClipbrd);
-
-		JMenuItem addImgLayerClickedArea = new JMenuItem("Add Image Layer (Based on Area Bounded by Last Two Clicks)");
-		addImgLayerClickedArea.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int top = Math.min(prevClickY, lastClickY);
-				int right = Math.max(prevClickX, lastClickX);
-				int bottom = Math.max(prevClickY, lastClickY);
-				int left = Math.min(prevClickX, lastClickX);
-
-				saveCurPicForUndo();
-				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(left, top, picture.bake().copy(top, right, bottom, left));
-				picture.addLayer(layer);
-				currentLayerIndex = picture.getLayerAmount() - 1;
-				setPictureUndoTakenCareOf(picture);
-				refreshLayerView();
-			}
-		});
-		layers.add(addImgLayerClickedArea);
-
-		JMenuItem addTextLayer = new JMenuItem("Add Text Layer");
-		addTextLayer.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				ImageLayerBasedOnText layer = new ImageLayerBasedOnText(0, 0, "Hello!", "Calibri", 32, foregroundColor);
-				picture.addLayer(layer);
-				currentLayerIndex = picture.getLayerAmount() - 1;
-				setPictureUndoTakenCareOf(picture);
-				refreshLayerView();
-			}
-		});
-		layers.add(addTextLayer);
-
-		JMenuItem duplicateLayer = new JMenuItem("Duplicate Current Layer");
-		duplicateLayer.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				picture.addLayer(getCurrentLayer().copy());
-				currentLayerIndex = picture.getLayerAmount() - 1;
-				setPictureUndoTakenCareOf(picture);
-				refreshLayerView();
-			}
-		});
-		layers.add(duplicateLayer);
-
-		layers.addSeparator();
-
-		JMenuItem selLayerUp = new JMenuItem("Select One Layer Up");
-		selLayerUp.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				currentLayerIndex++;
-				refreshLayerView();
-			}
-		});
-		layers.add(selLayerUp);
-
-		JMenuItem selLayerDown = new JMenuItem("Select One Layer Down");
-		selLayerDown.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				currentLayerIndex--;
-				refreshLayerView();
-			}
-		});
-		layers.add(selLayerDown);
-
-		layers.addSeparator();
-
-		JMenuItem moveLayerAllUp = new JMenuItem("Move Selected Layer All Layers Up / Front");
-		moveLayerAllUp.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				picture.moveLayerFullyUp(currentLayerIndex);
-				currentLayerIndex = picture.getLayerAmount() - 1;
-				refreshMainView();
-				refreshLayerView();
-			}
-		});
-		layers.add(moveLayerAllUp);
-
-		JMenuItem moveLayerUp = new JMenuItem("Move Selected Layer One Layer Up");
-		moveLayerUp.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				picture.moveLayerOneUp(currentLayerIndex);
-				currentLayerIndex++;
-				refreshMainView();
-				refreshLayerView();
-			}
-		});
-		layers.add(moveLayerUp);
-
-		JMenuItem moveLayerDown = new JMenuItem("Move Selected Layer One Layer Down");
-		moveLayerDown.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				picture.moveLayerOneDown(currentLayerIndex);
-				currentLayerIndex--;
-				refreshMainView();
-				refreshLayerView();
-			}
-		});
-		layers.add(moveLayerDown);
-
-		JMenuItem moveLayerAllDown = new JMenuItem("Move Selected Layer All Layers Down / Back");
-		moveLayerAllDown.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				picture.moveLayerFullyDown(currentLayerIndex);
-				currentLayerIndex = 0;
-				refreshMainView();
-				refreshLayerView();
-			}
-		});
-		layers.add(moveLayerAllDown);
-
-		layers.addSeparator();
-
-		JMenuItem moveToLeft = new JMenuItem("Move Selected Layer to Left");
-		moveToLeft.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ImageLayer curLayer = getCurrentLayer();
-				curLayer.moveTo(0, curLayer.getOffsetY());
-				refreshMainView();
-				refreshLayerView();
-			}
-		});
-		layers.add(moveToLeft);
-
-		JMenuItem moveToRight = new JMenuItem("Move Selected Layer to Right");
-		moveToRight.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ImageLayer curLayer = getCurrentLayer();
-				curLayer.moveTo(picture.getWidth() - curLayer.getWidth(), curLayer.getOffsetY());
-				refreshMainView();
-				refreshLayerView();
-			}
-		});
-		layers.add(moveToRight);
-
-		JMenuItem moveToTop = new JMenuItem("Move Selected Layer to Top");
-		moveToTop.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ImageLayer curLayer = getCurrentLayer();
-				curLayer.moveTo(curLayer.getOffsetX(), 0);
-				refreshMainView();
-				refreshLayerView();
-			}
-		});
-		layers.add(moveToTop);
-
-		JMenuItem moveToBottom = new JMenuItem("Move Selected Layer to Bottom");
-		moveToBottom.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ImageLayer curLayer = getCurrentLayer();
-				curLayer.moveTo(curLayer.getOffsetX(), picture.getHeight() - curLayer.getHeight());
-				refreshMainView();
-				refreshLayerView();
-			}
-		});
-		layers.add(moveToBottom);
-
-		JMenuItem moveToCenter = new JMenuItem("Move Selected Layer to Center");
-		moveToCenter.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ImageLayer curLayer = getCurrentLayer();
-				curLayer.moveTo(
-					(picture.getWidth() - curLayer.getWidth()) / 2,
-					(picture.getHeight() - curLayer.getHeight()) / 2
-				);
-				refreshMainView();
-				refreshLayerView();
-			}
-		});
-		layers.add(moveToCenter);
-
-		layers.addSeparator();
-
-		JMenuItem bakeAllLayers = new JMenuItem("Bake All Layers Into One");
-		bakeAllLayers.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				picture = new ImageMultiLayered(picture.bake());
-				setPictureUndoTakenCareOf(picture);
-				refreshLayerView();
-			}
-		});
-		layers.add(bakeAllLayers);
-
-
-		JMenu tools = new JMenu("Tools");
-		menu.add(tools);
-
-		JMenuItem unsetTool = new JMenuItem("Unset Currently Used Tool");
-		unsetTool.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				activeTool = null;
-				refreshTools();
-			}
-		});
-		tools.add(unsetTool);
-
-
-		JMenu grid = new JMenu("Grid");
-		menu.add(grid);
-
-		JMenuItem newGrid2 = new JMenuItem("Create Empty Grid to Align Images");
-		newGrid2.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				boolean createNew = true;
-				showGridGUI(createNew);
-			}
-		});
-		grid.add(newGrid2);
-
-		JMenuItem copyToGrid = new JMenuItem("Copy Current Image Multiple Times into Grid");
-		copyToGrid.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				boolean createNew = false;
-				showGridGUI(createNew);
-			}
-		});
-		grid.add(copyToGrid);
-
-
-		JMenu colors = new JMenu("Colors");
-		menu.add(colors);
-
-		JMenuItem switchForeAndBack = new JMenuItem("Switch Foreground and Background Colors");
-		switchForeAndBack.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				switchForeAndBackColor();
-			}
-		});
-		colors.add(switchForeAndBack);
-
-		colors.addSeparator();
-
-		setForegroundToPipette = new JMenuItem(TOOL_TEXTS_PIPETTE_FG);
-		setForegroundToPipette.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if ((activeTool == Tool.PIPETTE_FG) && (activeToolSize == 1)) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.PIPETTE_FG;
-					activeToolSize = 1;
-				}
-				refreshTools();
-			}
-		});
-		colors.add(setForegroundToPipette);
-
-		setForegroundToPipette4 = new JMenuItem(TOOL_TEXTS_PIPETTE_FG + " + 4 Pixels Around");
-		setForegroundToPipette4.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if ((activeTool == Tool.PIPETTE_FG) && (activeToolSize == 5)) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.PIPETTE_FG;
-					activeToolSize = 5;
-				}
-				refreshTools();
-			}
-		});
-		colors.add(setForegroundToPipette4);
-
-		setForegroundToPipette12 = new JMenuItem(TOOL_TEXTS_PIPETTE_FG + " + 12 Pixels Around");
-		setForegroundToPipette12.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if ((activeTool == Tool.PIPETTE_FG) && (activeToolSize == 13)) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.PIPETTE_FG;
-					activeToolSize = 13;
-				}
-				refreshTools();
-			}
-		});
-		colors.add(setForegroundToPipette12);
-
-		setBackgroundToPipette = new JMenuItem(TOOL_TEXTS_PIPETTE_BG);
-		setBackgroundToPipette.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				activeToolSize = 1;
-				if (activeTool == Tool.PIPETTE_BG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.PIPETTE_BG;
-				}
-				refreshTools();
-			}
-		});
-		colors.add(setBackgroundToPipette);
-
-		JMenuItem setForegroundToColorPickerGUI = new JMenuItem("Set Foreground to a Particular Color (GUI Menu)");
-		setForegroundToColorPickerGUI.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				colorToBePickedIsForeground = true;
-				if (colorPickerGUI == null) {
-					colorPickerGUI = new ColorPickerGUI(GUI.this);
-				}
-				colorPickerGUI.show(foregroundColor);
-			}
-		});
-		colors.add(setForegroundToColorPickerGUI);
-
-		JMenuItem setBackgroundToColorPickerGUI = new JMenuItem("Set Background to a Particular Color (GUI Menu)");
-		setBackgroundToColorPickerGUI.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				colorToBePickedIsForeground = false;
-				if (colorPickerGUI == null) {
-					colorPickerGUI = new ColorPickerGUI(GUI.this);
-				}
-				colorPickerGUI.show(backgroundColor);
-			}
-		});
-		colors.add(setBackgroundToColorPickerGUI);
-
-		colors.addSeparator();
-
-		JMenuItem setForegroundToMostCommon = new JMenuItem("Set Foreground to Most Common Color");
-		setForegroundToMostCommon.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setForegroundColor(picture.bake().getMostCommonColor());
-			}
-		});
-		colors.add(setForegroundToMostCommon);
-
-		JMenuItem setBackgroundToMostCommon = new JMenuItem("Set Background to Most Common Color");
-		setBackgroundToMostCommon.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setBackgroundColor(picture.bake().getMostCommonColor());
-			}
-		});
-		colors.add(setBackgroundToMostCommon);
-
-		JMenuItem setForegroundToMostCommonSur = new JMenuItem("Set Foreground to Most Common Surrounding Color");
-		setForegroundToMostCommonSur.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setForegroundColor(picture.bake().getMostCommonSurroundingColor());
-			}
-		});
-		colors.add(setForegroundToMostCommonSur);
-
-		JMenuItem setBackgroundToMostCommonSur = new JMenuItem("Set Background to Most Common Surrounding Color");
-		setBackgroundToMostCommonSur.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setBackgroundColor(picture.bake().getMostCommonSurroundingColor());
-			}
-		});
-		colors.add(setBackgroundToMostCommonSur);
-
-
-		JMenu draw = new JMenu("Draw");
-		menu.add(draw);
-
-		drawPenFG1 = new JMenuItem(TOOL_TEXTS_PEN_FG+"1");
-		drawPenFG1.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_PEN_FG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_PEN_FG;
-				}
-				activeToolSize = 1;
-				refreshTools();
-			}
-		});
-		draw.add(drawPenFG1);
-
-		drawPenFG2 = new JMenuItem(TOOL_TEXTS_PEN_FG+"2");
-		drawPenFG2.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_PEN_FG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_PEN_FG;
-				}
-				activeToolSize = 2;
-				refreshTools();
-			}
-		});
-		draw.add(drawPenFG2);
-
-		drawPenFG4 = new JMenuItem(TOOL_TEXTS_PEN_FG+"4");
-		drawPenFG4.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_PEN_FG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_PEN_FG;
-				}
-				activeToolSize = 4;
-				refreshTools();
-			}
-		});
-		draw.add(drawPenFG4);
-
-		drawPenFG8 = new JMenuItem(TOOL_TEXTS_PEN_FG+"8");
-		drawPenFG8.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				GuiUtils.complain("Not yet implemented!");
-			}
-		});
-		draw.add(drawPenFG8);
-
-		draw.addSeparator();
-
-		drawLinesFG1 = new JMenuItem(TOOL_TEXTS_LINES_FG+"1");
-		drawLinesFG1.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_LINES_FG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_LINES_FG;
-				}
-				activeToolSize = 1;
-				refreshTools();
-			}
-		});
-		draw.add(drawLinesFG1);
-
-		drawLinesFG2 = new JMenuItem(TOOL_TEXTS_LINES_FG+"2");
-		drawLinesFG2.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_LINES_FG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_LINES_FG;
-				}
-				activeToolSize = 2;
-				refreshTools();
-			}
-		});
-		draw.add(drawLinesFG2);
-
-		drawLinesFG4 = new JMenuItem(TOOL_TEXTS_LINES_FG+"4");
-		drawLinesFG4.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_LINES_FG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_LINES_FG;
-				}
-				activeToolSize = 4;
-				refreshTools();
-			}
-		});
-		draw.add(drawLinesFG4);
-
-		drawLinesFG8 = new JMenuItem(TOOL_TEXTS_LINES_FG+"8");
-		drawLinesFG8.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				GuiUtils.complain("Not yet implemented!");
-			}
-		});
-		draw.add(drawLinesFG8);
-
-		draw.addSeparator();
-
-		drawRectangleFG = new JMenuItem(TOOL_TEXTS_RECTANGLE_FG);
-		drawRectangleFG.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_RECTANGLE_FG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_RECTANGLE_FG;
-				}
-				refreshTools();
-			}
-		});
-		draw.add(drawRectangleFG);
-
-		drawRectangleBG = new JMenuItem(TOOL_TEXTS_RECTANGLE_BG);
-		drawRectangleBG.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_RECTANGLE_BG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_RECTANGLE_BG;
-				}
-				refreshTools();
-			}
-		});
-		draw.add(drawRectangleBG);
-
-		drawAreaFG = new JMenuItem(TOOL_TEXTS_AREA_FG);
-		drawAreaFG.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_AREA_FG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_AREA_FG;
-				}
-				refreshTools();
-			}
-		});
-		draw.add(drawAreaFG);
-
-		drawAreaBG = new JMenuItem(TOOL_TEXTS_AREA_BG);
-		drawAreaBG.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (activeTool == Tool.DRAW_AREA_BG) {
-					activeTool = null;
-				} else {
-					activeTool = Tool.DRAW_AREA_BG;
-				}
-				refreshTools();
-			}
-		});
-		draw.add(drawAreaBG);
-
-
-		JMenu adjustPixels = new JMenu("Pixels");
-		menu.add(adjustPixels);
-
-		JMenuItem replaceEvWithForeground = new JMenuItem("Replace Everything with Foreground Color");
-		replaceEvWithForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().clear(foregroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceEvWithForeground);
-
-		JMenuItem replaceEvWithBackground = new JMenuItem("Replace Everything with Background Color");
-		replaceEvWithBackground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().clear(backgroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceEvWithBackground);
-
-		adjustPixels.addSeparator();
-
-		JMenuItem replaceBackgroundForeground = new JMenuItem("Replace Background Color with Foreground Color");
-		replaceBackgroundForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceColors(backgroundColor, foregroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceBackgroundForeground);
-
-		JMenuItem replaceVCBackgroundForeground = new JMenuItem("Replace Very-Close-to-Background Color with Foreground Color");
-		replaceVCBackgroundForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceColors(backgroundColor, foregroundColor, 24);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceVCBackgroundForeground);
-
-		JMenuItem replaceCBackgroundForeground = new JMenuItem("Replace Close-to-Background Color with Foreground Color");
-		replaceCBackgroundForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceColors(backgroundColor, foregroundColor, 64);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceCBackgroundForeground);
-
-		JMenuItem replaceSBackgroundForeground = new JMenuItem("Replace Similar-ish-to-Background Color with Foreground Color");
-		replaceSBackgroundForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceColors(backgroundColor, foregroundColor, 128);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceSBackgroundForeground);
-
-		JMenuItem replaceVSBackgroundForeground = new JMenuItem("Replace Vaguely-Similar-ish-to-Background Color with Foreground Color");
-		replaceVSBackgroundForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceColors(backgroundColor, foregroundColor, 255);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceVSBackgroundForeground);
-
-		adjustPixels.addSeparator();
-
-		JMenuItem replaceAnythingButFgWithBg = new JMenuItem("Replace Anything but Foreground Color with Background Color");
-		replaceAnythingButFgWithBg.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceColorsExcept(foregroundColor, backgroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceAnythingButFgWithBg);
-
-		JMenuItem replaceAnythingButMcWithFg = new JMenuItem("Replace Anything but Most Common Color with Foreground Color");
-		replaceAnythingButMcWithFg.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceColorsExcept(
-					getCurrentImageLayer().getImage().getMostCommonColor(), foregroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceAnythingButMcWithFg);
-
-		adjustPixels.addSeparator();
-
-		JMenuItem replaceMostCommonForeground = new JMenuItem("Replace Most Common Color with Foreground Color");
-		replaceMostCommonForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceColors(
-					getCurrentImageLayer().getImage().getMostCommonColor(), foregroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceMostCommonForeground);
-
-		JMenuItem replaceMostCommonSurroundingForeground = new JMenuItem("Replace Most Common Surrounding Color with Foreground Color");
-		replaceMostCommonSurroundingForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceColors(
-					getCurrentImageLayer().getImage().getMostCommonSurroundingColor(), foregroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceMostCommonSurroundingForeground);
-
-		adjustPixels.addSeparator();
-
-		JMenuItem replaceStragglersWithForeground = new JMenuItem("Replace Stragglers (Single Pixels) based on Background Color with Foreground Color");
-		replaceStragglersWithForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceStragglersWith(backgroundColor, foregroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceStragglersWithForeground);
-
-		JMenuItem replaceStragglersIshWithForeground = new JMenuItem("Replace Stragglers-ish (Single-ish Pixels) based on Background Color with Foreground Color");
-		replaceStragglersIshWithForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().replaceStragglersIshWith(backgroundColor, foregroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustPixels.add(replaceStragglersIshWithForeground);
-
-		addPixelLevelDiffMapButtons(adjustPixels);
-
-
-		JMenu adjustColors = new JMenu("Channels");
-		menu.add(adjustColors);
-
-		JMenuItem removeAbsoluteColors = new JMenuItem("Remove Colors by Absolute Brightness (to Grayscale)");
-		removeAbsoluteColors.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().removeColors();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustColors.add(removeAbsoluteColors);
-
-		JMenuItem removePerceivedColors = new JMenuItem("Remove Colors by Perceived Brightness (to Grayscale)");
-		removePerceivedColors.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().removePerceivedColors();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustColors.add(removePerceivedColors);
-
-		JMenuItem removeAbsoluteColorsBW = new JMenuItem("Remove Colors by Absolute Brightness (to Black/White)");
-		removeAbsoluteColorsBW.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().removeColors();
-				getCurrentImageLayer().getImage().makeBlackAndWhite();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustColors.add(removeAbsoluteColorsBW);
-
-		JMenuItem removePerceivedColorsBW = new JMenuItem("Remove Colors by Perceived Brightness (to Black/White)");
-		removePerceivedColorsBW.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().removePerceivedColors();
-				getCurrentImageLayer().getImage().makeBlackAndWhite();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustColors.add(removePerceivedColorsBW);
-
-		adjustColors.addSeparator();
-
-		JMenuItem headline1 = new JMenuItem("RGB to RGBA:");
-		adjustColors.add(headline1);
-
-		JMenuItem extractBlackToAlpha = new JMenuItem("Extract Black to Alpha");
-		extractBlackToAlpha.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().extractBlackToAlpha();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustColors.add(extractBlackToAlpha);
-
-		JMenuItem extractWhiteToAlpha = new JMenuItem("Extract White to Alpha");
-		extractWhiteToAlpha.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().extractWhiteToAlpha();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustColors.add(extractWhiteToAlpha);
-
-		JMenuItem extractBgColToAlpha = new JMenuItem("Extract Background Color to Alpha");
-		extractBgColToAlpha.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().extractBackgroundColorToAlpha();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustColors.add(extractBgColToAlpha);
-
-		adjustColors.addSeparator();
-
-		JMenuItem headline2 = new JMenuItem("RGBA to RGB:");
-		adjustColors.add(headline2);
-
-		JMenuItem removeAlpha = new JMenuItem("Just Remove Alpha Channel");
-		removeAlpha.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().removeAlpha();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		adjustColors.add(removeAlpha);
-
-		JMenuItem bakeCurrentView = new JMenuItem("Remove Alpha Channel by Baking In Current Background View");
-		bakeCurrentView.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				/*
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().bakeAlpha(new ColorRGBA(imageViewerLabel.getBackground()));
-				setPictureUndoTakenCareOf(picture);
-				*/
-				GuiUtils.complain("TODO: this needs more logic now with layers - instead of baking in bg color, we should get all layers up to this one, and bake the layers, and extract? but still on that bg color below it all? arghs!");
-			}
-		});
-		adjustColors.add(bakeCurrentView);
-
-		adjustColors.addSeparator();
-
-		JMenuItem channelAdjust = new JMenuItem(ADJUST_CHANNEL_GUI_STR);
-		channelAdjust.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (channelChangeGUI == null) {
-					channelChangeGUI = new ChannelChangeGUI(GUI.this);
-				}
-				channelChangeGUI.show();
-			}
-		});
-		adjustColors.add(channelAdjust);
-
-
-		JMenu invert = new JMenu("Invert");
-		menu.add(invert);
-
-		JMenuItem invertColors = new JMenuItem("Invert Colors");
-		invertColors.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().invert();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		invert.add(invertColors);
-
-		JMenuItem invertBrightness = new JMenuItem("Invert Brightness (Keeping Colors, Approach 1)");
-		invertBrightness.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().invertBrightness1();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		invert.add(invertBrightness);
-
-		JMenuItem invertBrightness2 = new JMenuItem("Invert Brightness (Keeping Colors, Approach 2)");
-		invertBrightness2.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().invertBrightness2();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		invert.add(invertBrightness2);
-
-		JMenuItem invertBrightness3 = new JMenuItem("Invert Brightness (Keeping Colors, Approach 3)");
-		invertBrightness3.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().invertBrightness3();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		invert.add(invertBrightness3);
-
-
-		JMenu dampen = new JMenu("Dampen");
-		menu.add(dampen);
-
-		JMenuItem undampenStrongly = new JMenuItem("0.25 - Undampen Strongly");
-		undampenStrongly.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().dampen(0.25f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		dampen.add(undampenStrongly);
-
-		JMenuItem undampenWeakly = new JMenuItem("0.75 - Undampen Slightly");
-		undampenWeakly.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().dampen(0.75f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		dampen.add(undampenWeakly);
-
-		JMenuItem dampenWeakly1 = new JMenuItem("1.1 - Dampen Extremely Slightly");
-		dampenWeakly1.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().dampen(1.1f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		dampen.add(dampenWeakly1);
-
-		JMenuItem dampenWeakly25 = new JMenuItem("1.25 - Dampen Very Slightly");
-		dampenWeakly25.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().dampen(1.25f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		dampen.add(dampenWeakly25);
-
-		JMenuItem dampenWeakly = new JMenuItem("1.5 - Dampen Slightly");
-		dampenWeakly.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().dampen(1.5f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		dampen.add(dampenWeakly);
-
-		JMenuItem dampenStrongly = new JMenuItem("2.0 - Dampen Strongly");
-		dampenStrongly.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().dampen(2);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		dampen.add(dampenStrongly);
-
-		JMenu darkenBrighten = new JMenu("Darken / Brighten");
-		menu.add(darkenBrighten);
-
-		JMenuItem curMenuItem;
-
-		curMenuItem = new JMenuItem("0.25 - Darken Strongly");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().editChannels("R", 0.25, "G", 0.25, "B", 0.25);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		darkenBrighten.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("0.75 - Darken Slightly");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().editChannels("R", 0.75, "G", 0.75, "B", 0.75);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		darkenBrighten.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("1.25 - Brighten Slightly");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().editChannels("R", 1.25, "G", 1.25, "B", 1.25);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		darkenBrighten.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("1.75 - Brighten Strongly");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().editChannels("R", 1.75, "G", 1.75, "B", 1.75);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		darkenBrighten.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("1.75 - Brighten Strongly Above Brightness Cutoff");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				int cutoff = 256+256;
-				getCurrentImageLayer().getImage().editChannelsAboveCutoff(
-					"R", 1.75, "G", 1.75, "B", 1.75, ColorRGBA.DEFAULT_ALLOW_OVERFLOW, cutoff);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		darkenBrighten.add(curMenuItem);
-
-		JMenu intensify = new JMenu("Intensify");
-		menu.add(intensify);
-
-		/*
-		Farben intensivieren:
-		p^[1] := max255((p^[1] * p^[1]) div 128);
-		p^[2] := max255((p^[2] * p^[2]) div 128);
-		p^[3] := max255((p^[3] * p^[3]) div 128);
-		*/
-		curMenuItem = new JMenuItem("Intensify");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intensify();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		intensify.add(curMenuItem);
-
-		/*
-		Farben leicht intensivieren:
-		p^[1] := (max255((p^[1] * p^[1]) div 128) + p^[1]) div 2;
-		p^[2] := (max255((p^[2] * p^[2]) div 128) + p^[2]) div 2;
-		p^[3] := (max255((p^[3] * p^[3]) div 128) + p^[3]) div 2;
-		*/
-		curMenuItem = new JMenuItem("Intensify Slightly");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intensifySlightly();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		intensify.add(curMenuItem);
-
-		// intensifies colors, and the ones that achieve black or white are set to that,
-		// but all others are kept as before, so if it was somewhere in the middle before,
-		// it just stays exactly there
-		curMenuItem = new JMenuItem("Intensify Extremes, but Keep Non-Intense Pixels");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intensifyExtremes();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		intensify.add(curMenuItem);
-
-		intensify.addSeparator();
-
-		curMenuItem = new JMenuItem("Create Map of Extremes and Non-Intense Pixels");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().createMapOfExtremes(foregroundColor, backgroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		intensify.add(curMenuItem);
-
-		addPixelLevelDiffMapButtons(intensify);
-
-		JMenu mixing = new JMenu("Mixing");
-		menu.add(mixing);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image 90:10 (old:new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.1f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image 75:25 (old:new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.25f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image 66:33 (old:new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.3333f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image 60:40 (old:new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.4f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image 50:50 (old:new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.5f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image 40:60 (old:new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.6f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image 33:66 (old:new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.6666f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image 25:75 (old:new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.75f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image 10:90 (old:new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImage(otherPic, 0.9f);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		mixing.addSeparator();
-
-		curMenuItem = new JMenuItem("Mix in Previous Image from Left (old) to Right (new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImageLeftToRight(otherPic);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image from Right (old) to Left (new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImageRightToLeft(otherPic);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image from Top (old) to Bottom (new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImageTopToBottom(otherPic);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image from Bottom (old) to Top (new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImageBottomToTop(otherPic);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		mixing.addSeparator();
-
-		curMenuItem = new JMenuItem("Mix in Previous Image (applying min)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImageMin(otherPic);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Mix in Previous Image (applying max)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().intermixImageMax(otherPic);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		mixing.addSeparator();
-
-		curMenuItem = new JMenuItem("Mask out Previous Image (every same pixel becomes BG color)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().maskOutImage(otherPic, backgroundColor);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
-
-		mixing.addSeparator();
-
-		curMenuItem = new JMenuItem("Interlace Previous Image 50:50 (old:new)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Image otherPic = undoablePicture.bake();
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().interlaceImage(otherPic);
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		mixing.add(curMenuItem);
+		guiMenuFile = new GUIMenuFile();
+		menu.add(guiMenuFile.createMenu(this));
+		guiMenuNew = new GUIMenuNew();
+		menu.add(guiMenuNew.createMenu(this));
+		guiMenuEdit = new GUIMenuEdit();
+		menu.add(guiMenuEdit.createMenu(this));
+		guiMenuLayers = new GUIMenuLayers();
+		menu.add(guiMenuLayers.createMenu(this));
+		guiMenuTools = new GUIMenuTools();
+		menu.add(guiMenuTools.createMenu(this));
+		guiMenuGrid = new GUIMenuGrid();
+		menu.add(guiMenuGrid.createMenu(this));
+		guiMenuColors = new GUIMenuColors();
+		menu.add(guiMenuColors.createMenu(this));
+		guiMenuDraw = new GUIMenuDraw();
+		menu.add(guiMenuDraw.createMenu(this));
+		guiMenuPixels = new GUIMenuPixels();
+		menu.add(guiMenuPixels.createMenu(this));
+		guiMenuChannels = new GUIMenuChannels();
+		menu.add(guiMenuChannels.createMenu(this));
+		guiMenuInvert = new GUIMenuInvert();
+		menu.add(guiMenuInvert.createMenu(this));
+		guiMenuDampen = new GUIMenuDampen();
+		menu.add(guiMenuDampen.createMenu(this));
+		guiMenuDarkenBrighten = new GUIMenuDarkenBrighten();
+		menu.add(guiMenuDarkenBrighten.createMenu(this));
+		guiMenuIntensify = new GUIMenuIntensify();
+		menu.add(guiMenuIntensify.createMenu(this));
+		guiMenuMixing = new GUIMenuMixing();
+		menu.add(guiMenuMixing.createMenu(this));
+		guiMenuWindow = new GUIMenuWindow();
+		menu.add(guiMenuWindow.createMenu(this));
+		guiMenuHelp = new GUIMenuHelp();
+		menu.add(guiMenuHelp.createMenu(this));
 
 		/*
 		TODO:
@@ -2059,144 +368,6 @@ public class GUI extends MainWindow {
 		Pixels[varx, vary] := RGB(varwr, varwg, varwb);
 		*/
 
-
-		JMenu view = new JMenu("Window");
-		menu.add(view);
-
-		JMenuItem bgForeground = new JMenuItem("Set Window BG to Foreground Color");
-		bgForeground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(foregroundColor.toColor());
-			}
-		});
-		view.add(bgForeground);
-
-		JMenuItem bgBackground = new JMenuItem("Set Window BG to Background Color");
-		bgBackground.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(backgroundColor.toColor());
-			}
-		});
-		view.add(bgBackground);
-
-		JMenuItem bgBlack = new JMenuItem("Set Window BG to Black");
-		bgBlack.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.black);
-			}
-		});
-		view.add(bgBlack);
-
-		JMenuItem bgGray = new JMenuItem("Set Window BG to Gray");
-		bgGray.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.gray);
-			}
-		});
-		view.add(bgGray);
-
-		JMenuItem bgWhite = new JMenuItem("Set Window BG to White");
-		bgWhite.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.white);
-			}
-		});
-		view.add(bgWhite);
-
-		JMenuItem bgRed = new JMenuItem("Set Window BG to Red");
-		bgRed.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.red);
-			}
-		});
-		view.add(bgRed);
-
-		JMenuItem bgGreen = new JMenuItem("Set Window BG to Green");
-		bgGreen.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.green);
-			}
-		});
-		view.add(bgGreen);
-
-		JMenuItem bgBlue = new JMenuItem("Set Window BG to Blue");
-		bgBlue.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor(Color.blue);
-			}
-		});
-		view.add(bgBlue);
-
-		JMenuItem bgPurple = new JMenuItem("Set Window BG to Purple");
-		bgPurple.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setWindowBackgroundColor((new ColorRGBA(80, 0, 110)).toColor());
-			}
-		});
-		view.add(bgPurple);
-
-
-		JMenu huh = new JMenu("?");
-
-		JMenuItem showFGColorCode = new JMenuItem("Show Foreground Color Code");
-		showFGColorCode.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String msg = "Hex Code: " + foregroundColor.toHexString() + "\n" +
-					"rgba Code: " + foregroundColor.toString();
-				JOptionPane.showMessageDialog(mainFrame, msg, "Color", JOptionPane.INFORMATION_MESSAGE);
-			}
-		});
-		huh.add(showFGColorCode);
-
-		JMenuItem showBGColorCode = new JMenuItem("Show Background Color Code");
-		showBGColorCode.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String msg = "Hex Code: " + backgroundColor.toHexString() + "\n" +
-					"rgba Code: " + backgroundColor.toString();
-				JOptionPane.showMessageDialog(mainFrame, msg, "Color", JOptionPane.INFORMATION_MESSAGE);
-			}
-		});
-		huh.add(showBGColorCode);
-
-		huh.addSeparator();
-
-		JMenuItem openConfigPath = new JMenuItem("Open Config Path");
-		openConfigPath.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					Desktop.getDesktop().open(configuration.getParentDirectory().getJavaFile());
-				} catch (IOException ex) {
-					// do nothing
-				}
-			}
-		});
-		huh.add(openConfigPath);
-
-		JMenuItem about = new JMenuItem("About");
-		about.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String aboutMessage = "This is the " + Main.PROGRAM_TITLE + ".\n" +
-					"Version: " + Main.VERSION_NUMBER + " (" + Main.VERSION_DATE + ")\n" +
-					"Brought to you by: A Softer Space";
-				JOptionPane.showMessageDialog(mainFrame, aboutMessage, "About", JOptionPane.INFORMATION_MESSAGE);
-			}
-		});
-		huh.add(about);
-		menu.add(huh);
-
 		JTextField arrowKeyInputField = new JTextField();
 		menu.add(arrowKeyInputField);
 		arrowKeyInputField.addKeyListener(new KeyAdapter() {
@@ -2250,31 +421,6 @@ public class GUI extends MainWindow {
 		 }
 	}
 
-	private void addPixelLevelDiffMapButtons(JMenuItem parentItem) {
-
-		JMenuItem curMenuItem = new JMenuItem("Create Map of Pixel-Level Differences");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().createMapOfDifferences();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		parentItem.add(curMenuItem);
-
-		curMenuItem = new JMenuItem("Create Map of Pixel-Level Differences (Black/White)");
-		curMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				saveCurPicForUndo();
-				getCurrentImageLayer().getImage().createMapOfDifferencesBW();
-				setPictureUndoTakenCareOf(picture);
-			}
-		});
-		parentItem.add(curMenuItem);
-	}
-
 	private void drawBlackWhiteBackground(int left, int top, int right, int bottom, int colFieldThirdSize) {
 		// fill with black
 		mainPanelLeftImg.drawRectangle(left, top, right, bottom, ColorRGBA.BLACK);
@@ -2289,7 +435,7 @@ public class GUI extends MainWindow {
 	}
 
 	// magic numbers within this function correspond to mouse listener in the createMainPanel() function below
-	private void refreshLeftView() {
+	void refreshLeftView() {
 
 		int colFieldSize = 21;
 		int colFieldThirdSize = colFieldSize / 3;
@@ -2334,14 +480,6 @@ public class GUI extends MainWindow {
 
 		mainPanelLeft.revalidate();
 		mainPanelLeft.repaint();
-	}
-
-	public void setPickedColor(ColorRGBA newColor) {
-		if (colorToBePickedIsForeground) {
-			setForegroundColor(newColor);
-		} else {
-			setBackgroundColor(newColor);
-		}
 	}
 
 	private JPanel createMainPanel(JFrame parent) {
@@ -2686,7 +824,10 @@ public class GUI extends MainWindow {
 		return mainPanel;
 	}
 
-	private void refreshTitleBarAndSaveExportItems() {
+	void refreshTitleBarAndSaveExportItems() {
+
+		JMenuItem saveAgain = guiMenuFile.getSaveAgain();
+		JMenuItem exportAgain = guiMenuFile.getExportAgain();
 
 		String lastSavePathStr = lastSavePath;
 		if (lastSavePathStr == null) {
@@ -2715,235 +856,12 @@ public class GUI extends MainWindow {
 		mainFrame.setTitle(Main.PROGRAM_TITLE + " - " + unsavedStr + "Pic: " + lastSavePathStr + " Exp: " + lastExportPathStr);
 	}
 
-	private void createNewEmptyFile() {
-		setPicture(new Image(100, 100));
-	}
-
-	private Image getPdfPic() {
-
-		Image pic = Image.createFromClipboard();
-
-		ColorRGBA background = new ColorRGBA(255, 255, 255);
-		int longestRunOverallLength = 0;
-		int leftmostLongestRunTop = 0;
-		int leftmostLongestRunBottom = 0;
-		int leftmostLongestRunLeft = 0;
-		int rightmostLongestRunRight = 0;
-
-		// go from left to right across all columns
-		for (int x = 0; x < pic.getWidth(); x++) {
-
-			// check for each how long the longest run of white color is
-			int curLongestRunStart = 0;
-			int curLongestRunLength = 0;
-			int curStart = 0;
-			boolean curInARun = false;
-			for (int y = 0; y < pic.getHeight(); y++) {
-				if (pic.getPixel(x, y).equals(background)) {
-					if (!curInARun) {
-						curInARun = true;
-						curStart = y;
-					}
-				} else {
-					if (curInARun) {
-						curInARun = false;
-						int curLength = y - curStart;
-						if (curLength > curLongestRunLength) {
-							curLongestRunLength = curLength;
-							curLongestRunStart = curStart;
-						}
-					}
-				}
-			}
-			if (curInARun) {
-				int curLength = pic.getHeight() - curStart;
-				if (curLength > curLongestRunLength) {
-					curLongestRunLength = curLength;
-					curLongestRunStart = curStart;
-				}
-			}
-			if (curLongestRunLength > longestRunOverallLength) {
-				longestRunOverallLength = curLongestRunLength;
-				leftmostLongestRunTop = curLongestRunStart;
-				leftmostLongestRunBottom = curLongestRunStart + curLongestRunLength - 1;
-				leftmostLongestRunLeft = x;
-			}
-			if (curLongestRunLength == longestRunOverallLength) {
-				rightmostLongestRunRight = x;
-			}
-		}
-
-		int picLeft = leftmostLongestRunLeft;
-		int picTop = leftmostLongestRunTop;
-		int picRight = rightmostLongestRunRight;
-		int picBottom = leftmostLongestRunBottom;
-
-		pic = pic.copy(picTop, picRight, picBottom, picLeft);
-
-		return pic;
-	}
-
-	private void createPicFromPDF1() {
-
-		Image pdfPic = getPdfPic();
-
-		setPicture(pdfPic);
-	}
-
-	private void createPicFromPDF2() {
-
-		// take the first picture (from the top of the page)
-		Image origPic = picture.bake();
-
-		int origPicHeight = origPic.getHeight();
-
-		// and the second picture (from the bottom of the same page)
-		Image pdfPic = getPdfPic();
-
-		int overlapRows = 0;
-		int potentialOverlapStart = 0;
-		if (pdfPic.getHeight() < origPicHeight) {
-			potentialOverlapStart = origPicHeight - pdfPic.getHeight();
-		}
-
-		// figure out how large the overlap is
-		for (; potentialOverlapStart < origPicHeight; potentialOverlapStart++) {
-			boolean isOverlapping = true;
-			trynext:
-			for (int y = potentialOverlapStart; (y < origPic.getHeight()) && (y - potentialOverlapStart < pdfPic.getHeight()); y++) {
-				for (int x = 0; (x < origPic.getWidth()) && (x < pdfPic.getWidth()); x++) {
-					if (!origPic.getPixel(x, y).fastVaguelySimilar(pdfPic.getPixel(x, y - potentialOverlapStart))) {
-						isOverlapping = false;
-						break trynext;
-					}
-				}
-			}
-			if (isOverlapping) {
-				overlapRows = origPicHeight - potentialOverlapStart;
-				break;
-			}
-		}
-
-		if (overlapRows < 1) {
-			GuiUtils.complain("Could not find any overlapping area; probably fonts shifted by a pixel up or down.\n" +
-				"Try including a smaller (but existing) overlap.");
-			return;
-		}
-
-		// and draw the second picture on top of the first picture, but leave the non-overlapping area untouched
-		origPic.expandBottomBy(pdfPic.getHeight() - overlapRows, new ColorRGBA(255, 255, 255));
-
-		origPic.draw(pdfPic, 0, origPicHeight - overlapRows);
-
-		setPicture(origPic);
-
-		// save the screenshot immediately automagically
-		TEMP_DIR.create();
-		File tempFile = null;
-		int fileNum = 1;
-		while (true) {
-			tempFile = new File(TEMP_DIR, "pdf_" + fileNum + ".png");
-			if (tempFile.exists()) {
-				fileNum++;
-			} else {
-				break;
-			}
-		}
-		exportImageToFile(origPic, tempFile);
-	}
-
-	private void createPicFromScreenshot(ColorRGBA background) {
-
-		Image pic = Image.createFromClipboard();
-
-		int startX = 88;
-		int endX = 0;
-		int startY = 0;
-		int picLeft = 0;
-		int picTop = 0;
-		int picRight = 0;
-		int picBottom = 0;
-
-		// move from the top down until we find the first background pixel
-		for (int y = 0; y < pic.getHeight(); y++) {
-			if (pic.getPixel(startX, y).equals(background)) {
-				startY = y;
-				// move right until we find the last background pixel
-				for (int x = startX; x < pic.getWidth(); x++) {
-					if (!pic.getPixel(x, y).equals(background)) {
-						endX = x;
-						break;
-					}
-				}
-				break;
-			}
-		}
-
-		// move down until we find the first row in which the background is not a continuous row
-		for (int y = startY; y < pic.getHeight(); y++) {
-			for (int x = startX; x < endX; x++) {
-				if (!pic.getPixel(x, y).equals(background)) {
-					// we have found our upper left corner!
-					picLeft = x;
-					picTop = y;
-					break;
-				}
-			}
-			if (picLeft > 0) {
-				break;
-			}
-		}
-
-		// move right from the upper left corner until we find the upper right corner
-		for (int x = picLeft; x < endX; x++) {
-			if (pic.getPixel(x, picTop).equals(background)) {
-				picRight = x - 1;
-				break;
-			}
-		}
-
-		// move down from the upper left corner until we find a whole row containing the same color;
-		// this is one below the bottom
-		for (int y = picTop; y < pic.getHeight(); y++) {
-			ColorRGBA firstPixel = pic.getPixel(picLeft, y);
-			boolean allPixelsSame = true;
-			for (int x = picLeft; x <= picRight; x++) {
-				if (!pic.getPixel(x, y).equals(firstPixel)) {
-					allPixelsSame = false;
-					break;
-				}
-			}
-			if (allPixelsSame) {
-				picBottom = y - 1;
-				break;
-			}
-		}
-
-		pic = pic.copy(picTop, picRight, picBottom, picLeft);
-
-		setPicture(pic);
-	}
-
-	private void createScreenshot() {
-
-		try {
-			Robot robot = new Robot();
-
-			Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
-
-			BufferedImage screenshotBufImg = robot.createScreenCapture(new Rectangle(screenDimension));
-
-			Image screenshotImg = Image.createFromAwtImage(screenshotBufImg);
-
-			setPicture(screenshotImg);
-
-		} catch (AWTException e) {
-			// whoops! guess not...
-		}
-	}
-
 	public Image getPictureBaked() {
 		return picture.bake();
+	}
+
+	ImageMultiLayered getPicture() {
+		return picture;
 	}
 
 	public void setPicture(Image newImage) {
@@ -2960,7 +878,7 @@ public class GUI extends MainWindow {
 		refreshLayerView();
 	}
 
-	private void setPictureUndoTakenCareOf(ImageMultiLayered newPicture) {
+	void setPictureUndoTakenCareOf(ImageMultiLayered newPicture) {
 
 		picture = newPicture;
 
@@ -2970,7 +888,11 @@ public class GUI extends MainWindow {
 		refreshTitleBarAndSaveExportItems();
 	}
 
-	private Image openFile(boolean returnImage) {
+	ImageMultiLayered getUndoablePicture() {
+		return undoablePicture;
+	}
+
+	Image openFile(boolean returnImage) {
 
 		// TODO :: de-localize the JFileChooser (by default it seems localized, which is inconsistent when the rest of the program is in English...)
 		// (while you're at it, make Öffnen into Save for the save dialog, but keep it as Open for the open dialog... ^^)
@@ -3039,7 +961,7 @@ public class GUI extends MainWindow {
 		return null;
 	}
 
-	private void saveOrExportFile(boolean exporting) {
+	void saveOrExportFile(boolean exporting) {
 
 		JFileChooser augFilePicker;
 
@@ -3106,7 +1028,7 @@ public class GUI extends MainWindow {
 		}
 	}
 
-	private void saveFileAgain() {
+	void saveFileAgain() {
 		saveImageToFile(picture, new File(lastSavePath));
 	}
 
@@ -3122,11 +1044,11 @@ public class GUI extends MainWindow {
 		refreshTitleBarAndSaveExportItems();
 	}
 
-	private void exportFileAgain() {
+	void exportFileAgain() {
 		exportImageToFile(picture.bake(), new File(lastExportPath));
 	}
 
-	private void exportImageToFile(Image picture, File selectedFile) {
+	void exportImageToFile(Image picture, File selectedFile) {
 		imageFileCtrl.saveImageToFile(picture, selectedFile);
 		lastExportPath = selectedFile.getCanonicalFilename();
 		refreshTitleBarAndSaveExportItems();
@@ -3156,14 +1078,14 @@ public class GUI extends MainWindow {
 		}
 	}
 
-	private void refreshMainView() {
+	void refreshMainView() {
 		imageViewer.setImage(picture.bake().getAwtImage());
 		// imageViewerLabel.repaint();
 		mainPanelRight.revalidate();
 		mainPanelRight.repaint();
 	}
 
-	private void saveCurPicForUndo() {
+	void saveCurPicForUndo() {
 		undoablePicture3 = undoablePicture2;
 		undoablePicture2 = undoablePicture1;
 		undoablePicture1 = undoablePicture;
@@ -3175,24 +1097,32 @@ public class GUI extends MainWindow {
 		redoablePicture = null;
 	}
 
-	private void switchForeAndBackColor() {
+	void switchForeAndBackColor() {
 		ColorRGBA prevBackgroundColor = backgroundColor;
 		backgroundColor = foregroundColor;
 		foregroundColor = prevBackgroundColor;
 		refreshLeftView();
 	}
 
-	private void setForegroundColor(ColorRGBA col) {
+	ColorRGBA getForegroundColor() {
+		return foregroundColor;
+	}
+
+	void setForegroundColor(ColorRGBA col) {
 		foregroundColor = col;
 		refreshLeftView();
 	}
 
-	private void setBackgroundColor(ColorRGBA col) {
+	ColorRGBA getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	void setBackgroundColor(ColorRGBA col) {
 		backgroundColor = col;
 		refreshLeftView();
 	}
 
-	private void setWindowBackgroundColor(Color newBgColor) {
+	void setWindowBackgroundColor(Color newBgColor) {
 		windowBackgroundColor = new ColorRGBA(newBgColor);
 		imageViewerLabel.setBackground(newBgColor);
 		mainPanelLeftViewerLabel.setBackground(newBgColor);
@@ -3200,7 +1130,7 @@ public class GUI extends MainWindow {
 		refreshLeftView();
 	}
 
-	private void undo() {
+	void undo() {
 		if (undoablePicture == null) {
 			return;
 		}
@@ -3210,9 +1140,10 @@ public class GUI extends MainWindow {
 		undoablePicture1 = undoablePicture2;
 		undoablePicture2 = undoablePicture3;
 		refreshMainView();
+		refreshLayerView();
 	}
 
-	private void redo() {
+	void redo() {
 		if (redoablePicture == null) {
 			return;
 		}
@@ -3223,6 +1154,30 @@ public class GUI extends MainWindow {
 		picture = redoablePicture;
 		redoablePicture = null;
 		refreshMainView();
+		refreshLayerView();
+	}
+
+	Tool getActiveTool() {
+		return activeTool;
+	}
+
+	void setActiveTool(Tool tool) {
+		if (activeTool == tool) {
+			activeTool = null;
+		} else {
+			activeTool = tool;
+		}
+		refreshTools();
+	}
+
+	void setActiveTool(Tool tool, int size) {
+		if ((activeTool == tool) && (activeToolSize == size)) {
+			activeTool = null;
+		} else {
+			activeTool = tool;
+			activeToolSize = size;
+		}
+		refreshTools();
 	}
 
 	private void refreshTools() {
@@ -3243,60 +1198,11 @@ public class GUI extends MainWindow {
 			}
 		}
 
-		adjustToolTitle(setForegroundToPipette, TOOL_TEXTS_PIPETTE_FG, (activeTool == Tool.PIPETTE_FG) && (activeToolSize == 1));
-		adjustToolTitle(setForegroundToPipette4, TOOL_TEXTS_PIPETTE_FG + " + 4 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (activeToolSize == 5));
-		adjustToolTitle(setForegroundToPipette12, TOOL_TEXTS_PIPETTE_FG + " + 12 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (activeToolSize == 13));
-		adjustToolTitle(setBackgroundToPipette, TOOL_TEXTS_PIPETTE_BG, activeTool == Tool.PIPETTE_BG);
-		adjustToolTitle(drawPenFG1, TOOL_TEXTS_PEN_FG + "1", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 1));
-		adjustToolTitle(drawPenFG2, TOOL_TEXTS_PEN_FG + "2", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 2));
-		adjustToolTitle(drawPenFG4, TOOL_TEXTS_PEN_FG + "4", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 4));
-		adjustToolTitle(drawPenFG8, TOOL_TEXTS_PEN_FG + "8", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 8));
-		adjustToolTitle(drawLinesFG1, TOOL_TEXTS_LINES_FG + "1", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 1));
-		adjustToolTitle(drawLinesFG2, TOOL_TEXTS_LINES_FG + "2", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 2));
-		adjustToolTitle(drawLinesFG4, TOOL_TEXTS_LINES_FG + "4", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 4));
-		adjustToolTitle(drawLinesFG8, TOOL_TEXTS_LINES_FG + "8", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 8));
-		adjustToolTitle(drawRectangleFG, TOOL_TEXTS_RECTANGLE_FG, activeTool == Tool.DRAW_RECTANGLE_FG);
-		adjustToolTitle(drawRectangleBG, TOOL_TEXTS_RECTANGLE_BG, activeTool == Tool.DRAW_RECTANGLE_BG);
-		adjustToolTitle(drawAreaFG, TOOL_TEXTS_AREA_FG, activeTool == Tool.DRAW_AREA_FG);
-		adjustToolTitle(drawAreaBG, TOOL_TEXTS_AREA_BG, activeTool == Tool.DRAW_AREA_BG);
+		guiMenuColors.refreshTools(activeTool, activeToolSize);
+		guiMenuDraw.refreshTools(activeTool, activeToolSize);
 	}
 
-	private void adjustToolTitle(JMenuItem item, String itemText, boolean isActive) {
-		if (isActive) {
-			item.setText(TOOL_SELECTED_START_STR + itemText + TOOL_SELECTED_END_STR);
-		} else {
-			item.setText(itemText);
-		}
-	}
-
-	private void showGridGUI(boolean createNew) {
-
-		if (createGridGUI == null) {
-			createGridGUI = new CreateGridGUI(GUI.this);
-		}
-
-		createGridGUI.show(createNew, foregroundColor, backgroundColor, picture.bake());
-	}
-
-	private void showExpandShrinkGUI() {
-
-		if (expandShrinkGUI == null) {
-			expandShrinkGUI = new ExpandShrinkGUI(GUI.this);
-		}
-
-		expandShrinkGUI.show(foregroundColor, backgroundColor, picture.bake());
-	}
-
-	private void showResizeGUI(boolean resample) {
-
-		if (resizeGUI == null) {
-			resizeGUI = new ResizeGUI(GUI.this);
-		}
-
-		resizeGUI.show(picture.bake(), resample);
-	}
-
-	private ImageLayer getCurrentLayer() {
+	ImageLayer getCurrentLayer() {
 		ImageLayer layer = picture.getLayer(currentLayerIndex);
 		if (layer != null) {
 			return layer;
@@ -3304,7 +1210,7 @@ public class GUI extends MainWindow {
 		return new ImageLayerBasedOnText(0, 0, "", "", 1, foregroundColor);
 	}
 
-	private ImageLayerBasedOnImage getCurrentImageLayer() {
+	ImageLayerBasedOnImage getCurrentImageLayer() {
 		ImageLayer layer = picture.getLayer(currentLayerIndex);
 		if (layer != null) {
 			if (layer instanceof ImageLayerBasedOnImage) {
@@ -3319,7 +1225,7 @@ public class GUI extends MainWindow {
 		return new ImageLayerBasedOnImage(0, 0, tempImg);
 	}
 
-	private ImageLayerBasedOnText getCurrentTextLayer() {
+	ImageLayerBasedOnText getCurrentTextLayer() {
 		ImageLayer layer = picture.getLayer(currentLayerIndex);
 		if (layer != null) {
 			if (layer instanceof ImageLayerBasedOnText) {
@@ -3354,7 +1260,7 @@ public class GUI extends MainWindow {
 		return result;
 	}
 
-	private void refreshLayerView() {
+	void refreshLayerView() {
 		if (currentLayerIndex >= picture.getLayerAmount()) {
 			currentLayerIndex = picture.getLayerAmount() - 1;
 		}
@@ -3389,4 +1295,33 @@ public class GUI extends MainWindow {
 			}
 		}
 	}
+
+	int getCurrentLayerIndex() {
+		return currentLayerIndex;
+	}
+
+	void setCurrentLayerIndex(int currentLayerIndex) {
+		this.currentLayerIndex = currentLayerIndex;
+	}
+
+	int getPrevClickX() {
+		return prevClickX;
+	}
+
+	int getPrevClickY() {
+		return prevClickY;
+	}
+
+	int getLastClickX() {
+		return lastClickX;
+	}
+
+	int getLastClickY() {
+		return lastClickY;
+	}
+
+	ConfigFile getConfiguration() {
+		return configuration;
+	}
+
 }

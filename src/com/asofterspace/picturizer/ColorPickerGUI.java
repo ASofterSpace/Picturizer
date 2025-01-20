@@ -67,7 +67,7 @@ public class ColorPickerGUI {
 		JButton okButton = new JButton("OK, take this");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				gui.setPickedColor(getColor());
+				gui.guiMenuColors.setPickedColor(gui, getColor());
 				ccDialog.dispose();
 			}
 		});
