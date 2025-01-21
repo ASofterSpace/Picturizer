@@ -7,6 +7,7 @@ package com.asofterspace.picturizer;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
+import com.asofterspace.toolbox.images.ImageMultiLayered;
 import com.asofterspace.toolbox.io.File;
 
 import java.awt.AWTException;
@@ -32,7 +33,7 @@ public class GUIMenuNew {
 
 		JMenu newFile = new JMenu("New");
 
-		JMenuItem emptyFile = new JMenuItem("Empty");
+		JMenuItem emptyFile = new JMenuItem("Empty (of same size as current image = clear with background color)");
 		emptyFile.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -40,6 +41,15 @@ public class GUIMenuNew {
 			}
 		});
 		newFile.add(emptyFile);
+
+		JMenuItem noiseFile = new JMenuItem("Noise (of same size as current image)");
+		noiseFile.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				createNewNoisyFile(gui, 1);
+			}
+		});
+		newFile.add(noiseFile);
 
 		JMenuItem screenshotFile = new JMenuItem("Screenshot");
 		screenshotFile.addActionListener(new ActionListener() {
@@ -135,7 +145,22 @@ public class GUIMenuNew {
 	}
 
 	void createNewEmptyFile(GUI gui) {
-		gui.setPicture(new Image(100, 100));
+		createNewNoisyFile(gui, 0);
+	}
+
+	private void createNewNoisyFile(GUI gui, int generateNoise) {
+		int newWidth = 128;
+		int newHeight = 128;
+		ImageMultiLayered picture = gui.getPicture();
+		if (picture != null) {
+			newWidth = picture.getWidth();
+			newHeight = picture.getHeight();
+		}
+		Image newImg = new Image(newWidth, newHeight, gui.getBackgroundColor());
+		if (generateNoise > 0) {
+			newImg.createNoise();
+		}
+		gui.setPicture(newImg);
 	}
 
 	private Image getPdfPic() {

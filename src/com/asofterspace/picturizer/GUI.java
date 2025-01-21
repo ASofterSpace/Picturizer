@@ -223,6 +223,8 @@ public class GUI extends MainWindow {
 					boolean returnImage = false;
 					openImageFile(new File(fileToOpenAfterStartup), returnImage);
 				}
+
+				setPosLabelTexts(0, 0);
 			}
 		});
 
@@ -760,11 +762,7 @@ public class GUI extends MainWindow {
 				int x = getX(e);
 				int y = getY(e);
 
-				curPosXLabel.setText(" X: " + x);
-				curPosYLabel.setText(" Y: " + y);
-				curPosWLabel.setText(" W: " + picture.getWidth());
-				curPosHLabel.setText(" H: " + picture.getHeight());
-				mainPanelLeft.repaint();
+				setPosLabelTexts(x, y);
 			}
 
 			private int getX(MouseEvent e) {
@@ -1258,6 +1256,14 @@ public class GUI extends MainWindow {
 			}
 		}
 		return result;
+	}
+
+	private void setPosLabelTexts(int x, int y) {
+		curPosXLabel.setText(" X: " + x);
+		curPosYLabel.setText(" Y: " + y);
+		curPosWLabel.setText(" W: " + picture.getWidth());
+		curPosHLabel.setText(" H: " + picture.getHeight());
+		mainPanelLeft.repaint();
 	}
 
 	void refreshLayerView() {

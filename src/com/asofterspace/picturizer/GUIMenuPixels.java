@@ -171,7 +171,18 @@ public class GUIMenuPixels {
 		});
 		adjustPixels.add(replaceStragglersIshWithForeground);
 
+		adjustPixels.addSeparator();
+
 		addPixelLevelDiffMapButtons(gui, adjustPixels);
+
+		adjustPixels.addSeparator();
+
+		addPixelateButton(gui, adjustPixels, 2);
+		addPixelateButton(gui, adjustPixels, 4);
+		addPixelateButton(gui, adjustPixels, 8);
+		addPixelateButton(gui, adjustPixels, 16);
+		addPixelateButton(gui, adjustPixels, 32);
+		addPixelateButton(gui, adjustPixels, 64);
 
 		return adjustPixels;
 	}
@@ -195,6 +206,20 @@ public class GUIMenuPixels {
 			public void actionPerformed(ActionEvent e) {
 				gui.saveCurPicForUndo();
 				gui.getCurrentImageLayer().getImage().createMapOfDifferencesBW();
+				gui.setPictureUndoTakenCareOf(gui.getPicture());
+			}
+		});
+		parentItem.add(curMenuItem);
+	}
+
+	private void addPixelateButton(GUI gui, JMenuItem parentItem, int size) {
+
+		JMenuItem curMenuItem = new JMenuItem("Pixelate (to "+size+"px x "+size+"px)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				gui.getCurrentImageLayer().getImage().pixelate(size);
 				gui.setPictureUndoTakenCareOf(gui.getPicture());
 			}
 		});
