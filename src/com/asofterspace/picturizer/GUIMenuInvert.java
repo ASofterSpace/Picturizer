@@ -64,6 +64,17 @@ public class GUIMenuInvert {
 		});
 		invert.add(invertBrightness3);
 
+		JMenuItem invertBrightness4 = new JMenuItem("Invert Brightness (Keeping Colors, Approach 4)");
+		invertBrightness4.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				gui.getCurrentImageLayer().getImage().invertBrightness4();
+				gui.setPictureUndoTakenCareOf(gui.getPicture());
+			}
+		});
+		invert.add(invertBrightness4);
+
 		return invert;
 	}
 }
