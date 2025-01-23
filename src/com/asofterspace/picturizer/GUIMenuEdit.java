@@ -4,6 +4,7 @@
  */
 package com.asofterspace.picturizer;
 
+import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageMultiLayered;
 
@@ -84,7 +85,11 @@ public class GUIMenuEdit {
 				int bottom = Math.max(prevClickY, lastClickY);
 				int left = Math.min(prevClickX, lastClickX);
 
-				gui.getPicture().bake().copy(top, right, bottom, left).copyToClipboard();
+				if ((right > left) && (bottom > top)) {
+					gui.getPicture().bake().copy(top, right, bottom, left).copyToClipboard();
+				} else {
+					GuiUtils.complain("Cannot copy area of with zero width or height!");
+				}
 			}
 		});
 		edit.add(copyClickedArea);
@@ -94,7 +99,12 @@ public class GUIMenuEdit {
 		paste.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				gui.setPicture(Image.createFromClipboard());
+				Image img = Image.createFromClipboard();
+				if (img != null) {
+					gui.setPicture(img);
+				} else {
+					complainAboutClipboard();
+				}
 			}
 		});
 		edit.add(paste);
@@ -223,6 +233,11 @@ public class GUIMenuEdit {
 		edit.add(reflectVerticallyCL);
 
 		return edit;
+	}
+
+	static void complainAboutClipboard() {
+		GuiUtils.complain("Clipboard contents cannot be parsed as image!\n" +
+			"(Clipboard is either empty or filled with horrors beyond our comprehension...)");
 	}
 
 	private void showExpandShrinkGUI(GUI gui) {

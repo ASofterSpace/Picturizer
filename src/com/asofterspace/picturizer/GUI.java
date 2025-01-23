@@ -68,17 +68,23 @@ public class GUI extends MainWindow {
 	private final static String CONFIG_KEY_TOP = "mainFrameTop";
 	private final static String CONFIG_KEY_LAST_DIRECTORY = "lastDirectory";
 
+	private final static int MAIN_VIEW_OFFSET = 8;
+
 	private String lastSavePath;
 	private String lastExportPath;
+	private File lastOpenedFile;
 
 	private JPanel mainPanel;
 	private JPanel mainPanelLeft;
+	private JPanel mainPanelLeftButtons;
+	private JPanel mainPanelLeftColorPicker;
 	private JList<String> layerList;
 	private JScrollPane mainPanelRight;
 	private JPanel imgLayerPanel;
 	private JLabel imgLayerLabel;
 	private JTextField imgLayerOffsetXInput;
 	private JTextField imgLayerOffsetYInput;
+	private JTextField imgLayerTextInput;
 	private JPanel textLayerPanel;
 	private JLabel textLayerLabel;
 	private JTextField textLayerOffsetXInput;
@@ -87,7 +93,6 @@ public class GUI extends MainWindow {
 	private JTextField textLayerFontSizeInput;
 	private JTextField textLayerColorInput;
 	private JTextField textLayerTextInput;
-	private JPanel mainLowerPanelLeft;
 	private JLabel curPosXLabel;
 	private JLabel curPosYLabel;
 	private JLabel curPosWLabel;
@@ -110,6 +115,8 @@ public class GUI extends MainWindow {
 	GUIMenuMixing guiMenuMixing;
 	GUIMenuWindow guiMenuWindow;
 	GUIMenuHelp guiMenuHelp;
+
+	private GUIButtonHolder guiButtonHolder;
 
 	private ConfigFile configuration;
 	private String fileToOpenAfterStartup;
@@ -144,6 +151,7 @@ public class GUI extends MainWindow {
 	private int prevClickY = 0;
 	private int lastClickX = 0;
 	private int lastClickY = 0;
+	private double zoomFactor = 1.0;
 
 	private boolean savedSinceLastChange = true;
 
@@ -480,8 +488,8 @@ public class GUI extends MainWindow {
 
 		mainPanelLeftViewer.setImage(mainPanelLeftImg.getAwtImage());
 
-		mainPanelLeft.revalidate();
-		mainPanelLeft.repaint();
+		mainPanelLeftColorPicker.revalidate();
+		mainPanelLeftColorPicker.repaint();
 	}
 
 	private JPanel createMainPanel(JFrame parent) {
@@ -554,6 +562,9 @@ public class GUI extends MainWindow {
 		imgLayerOffsetYInput = new JTextField();
 		imgLayerPanel.add(imgLayerOffsetYInput, new Arrangement(2, 0, 0.1, 1.0));
 
+		imgLayerTextInput = new JTextField();
+		imgLayerPanel.add(imgLayerTextInput, new Arrangement(3, 0, 0.2, 1.0));
+
 		JButton imgLayerApplyBtn = new JButton("Apply");
 		imgLayerApplyBtn.addActionListener(new ActionListener() {
 			@Override
@@ -561,11 +572,12 @@ public class GUI extends MainWindow {
 				ImageLayerBasedOnImage imgLayer = getCurrentImageLayer();
 				imgLayer.setOffsetX(StrUtils.strToInt(imgLayerOffsetXInput.getText(), 0));
 				imgLayer.setOffsetY(StrUtils.strToInt(imgLayerOffsetYInput.getText(), 0));
+				imgLayer.setCaption(imgLayerTextInput.getText());
 				refreshMainView();
 				refreshLayerView();
 			}
 		});
-		imgLayerPanel.add(imgLayerApplyBtn, new Arrangement(3, 0, 0.0, 1.0));
+		imgLayerPanel.add(imgLayerApplyBtn, new Arrangement(4, 0, 0.0, 1.0));
 
 
 		JPanel mainLowerPanel = new JPanel();
@@ -575,13 +587,13 @@ public class GUI extends MainWindow {
 		mainLowerPanel.setBorder(BorderFactory.createEmptyBorder());
 		mainPanel.add(mainLowerPanel, new Arrangement(0, 1, 1.0, 1.0));
 
-		mainLowerPanelLeft = new JPanel();
-		GridBagLayout mainLowerPanelLeftLayout = new GridBagLayout();
-		mainLowerPanelLeft.setLayout(mainLowerPanelLeftLayout);
-		mainLowerPanelLeft.setBorder(BorderFactory.createEmptyBorder());
-		mainLowerPanelLeft.setBackground(windowBackgroundColor.toColor());
-		mainLowerPanelLeft.setOpaque(true);
-		mainLowerPanel.add(mainLowerPanelLeft, new Arrangement(0, 0, 0.0, 1.0));
+		mainPanelLeft = new JPanel();
+		GridBagLayout mainPanelLeftLayout = new GridBagLayout();
+		mainPanelLeft.setLayout(mainPanelLeftLayout);
+		mainPanelLeft.setBorder(BorderFactory.createEmptyBorder());
+		mainPanelLeft.setBackground(windowBackgroundColor.toColor());
+		mainPanelLeft.setOpaque(true);
+		mainLowerPanel.add(mainPanelLeft, new Arrangement(0, 0, 0.0, 1.0));
 
 		mainPanelLeftImg = new Image(80, 200, ColorRGBA.WHITE);
 		mainPanelLeftViewer = new ImageIcon();
@@ -612,25 +624,35 @@ public class GUI extends MainWindow {
 			}
 		});
 
-		mainPanelLeft = new JPanel();
-		mainPanelLeft.add(mainPanelLeftViewerLabel);
-		mainPanelLeft.setPreferredSize(new Dimension(80, 1));
-		mainPanelLeft.setBorder(BorderFactory.createEmptyBorder());
-		mainLowerPanelLeft.add(mainPanelLeft, new Arrangement(0, 0, 1.0, 1.0));
+		mainPanelLeftColorPicker = new JPanel();
+		mainPanelLeftColorPicker.add(mainPanelLeftViewerLabel);
+		mainPanelLeftColorPicker.setPreferredSize(new Dimension(80, 164));
+		mainPanelLeftColorPicker.setBorder(BorderFactory.createEmptyBorder());
+		mainPanelLeftColorPicker.setBackground(windowBackgroundColor.toColor());
+		mainPanelLeft.add(mainPanelLeftColorPicker, new Arrangement(0, 0, 1.0, 0.0));
+
+		mainPanelLeftButtons = new JPanel();
+		mainPanelLeftButtons.setBackground(windowBackgroundColor.toColor());
+		guiButtonHolder = new GUIButtonHolder();
+		guiButtonHolder.createButtons(this, mainPanelLeftButtons);
+		mainPanelLeft.add(mainPanelLeftButtons, new Arrangement(0, 1, 1.0, 0.0));
+
+		JLabel spaceHolderLabel = new JLabel();
+		mainPanelLeft.add(spaceHolderLabel, new Arrangement(0, 2, 1.0, 1.0));
 
 		curPosXLabel = new JLabel();
-		mainLowerPanelLeft.add(curPosXLabel, new Arrangement(0, 1, 1.0, 0.0));
+		mainPanelLeft.add(curPosXLabel, new Arrangement(0, 3, 1.0, 0.0));
 		curPosYLabel = new JLabel();
-		mainLowerPanelLeft.add(curPosYLabel, new Arrangement(0, 2, 1.0, 0.0));
+		mainPanelLeft.add(curPosYLabel, new Arrangement(0, 4, 1.0, 0.0));
 		curPosWLabel = new JLabel();
-		mainLowerPanelLeft.add(curPosWLabel, new Arrangement(0, 3, 1.0, 0.0));
+		mainPanelLeft.add(curPosWLabel, new Arrangement(0, 5, 1.0, 0.0));
 		curPosHLabel = new JLabel();
-		mainLowerPanelLeft.add(curPosHLabel, new Arrangement(0, 4, 1.0, 0.0));
+		mainPanelLeft.add(curPosHLabel, new Arrangement(0, 6, 1.0, 0.0));
 
 		imageViewer = new ImageIcon();
 		imageViewerLabel = new JLabel(imageViewer);
-		imageViewerLabel.setBackground(Color.gray);
 		imageViewerLabel.setOpaque(true);
+		imageViewerLabel.setBackground(windowBackgroundColor.toColor());
 
 		imageViewerLabel.addMouseListener(new MouseAdapter() {
 			@Override
@@ -772,7 +794,8 @@ public class GUI extends MainWindow {
 				if (lw > iw) {
 					offsetX = (lw - iw) / 2;
 				}
-				return e.getX() - offsetX;
+				int result = e.getX() - offsetX - MAIN_VIEW_OFFSET;
+				return (int) Math.round(result / zoomFactor);
 			}
 
 			private int getY(MouseEvent e) {
@@ -782,7 +805,8 @@ public class GUI extends MainWindow {
 				if (lh > ih) {
 					offsetY = (lh - ih) / 2;
 				}
-				return e.getY() - offsetY;
+				int result = e.getY() - offsetY - MAIN_VIEW_OFFSET;
+				return (int) Math.round(result / zoomFactor);
 			}
 		});
 
@@ -936,6 +960,8 @@ public class GUI extends MainWindow {
 
 		String selFilename = imageFile.getCanonicalFilename();
 
+		lastOpenedFile = imageFile;
+
 		saveCurPicForUndo();
 		if (selFilename.toLowerCase().endsWith(".pic")) {
 			lastSavePath = selFilename;
@@ -1077,7 +1103,22 @@ public class GUI extends MainWindow {
 	}
 
 	void refreshMainView() {
-		imageViewer.setImage(picture.bake().getAwtImage());
+		int offset = MAIN_VIEW_OFFSET;
+		Image zoomedPicture = picture.bake();
+		if ((zoomFactor < 0.95) || (zoomFactor > 1.05)) {
+			zoomedPicture.resizeBy(zoomFactor, zoomFactor);
+		}
+		Image ivImg = new Image(zoomedPicture.getWidth() + offset + offset, zoomedPicture.getHeight() + offset + offset, ColorRGBA.TRANS);
+		ivImg.draw(zoomedPicture, offset, offset);
+		int left = offset - 1;
+		int top = offset - 1;
+		int right = zoomedPicture.getWidth() + offset;
+		int bottom = zoomedPicture.getHeight() + offset;
+		ivImg.drawDottedLine(left, top, right, top, ColorRGBA.BLACK);
+		ivImg.drawDottedLine(left, bottom, right, bottom, ColorRGBA.BLACK);
+		ivImg.drawDottedLine(left, top, left, bottom, ColorRGBA.BLACK);
+		ivImg.drawDottedLine(right, top, right, bottom, ColorRGBA.BLACK);
+		imageViewer.setImage(ivImg.getAwtImage());
 		// imageViewerLabel.repaint();
 		mainPanelRight.revalidate();
 		mainPanelRight.repaint();
@@ -1124,7 +1165,9 @@ public class GUI extends MainWindow {
 		windowBackgroundColor = new ColorRGBA(newBgColor);
 		imageViewerLabel.setBackground(newBgColor);
 		mainPanelLeftViewerLabel.setBackground(newBgColor);
-		mainLowerPanelLeft.setBackground(newBgColor);
+		mainPanelLeft.setBackground(newBgColor);
+		mainPanelLeftColorPicker.setBackground(newBgColor);
+		mainPanelLeftButtons.setBackground(newBgColor);
 		refreshLeftView();
 	}
 
@@ -1157,6 +1200,11 @@ public class GUI extends MainWindow {
 
 	Tool getActiveTool() {
 		return activeTool;
+	}
+
+	void forceActiveTool(Tool tool) {
+		activeTool = tool;
+		refreshTools();
 	}
 
 	void setActiveTool(Tool tool) {
@@ -1198,6 +1246,7 @@ public class GUI extends MainWindow {
 
 		guiMenuColors.refreshTools(activeTool, activeToolSize);
 		guiMenuDraw.refreshTools(activeTool, activeToolSize);
+		guiButtonHolder.refreshTools(activeTool);
 	}
 
 	ImageLayer getCurrentLayer() {
@@ -1220,7 +1269,7 @@ public class GUI extends MainWindow {
 		GuiUtils.complain("The currently selected layer is not an image layer!");
 		// return a layer not attached to anything to that requests to this are just ignored - as the complaining is already done...
 		Image tempImg = new Image(picture.getWidth(), picture.getHeight());
-		return new ImageLayerBasedOnImage(0, 0, tempImg);
+		return new ImageLayerBasedOnImage(0, 0, tempImg, "(temp)");
 	}
 
 	ImageLayerBasedOnText getCurrentTextLayer() {
@@ -1245,15 +1294,22 @@ public class GUI extends MainWindow {
 		String[] result = new String[amount];
 		for (int i = 0; i < amount; i++) {
 			ImageLayer layer = picture.getLayer(i);
+			String captionStr = "?";
 			if (layer instanceof ImageLayerBasedOnText) {
-				String captionStr = ((ImageLayerBasedOnText) layer).getText();
-				if (captionStr.length() > 9) {
-					captionStr = captionStr.substring(0, 9) + "...";
-				}
-				result[amount - i - 1] = "TXT#" + i + ": " + captionStr;
+				captionStr = "TXT#" + i + ": " + ((ImageLayerBasedOnText) layer).getText();
 			} else {
-				result[amount - i - 1] = "IMG#" + i;
+				if (layer instanceof ImageLayerBasedOnImage) {
+					String imgCaption = ((ImageLayerBasedOnImage) layer).getCaption();
+					if (imgCaption == null) {
+						imgCaption = "";
+					}
+					captionStr = "IMG#" + i + ": " + imgCaption;
+				}
 			}
+			if (captionStr.length() > 18) {
+				captionStr = captionStr.substring(0, 16) + "...";
+			}
+			result[amount - i - 1] = captionStr;
 		}
 		return result;
 	}
@@ -1263,7 +1319,7 @@ public class GUI extends MainWindow {
 		curPosYLabel.setText(" Y: " + y);
 		curPosWLabel.setText(" W: " + picture.getWidth());
 		curPosHLabel.setText(" H: " + picture.getHeight());
-		mainPanelLeft.repaint();
+		mainPanelLeftColorPicker.repaint();
 	}
 
 	void refreshLayerView() {
@@ -1297,6 +1353,11 @@ public class GUI extends MainWindow {
 				imgLayerLabel.setText("IMG#" + currentLayerIndex);
 				imgLayerOffsetXInput.setText(""+imgLayer.getOffsetX());
 				imgLayerOffsetYInput.setText(""+imgLayer.getOffsetY());
+				String captionStr = imgLayer.getCaption();
+				if (captionStr == null) {
+					captionStr = "";
+				}
+				imgLayerTextInput.setText(captionStr);
 				imgLayerPanel.setVisible(true);
 			}
 		}
@@ -1328,6 +1389,15 @@ public class GUI extends MainWindow {
 
 	ConfigFile getConfiguration() {
 		return configuration;
+	}
+
+	public File getLastOpenedFile() {
+		return lastOpenedFile;
+	}
+
+	void setZoomFactor(double newZoomFactor) {
+		zoomFactor = newZoomFactor;
+		refreshMainView();
 	}
 
 }

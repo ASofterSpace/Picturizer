@@ -4,10 +4,12 @@
  */
 package com.asofterspace.picturizer;
 
+import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageLayer;
 import com.asofterspace.toolbox.images.ImageLayerBasedOnImage;
 import com.asofterspace.toolbox.images.ImageLayerBasedOnText;
+import com.asofterspace.toolbox.io.File;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,10 +28,14 @@ public class GUIMenuLayers {
 		delLayer.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				gui.saveCurPicForUndo();
-				gui.getPicture().deleteLayer(gui.getCurrentLayerIndex());
-				gui.setPictureUndoTakenCareOf(gui.getPicture());
-				gui.refreshLayerView();
+				if (gui.getPicture().getLayerAmount() > 1) {
+					gui.saveCurPicForUndo();
+					gui.getPicture().deleteLayer(gui.getCurrentLayerIndex());
+					gui.setPictureUndoTakenCareOf(gui.getPicture());
+					gui.refreshLayerView();
+				} else {
+					GuiUtils.complain("Deleting the last layer is a bit silly, then there is none left - please add a layer first to delete this one!");
+				}
 			}
 		});
 		layers.add(delLayer);
@@ -40,7 +46,7 @@ public class GUIMenuLayers {
 			public void actionPerformed(ActionEvent e) {
 				gui.saveCurPicForUndo();
 				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0,
-					new Image(gui.getPicture().getWidth(), gui.getPicture().getHeight(), gui.getBackgroundColor()));
+					new Image(gui.getPicture().getWidth(), gui.getPicture().getHeight(), gui.getBackgroundColor()), "(new)");
 				gui.getPicture().addLayer(layer);
 				gui.setCurrentLayerIndex(gui.getPicture().getLayerAmount() - 1);
 				gui.setPictureUndoTakenCareOf(gui.getPicture());
@@ -56,11 +62,18 @@ public class GUIMenuLayers {
 				gui.saveCurPicForUndo();
 				boolean returnImage = true;
 				Image img = gui.openFile(returnImage);
-				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0, img);
-				gui.getPicture().addLayer(layer);
-				gui.setCurrentLayerIndex(gui.getPicture().getLayerAmount() - 1);
-				gui.setPictureUndoTakenCareOf(gui.getPicture());
-				gui.refreshLayerView();
+				if (img != null) {
+					String caption = "";
+					File lastOpenedFile = gui.getLastOpenedFile();
+					if (lastOpenedFile != null) {
+						caption = lastOpenedFile.getLocalFilename();
+					}
+					ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0, img, caption);
+					gui.getPicture().addLayer(layer);
+					gui.setCurrentLayerIndex(gui.getPicture().getLayerAmount() - 1);
+					gui.setPictureUndoTakenCareOf(gui.getPicture());
+					gui.refreshLayerView();
+				}
 			}
 		});
 		layers.add(addImgLayerFile);
@@ -69,12 +82,17 @@ public class GUIMenuLayers {
 		addImgLayerClipbrd.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				gui.saveCurPicForUndo();
-				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0, Image.createFromClipboard());
-				gui.getPicture().addLayer(layer);
-				gui.setCurrentLayerIndex(gui.getPicture().getLayerAmount() - 1);
-				gui.setPictureUndoTakenCareOf(gui.getPicture());
-				gui.refreshLayerView();
+				Image newImg = Image.createFromClipboard();
+				if (newImg != null) {
+					gui.saveCurPicForUndo();
+					ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0, newImg, "(pasted)");
+					gui.getPicture().addLayer(layer);
+					gui.setCurrentLayerIndex(gui.getPicture().getLayerAmount() - 1);
+					gui.setPictureUndoTakenCareOf(gui.getPicture());
+					gui.refreshLayerView();
+				} else {
+					GUIMenuEdit.complainAboutClipboard();
+				}
 			}
 		});
 		layers.add(addImgLayerClipbrd);
@@ -93,7 +111,7 @@ public class GUIMenuLayers {
 				int left = Math.min(prevClickX, lastClickX);
 
 				gui.saveCurPicForUndo();
-				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(left, top, gui.getPicture().bake().copy(top, right, bottom, left));
+				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(left, top, gui.getPicture().bake().copy(top, right, bottom, left), "(clicked)");
 				gui.getPicture().addLayer(layer);
 				gui.setCurrentLayerIndex(gui.getPicture().getLayerAmount() - 1);
 				gui.setPictureUndoTakenCareOf(gui.getPicture());

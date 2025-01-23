@@ -47,8 +47,10 @@ public class GUIMenuHelp {
 		showSize.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String msg = "Width: " + gui.getPicture().getWidth() + " px\n" +
-					"Height: " + gui.getPicture().getHeight() + " px";
+				String msg = "Picture Area Width: " + gui.getPicture().getWidth() + " px\n" +
+					"Picture Area Height: " + gui.getPicture().getHeight() + " px\n" +
+					"Current Layer Width: " + gui.getPicture().getLayer(gui.getCurrentLayerIndex()).getWidth() + " px\n" +
+					"Current Layer Height: " + gui.getPicture().getLayer(gui.getCurrentLayerIndex()).getHeight() + " px";
 				JOptionPane.showMessageDialog(null, msg, "Size", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
