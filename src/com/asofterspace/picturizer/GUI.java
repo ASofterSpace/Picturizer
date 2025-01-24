@@ -69,6 +69,9 @@ public class GUI extends MainWindow {
 	private final static String CONFIG_KEY_LAST_DIRECTORY = "lastDirectory";
 
 	private final static int MAIN_VIEW_OFFSET = 8;
+	private final static ColorRGBA LINE_COLOR_SURROUND = ColorRGBA.BLACK;
+	private final static ColorRGBA LINE_COLOR_LAYER = new ColorRGBA(150, 0, 200, 255);
+	private final static ColorRGBA LINE_COLOR_CLICKRECT = new ColorRGBA(200, 0, 120, 255);
 
 	private String lastSavePath;
 	private String lastExportPath;
@@ -670,6 +673,8 @@ public class GUI extends MainWindow {
 				lastClickX = x;
 				lastClickY = y;
 
+				refreshMainView();
+
 				if (activeTool != null) {
 					switch (activeTool) {
 
@@ -820,6 +825,7 @@ public class GUI extends MainWindow {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				currentLayerIndex = picture.getLayerAmount() - layerList.locationToIndex(e.getPoint()) - 1;
+				refreshMainView();
 				refreshLayerView();
 			}
 
@@ -1110,14 +1116,54 @@ public class GUI extends MainWindow {
 		}
 		Image ivImg = new Image(zoomedPicture.getWidth() + offset + offset, zoomedPicture.getHeight() + offset + offset, ColorRGBA.TRANS);
 		ivImg.draw(zoomedPicture, offset, offset);
-		int left = offset - 1;
-		int top = offset - 1;
-		int right = zoomedPicture.getWidth() + offset;
-		int bottom = zoomedPicture.getHeight() + offset;
-		ivImg.drawDottedLine(left, top, right, top, ColorRGBA.BLACK);
-		ivImg.drawDottedLine(left, bottom, right, bottom, ColorRGBA.BLACK);
-		ivImg.drawDottedLine(left, top, left, bottom, ColorRGBA.BLACK);
-		ivImg.drawDottedLine(right, top, right, bottom, ColorRGBA.BLACK);
+
+		// dotted rectangle around current layer
+		ImageLayer ly = getCurrentLayer();
+		int left = offset - 1 + (int) Math.round(ly.getOffsetX() * zoomFactor);
+		int top = offset - 1 + (int) Math.round(ly.getOffsetY() * zoomFactor);
+		int right = (int) Math.round((ly.getOffsetX() + ly.getWidth()) * zoomFactor) + offset;
+		int bottom = (int) Math.round((ly.getOffsetY() + ly.getHeight()) * zoomFactor) + offset;
+		ivImg.drawDottedLine(left, top, right, top, LINE_COLOR_LAYER);
+		ivImg.drawDottedLine(left, bottom, right, bottom, LINE_COLOR_LAYER);
+		ivImg.drawDottedLine(left, top, left, bottom, LINE_COLOR_LAYER);
+		ivImg.drawDottedLine(right, top, right, bottom, LINE_COLOR_LAYER);
+
+		// dotted rectangle around picture overall
+		left = offset - 1;
+		top = offset - 1;
+		right = zoomedPicture.getWidth() + offset;
+		bottom = zoomedPicture.getHeight() + offset;
+		ivImg.drawDottedLine(left, top, right, top, LINE_COLOR_SURROUND);
+		ivImg.drawDottedLine(left, bottom, right, bottom, LINE_COLOR_SURROUND);
+		ivImg.drawDottedLine(left, top, left, bottom, LINE_COLOR_SURROUND);
+		ivImg.drawDottedLine(right, top, right, bottom, LINE_COLOR_SURROUND);
+
+		if (activeTool == null) {
+			// dotted rectangle around last clicked area
+			if (prevClickX < lastClickX) {
+				left = prevClickX;
+				right = lastClickX + 1;
+			} else {
+				left = lastClickX;
+				right = prevClickX + 1;
+			}
+			if (prevClickY < lastClickY) {
+				top = prevClickY;
+				bottom = lastClickY + 1;
+			} else {
+				top = lastClickY;
+				bottom = prevClickY + 1;
+			}
+			left = (int) Math.round(left * zoomFactor) + offset - 1;
+			top = (int) Math.round(top * zoomFactor) + offset - 1;
+			right = (int) Math.round(right * zoomFactor) + offset;
+			bottom = (int) Math.round(bottom * zoomFactor) + offset;
+			ivImg.drawDottedLine(left, top, right, top, LINE_COLOR_CLICKRECT);
+			ivImg.drawDottedLine(left, bottom, right, bottom, LINE_COLOR_CLICKRECT);
+			ivImg.drawDottedLine(left, top, left, bottom, LINE_COLOR_CLICKRECT);
+			ivImg.drawDottedLine(right, top, right, bottom, LINE_COLOR_CLICKRECT);
+		}
+
 		imageViewer.setImage(ivImg.getAwtImage());
 		// imageViewerLabel.repaint();
 		mainPanelRight.revalidate();
