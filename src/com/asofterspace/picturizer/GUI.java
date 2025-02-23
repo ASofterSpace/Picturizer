@@ -1138,7 +1138,7 @@ public class GUI extends MainWindow {
 		ivImg.drawDottedLine(left, top, left, bottom, LINE_COLOR_SURROUND);
 		ivImg.drawDottedLine(right, top, right, bottom, LINE_COLOR_SURROUND);
 
-		if (activeTool == null) {
+		if ((activeTool == null) && (prevClickX != lastClickX) && (prevClickY != lastClickY)) {
 			// dotted rectangle around last clicked area
 			if (prevClickX < lastClickX) {
 				left = prevClickX;

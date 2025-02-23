@@ -140,7 +140,31 @@ public class GUIMenuEdit {
 
 		edit.addSeparator();
 
-		JMenuItem turnLeft = new JMenuItem("Turn Left (all)");
+		JMenuItem turnLeft22 = new JMenuItem("Turn Left 22.5° (all)");
+		turnLeft22.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				Image img = gui.getPicture().bake();
+				img.rotateLeft22(gui.getBackgroundColor());
+				gui.setPictureUndoTakenCareOf(new ImageMultiLayered(img));
+			}
+		});
+		edit.add(turnLeft22);
+
+		JMenuItem turnLeft45 = new JMenuItem("Turn Left 45° (all)");
+		turnLeft45.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				Image img = gui.getPicture().bake();
+				img.rotateLeft45(gui.getBackgroundColor());
+				gui.setPictureUndoTakenCareOf(new ImageMultiLayered(img));
+			}
+		});
+		edit.add(turnLeft45);
+
+		JMenuItem turnLeft = new JMenuItem("Turn Left 90° (all)");
 		turnLeft.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -152,7 +176,7 @@ public class GUIMenuEdit {
 		});
 		edit.add(turnLeft);
 
-		JMenuItem turnRight = new JMenuItem("Turn Right (all)");
+		JMenuItem turnRight = new JMenuItem("Turn Right 90° (all)");
 		turnRight.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -164,7 +188,29 @@ public class GUIMenuEdit {
 		});
 		edit.add(turnRight);
 
-		JMenuItem turnLeftCL = new JMenuItem("Turn Left (current layer)");
+		JMenuItem turnLeftCL22 = new JMenuItem("Turn Left 22.5° (current layer)");
+		turnLeftCL22.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				gui.getCurrentImageLayer().getImage().rotateLeft22(gui.getBackgroundColor());
+				gui.setPictureUndoTakenCareOf(gui.getPicture());
+			}
+		});
+		edit.add(turnLeftCL22);
+
+		JMenuItem turnLeftCL45 = new JMenuItem("Turn Left 45° (current layer)");
+		turnLeftCL45.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				gui.getCurrentImageLayer().getImage().rotateLeft45(gui.getBackgroundColor());
+				gui.setPictureUndoTakenCareOf(gui.getPicture());
+			}
+		});
+		edit.add(turnLeftCL45);
+
+		JMenuItem turnLeftCL = new JMenuItem("Turn Left 90° (current layer)");
 		turnLeftCL.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -175,7 +221,7 @@ public class GUIMenuEdit {
 		});
 		edit.add(turnLeftCL);
 
-		JMenuItem turnRightCL = new JMenuItem("Turn Right (current layer)");
+		JMenuItem turnRightCL = new JMenuItem("Turn Right 90° (current layer)");
 		turnRightCL.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
