@@ -109,6 +109,28 @@ public class GUIMenuEdit {
 		});
 		edit.add(paste);
 
+		JMenuItem extractClickedArea = new JMenuItem("Extract Area Bounded by Last Two Clicks (Copy+Paste)");
+		extractClickedArea.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int prevClickX = gui.getPrevClickX();
+				int prevClickY = gui.getPrevClickY();
+				int lastClickX = gui.getLastClickX();
+				int lastClickY = gui.getLastClickY();
+				int top = Math.min(prevClickY, lastClickY);
+				int right = Math.max(prevClickX, lastClickX);
+				int bottom = Math.max(prevClickY, lastClickY);
+				int left = Math.min(prevClickX, lastClickX);
+
+				if ((right > left) && (bottom > top)) {
+					gui.setPicture(gui.getPicture().bake().copy(top, right, bottom, left));
+				} else {
+					GuiUtils.complain("Cannot copy area of with zero width or height!");
+				}
+			}
+		});
+		edit.add(extractClickedArea);
+
 		edit.addSeparator();
 
 		JMenuItem expandShrinkImgArea = new JMenuItem("Expand / Shrink Image Area");
@@ -231,6 +253,8 @@ public class GUIMenuEdit {
 			}
 		});
 		edit.add(turnRightCL);
+
+		edit.addSeparator();
 
 		JMenuItem reflectHorizontally = new JMenuItem("Reflect Horizontally (all)");
 		reflectHorizontally.addActionListener(new ActionListener() {
