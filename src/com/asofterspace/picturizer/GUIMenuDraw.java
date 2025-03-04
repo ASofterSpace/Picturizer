@@ -17,6 +17,8 @@ public class GUIMenuDraw {
 
 	private final static String TOOL_TEXTS_PEN_FG = "Draw Using Pen with Foreground Color, Size: ";
 	private final static String TOOL_TEXTS_LINES_FG = "Draw Using Lines with Foreground Color, Size: ";
+	private final static String TOOL_TEXTS_FILL_FG = "Fill Connected Area (Same Color) with Foreground Color";
+	private final static String TOOL_TEXTS_FILL_ROUGHLY_FG = "Fill Connected Area (Roughly Same Color) with Foreground Color";
 	private final static String TOOL_TEXTS_RECTANGLE_FG = "Draw Rectangle with Foreground Color";
 	private final static String TOOL_TEXTS_RECTANGLE_BG = "Draw Rectangle with Background Color";
 	private final static String TOOL_TEXTS_AREA_FG = "Draw Area with Foreground Color";
@@ -30,6 +32,8 @@ public class GUIMenuDraw {
 	private JMenuItem drawLinesFG2;
 	private JMenuItem drawLinesFG4;
 	private JMenuItem drawLinesFG8;
+	private JMenuItem fill;
+	private JMenuItem fillRoughly;
 	private JMenuItem drawRectangleFG;
 	private JMenuItem drawRectangleBG;
 	private JMenuItem drawAreaFG;
@@ -116,6 +120,26 @@ public class GUIMenuDraw {
 
 		draw.addSeparator();
 
+		fill = new JMenuItem(TOOL_TEXTS_FILL_FG);
+		fill.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.setActiveTool(Tool.FILL_FG);
+			}
+		});
+		draw.add(fill);
+
+		fillRoughly = new JMenuItem(TOOL_TEXTS_FILL_ROUGHLY_FG);
+		fillRoughly.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.setActiveTool(Tool.FILL_ROUGHLY_FG);
+			}
+		});
+		draw.add(fillRoughly);
+
+		draw.addSeparator();
+
 		drawRectangleFG = new JMenuItem(TOOL_TEXTS_RECTANGLE_FG);
 		drawRectangleFG.addActionListener(new ActionListener() {
 			@Override
@@ -164,6 +188,8 @@ public class GUIMenuDraw {
 		GUIMenuTools.adjustToolTitle(drawLinesFG2, TOOL_TEXTS_LINES_FG + "2", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 2));
 		GUIMenuTools.adjustToolTitle(drawLinesFG4, TOOL_TEXTS_LINES_FG + "4", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 4));
 		GUIMenuTools.adjustToolTitle(drawLinesFG8, TOOL_TEXTS_LINES_FG + "8", (activeTool == Tool.DRAW_LINES_FG) && (activeToolSize == 8));
+		GUIMenuTools.adjustToolTitle(fill, TOOL_TEXTS_FILL_FG, activeTool == Tool.FILL_FG);
+		GUIMenuTools.adjustToolTitle(fillRoughly, TOOL_TEXTS_FILL_ROUGHLY_FG, activeTool == Tool.FILL_ROUGHLY_FG);
 		GUIMenuTools.adjustToolTitle(drawRectangleFG, TOOL_TEXTS_RECTANGLE_FG, activeTool == Tool.DRAW_RECTANGLE_FG);
 		GUIMenuTools.adjustToolTitle(drawRectangleBG, TOOL_TEXTS_RECTANGLE_BG, activeTool == Tool.DRAW_RECTANGLE_BG);
 		GUIMenuTools.adjustToolTitle(drawAreaFG, TOOL_TEXTS_AREA_FG, activeTool == Tool.DRAW_AREA_FG);

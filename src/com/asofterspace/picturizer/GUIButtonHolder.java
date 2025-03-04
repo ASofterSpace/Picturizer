@@ -32,6 +32,8 @@ public class GUIButtonHolder {
 	private JButton pipBG;
 	private JButton penBtn;
 	private JButton lineBtn;
+	private JButton fillBtn;
+	private JButton roughFillBtn;
 	private JButton rectBtn;
 	private JButton areaBtn;
 
@@ -94,6 +96,26 @@ public class GUIButtonHolder {
 			}
 		});
 		addBtn(lineBtn, 1, row, parent);
+
+		row++;
+
+		fillBtn = new JButton("Fill");
+		fillBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.forceActiveTool(Tool.FILL_FG);
+			}
+		});
+		addBtn(fillBtn, 0, row, parent);
+
+		roughFillBtn = new JButton("~Fill");
+		roughFillBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.forceActiveTool(Tool.FILL_ROUGHLY_FG);
+			}
+		});
+		addBtn(roughFillBtn, 1, row, parent);
 
 		row++;
 
@@ -192,6 +214,8 @@ public class GUIButtonHolder {
 		pipBG.setBackground((activeTool == Tool.PIPETTE_BG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		penBtn.setBackground((activeTool == Tool.DRAW_PEN_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		lineBtn.setBackground((activeTool == Tool.DRAW_LINES_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
+		fillBtn.setBackground((activeTool == Tool.FILL_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
+		roughFillBtn.setBackground((activeTool == Tool.FILL_ROUGHLY_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		rectBtn.setBackground((activeTool == Tool.DRAW_RECTANGLE_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		areaBtn.setBackground((activeTool == Tool.DRAW_AREA_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 	}

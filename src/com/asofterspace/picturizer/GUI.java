@@ -730,6 +730,16 @@ public class GUI extends MainWindow {
 							lastDrawPoints.add(newPoint);
 							break;
 
+						case FILL_FG:
+							pictureBeforePointDrawing.fillConnectedArea(x, y, foregroundColor);
+							setPicture(pictureBeforePointDrawing);
+							break;
+
+						case FILL_ROUGHLY_FG:
+							pictureBeforePointDrawing.fillConnectedArea(x, y, foregroundColor, 64);
+							setPicture(pictureBeforePointDrawing);
+							break;
+
 						case DRAW_RECTANGLE_FG:
 						case DRAW_RECTANGLE_BG:
 							newPoint = new Pair<>(x, y);
@@ -1277,6 +1287,8 @@ public class GUI extends MainWindow {
 			switch (activeTool) {
 				case DRAW_PEN_FG:
 				case DRAW_LINES_FG:
+				case FILL_FG:
+				case FILL_ROUGHLY_FG:
 				case DRAW_RECTANGLE_FG:
 				case DRAW_RECTANGLE_BG:
 				case DRAW_AREA_FG:

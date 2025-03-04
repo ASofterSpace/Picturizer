@@ -19,6 +19,10 @@ public enum Tool {
 	// draw connected lines with foreground color
 	DRAW_LINES_FG,
 
+	// fill a clicked area with foreground color
+	FILL_FG,
+	FILL_ROUGHLY_FG,
+
 	// draw rectangle with foreground / background color
 	DRAW_RECTANGLE_FG,
 	DRAW_RECTANGLE_BG,
