@@ -193,8 +193,16 @@ public class GUI extends MainWindow {
 
 		final Integer lastWidth = configuration.getInteger(CONFIG_KEY_WIDTH, -1);
 		final Integer lastHeight = configuration.getInteger(CONFIG_KEY_HEIGHT, -1);
-		final Integer lastLeft = configuration.getInteger(CONFIG_KEY_LEFT, -1);
-		final Integer lastTop = configuration.getInteger(CONFIG_KEY_TOP, -1);
+		Integer lastLeftRead = configuration.getInteger(CONFIG_KEY_LEFT, -1);
+		if (lastLeftRead < 0) {
+			lastLeftRead = 0;
+		}
+		final Integer lastLeft = lastLeftRead;
+		Integer lastTopRead = configuration.getInteger(CONFIG_KEY_TOP, -1);
+		if (lastTopRead < 0) {
+			lastTopRead = 0;
+		}
+		final Integer lastTop = lastTopRead;
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -891,7 +899,7 @@ public class GUI extends MainWindow {
 			unsavedStr += "UNSAVED - ";
 		}
 
-		mainFrame.setTitle(Main.PROGRAM_TITLE + " - " + unsavedStr + "Pic: " + lastSavePathStr + " Exp: " + lastExportPathStr);
+		mainFrame.setTitle(Picturizer.PROGRAM_TITLE + " - " + unsavedStr + "Pic: " + lastSavePathStr + " Exp: " + lastExportPathStr);
 	}
 
 	public Image getPictureBaked() {

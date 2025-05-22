@@ -75,8 +75,8 @@ public class GUIMenuHelp {
 		about.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String aboutMessage = "This is the " + Main.PROGRAM_TITLE + ".\n" +
-					"Version: " + Main.VERSION_NUMBER + " (" + Main.VERSION_DATE + ")\n" +
+				String aboutMessage = "This is the " + Picturizer.PROGRAM_TITLE + ".\n" +
+					"Version: " + Picturizer.VERSION_NUMBER + " (" + Picturizer.VERSION_DATE + ")\n" +
 					"Brought to you by: A Softer Space";
 				JOptionPane.showMessageDialog(null, aboutMessage, "About", JOptionPane.INFORMATION_MESSAGE);
 			}
