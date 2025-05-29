@@ -70,17 +70,37 @@ public class ResizeGUI {
 		inputFieldHeight.setPreferredSize(new Dimension(75, 20));
 		dialog.add(inputFieldHeight, new Arrangement(0, 3, 1.0, 0.0));
 
+		explanationLabel = new JLabel();
+		explanationLabel.setText("(Leave either empty to automatically choose size based on current aspect ratio.)");
+		dialog.add(explanationLabel, new Arrangement(0, 4, 1.0, 0.0));
+
 		JPanel buttonRow = new JPanel();
 		GridLayout buttonRowLayout = new GridLayout(1, 3);
 		buttonRowLayout.setHgap(8);
 		buttonRow.setLayout(buttonRowLayout);
-		dialog.add(buttonRow, new Arrangement(0, 4, 1.0, 0.0));
+		dialog.add(buttonRow, new Arrangement(0, 5, 1.0, 0.0));
 
 		JButton okButton = new JButton("OK, make adjustments");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				int oldWidth = baseImage.getWidth();
+				int oldHeight = baseImage.getHeight();
+
 				int newWidth = StrUtils.strToInt(inputFieldWidth.getText(), 0);
 				int newHeight = StrUtils.strToInt(inputFieldHeight.getText(), 0);
+
+				if (newWidth < 1) {
+					if (newHeight < 1) {
+						newWidth = 0;
+						newHeight = 0;
+					} else {
+						newWidth = (newHeight * oldWidth) / oldHeight;
+					}
+				} else {
+					if (newHeight < 1) {
+						newHeight = (newWidth * oldHeight) / oldWidth;
+					}
+				}
 
 				Image newPic = baseImage.copy();
 				if (resample) {

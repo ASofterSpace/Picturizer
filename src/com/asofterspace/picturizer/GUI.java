@@ -1352,6 +1352,20 @@ public class GUI extends MainWindow {
 		return new ImageLayerBasedOnText(0, 0, "", "", 1, foregroundColor);
 	}
 
+	public String getTextLayerCaptionText() {
+		List<String> texts = new ArrayList<>();
+		if (picture != null) {
+			int amount = picture.getLayerAmount();
+			for (int i = 0; i < amount; i++) {
+				ImageLayer layer = picture.getLayer(i);
+				if (layer instanceof ImageLayerBasedOnText) {
+					texts.add(((ImageLayerBasedOnText) layer).getText());
+				}
+			}
+		}
+		return StrUtils.join("\n", texts);
+	}
+
 	private String[] getLayerCaptionArray() {
 		if (picture == null) {
 			return new String[0];

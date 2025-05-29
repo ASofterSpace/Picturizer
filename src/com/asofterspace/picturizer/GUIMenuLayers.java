@@ -330,6 +330,15 @@ public class GUIMenuLayers {
 		});
 		layers.add(convertCurToImg);
 
+		JMenuItem copyAllText = new JMenuItem("Copy Text from All Text Layers to Clipboard");
+		copyAllText.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GuiUtils.copyToClipboard(gui.getTextLayerCaptionText());
+			}
+		});
+		layers.add(copyAllText);
+
 		JMenuItem bakeAllLayers = new JMenuItem("Bake All Layers Into One");
 		bakeAllLayers.addActionListener(new ActionListener() {
 			@Override
