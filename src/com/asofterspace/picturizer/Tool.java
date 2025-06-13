@@ -27,6 +27,10 @@ public enum Tool {
 	DRAW_RECTANGLE_FG,
 	DRAW_RECTANGLE_BG,
 
+	// draw quads (area with one quadrangle after another) with foreground / background color
+	DRAW_QUADS_FG,
+	DRAW_QUADS_BG,
+
 	// draw area with foreground / background color
 	DRAW_AREA_FG,
 	DRAW_AREA_BG;

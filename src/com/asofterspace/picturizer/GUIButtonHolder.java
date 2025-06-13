@@ -35,6 +35,7 @@ public class GUIButtonHolder {
 	private JButton fillBtn;
 	private JButton roughFillBtn;
 	private JButton rectBtn;
+	private JButton quadsBtn;
 	private JButton areaBtn;
 
 	private List<JButton> zoomButtons = new ArrayList<>();
@@ -128,6 +129,17 @@ public class GUIButtonHolder {
 		});
 		addBtn(rectBtn, 0, row, parent);
 
+		quadsBtn = new JButton("Quads");
+		quadsBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.forceActiveTool(Tool.DRAW_QUADS_FG);
+			}
+		});
+		addBtn(quadsBtn, 1, row, parent);
+
+		row++;
+
 		areaBtn = new JButton("Area");
 		areaBtn.addActionListener(new ActionListener() {
 			@Override
@@ -217,6 +229,7 @@ public class GUIButtonHolder {
 		fillBtn.setBackground((activeTool == Tool.FILL_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		roughFillBtn.setBackground((activeTool == Tool.FILL_ROUGHLY_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		rectBtn.setBackground((activeTool == Tool.DRAW_RECTANGLE_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
+		quadsBtn.setBackground((activeTool == Tool.DRAW_QUADS_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		areaBtn.setBackground((activeTool == Tool.DRAW_AREA_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 	}
 

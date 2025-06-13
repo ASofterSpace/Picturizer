@@ -783,17 +783,27 @@ public class GUI extends MainWindow {
 
 						case DRAW_AREA_FG:
 						case DRAW_AREA_BG:
+						case DRAW_QUADS_FG:
+						case DRAW_QUADS_BG:
 							newPoint = new Pair<>(x, y);
 							lastDrawPoints.add(newPoint);
 							if (lastDrawPoints.size() > 2) {
 								ColorRGBA drawColor = foregroundColor;
-								if (activeTool == Tool.DRAW_AREA_BG) {
+								if ((activeTool == Tool.DRAW_AREA_BG) || (activeTool == Tool.DRAW_QUADS_BG)) {
 									drawColor = backgroundColor;
 								}
 								Image drawImg = pictureBeforePointDrawing.copy();
 								drawImg.drawArea(lastDrawPoints, drawColor);
 								getCurrentImageLayer().setImage(drawImg);
 								setPictureUndoTakenCareOf(picture);
+
+								if ((activeTool == Tool.DRAW_QUADS_FG) || (activeTool == Tool.DRAW_QUADS_BG)) {
+									if (lastDrawPoints.size() > 3) {
+										Tool curTool = activeTool;
+										forceActiveTool(null);
+										forceActiveTool(curTool);
+									}
+								}
 							}
 							break;
 					}
@@ -1267,6 +1277,9 @@ public class GUI extends MainWindow {
 	}
 
 	void forceActiveTool(Tool tool) {
+		if (tool != null) {
+			saveCurPicForUndo();
+		}
 		activeTool = tool;
 		refreshTools();
 	}
@@ -1299,6 +1312,8 @@ public class GUI extends MainWindow {
 				case FILL_ROUGHLY_FG:
 				case DRAW_RECTANGLE_FG:
 				case DRAW_RECTANGLE_BG:
+				case DRAW_QUADS_FG:
+				case DRAW_QUADS_BG:
 				case DRAW_AREA_FG:
 				case DRAW_AREA_BG:
 					this.lastDrawPoints = new ArrayList<>();

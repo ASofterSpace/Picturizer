@@ -21,6 +21,8 @@ public class GUIMenuDraw {
 	private final static String TOOL_TEXTS_FILL_ROUGHLY_FG = "Fill Connected Area (Roughly Same Color) with Foreground Color";
 	private final static String TOOL_TEXTS_RECTANGLE_FG = "Draw Rectangle with Foreground Color";
 	private final static String TOOL_TEXTS_RECTANGLE_BG = "Draw Rectangle with Background Color";
+	private final static String TOOL_TEXTS_QUADS_FG = "Draw Quadrangle with Foreground Color";
+	private final static String TOOL_TEXTS_QUADS_BG = "Draw Quadrangle with Background Color";
 	private final static String TOOL_TEXTS_AREA_FG = "Draw Area with Foreground Color";
 	private final static String TOOL_TEXTS_AREA_BG = "Draw Area with Background Color";
 
@@ -36,6 +38,8 @@ public class GUIMenuDraw {
 	private JMenuItem fillRoughly;
 	private JMenuItem drawRectangleFG;
 	private JMenuItem drawRectangleBG;
+	private JMenuItem drawQuadsFG;
+	private JMenuItem drawQuadsBG;
 	private JMenuItem drawAreaFG;
 	private JMenuItem drawAreaBG;
 
@@ -158,6 +162,24 @@ public class GUIMenuDraw {
 		});
 		draw.add(drawRectangleBG);
 
+		drawQuadsFG = new JMenuItem(TOOL_TEXTS_QUADS_FG);
+		drawQuadsFG.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.setActiveTool(Tool.DRAW_QUADS_FG);
+			}
+		});
+		draw.add(drawQuadsFG);
+
+		drawQuadsBG = new JMenuItem(TOOL_TEXTS_QUADS_BG);
+		drawQuadsBG.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.setActiveTool(Tool.DRAW_QUADS_BG);
+			}
+		});
+		draw.add(drawQuadsBG);
+
 		drawAreaFG = new JMenuItem(TOOL_TEXTS_AREA_FG);
 		drawAreaFG.addActionListener(new ActionListener() {
 			@Override
@@ -192,6 +214,8 @@ public class GUIMenuDraw {
 		GUIMenuTools.adjustToolTitle(fillRoughly, TOOL_TEXTS_FILL_ROUGHLY_FG, activeTool == Tool.FILL_ROUGHLY_FG);
 		GUIMenuTools.adjustToolTitle(drawRectangleFG, TOOL_TEXTS_RECTANGLE_FG, activeTool == Tool.DRAW_RECTANGLE_FG);
 		GUIMenuTools.adjustToolTitle(drawRectangleBG, TOOL_TEXTS_RECTANGLE_BG, activeTool == Tool.DRAW_RECTANGLE_BG);
+		GUIMenuTools.adjustToolTitle(drawQuadsFG, TOOL_TEXTS_QUADS_FG, activeTool == Tool.DRAW_QUADS_FG);
+		GUIMenuTools.adjustToolTitle(drawQuadsBG, TOOL_TEXTS_QUADS_BG, activeTool == Tool.DRAW_QUADS_BG);
 		GUIMenuTools.adjustToolTitle(drawAreaFG, TOOL_TEXTS_AREA_FG, activeTool == Tool.DRAW_AREA_FG);
 		GUIMenuTools.adjustToolTitle(drawAreaBG, TOOL_TEXTS_AREA_BG, activeTool == Tool.DRAW_AREA_BG);
 	}
