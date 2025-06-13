@@ -111,7 +111,8 @@ public class GUIMenuLayers {
 				int left = Math.min(prevClickX, lastClickX);
 
 				gui.saveCurPicForUndo();
-				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(left, top, gui.getPicture().bake().copy(top, right, bottom, left), "(clicked)");
+				ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(
+					Math.max(0, left), Math.max(0, top), gui.getPicture().bake().copy(top, right, bottom, left), "(clicked)");
 				gui.getPicture().addLayer(layer);
 				gui.setCurrentLayerIndex(gui.getPicture().getLayerAmount() - 1);
 				gui.setPictureUndoTakenCareOf(gui.getPicture());
