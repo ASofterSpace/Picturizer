@@ -115,6 +115,7 @@ public class GUI extends MainWindow {
 	GUIMenuDampen guiMenuDampen;
 	GUIMenuDarkenBrighten guiMenuDarkenBrighten;
 	GUIMenuIntensify guiMenuIntensify;
+	GUIMenuGlitch guiMenuGlitch;
 	GUIMenuMixing guiMenuMixing;
 	GUIMenuWindow guiMenuWindow;
 	GUIMenuHelp guiMenuHelp;
@@ -282,6 +283,8 @@ public class GUI extends MainWindow {
 		menu.add(guiMenuDarkenBrighten.createMenu(this));
 		guiMenuIntensify = new GUIMenuIntensify();
 		menu.add(guiMenuIntensify.createMenu(this));
+		guiMenuGlitch = new GUIMenuGlitch();
+		menu.add(guiMenuGlitch.createMenu(this));
 		guiMenuMixing = new GUIMenuMixing();
 		menu.add(guiMenuMixing.createMenu(this));
 		guiMenuWindow = new GUIMenuWindow();
