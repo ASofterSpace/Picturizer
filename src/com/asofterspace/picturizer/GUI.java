@@ -66,7 +66,7 @@ public class GUI extends MainWindow {
 	private final static String CONFIG_KEY_HEIGHT = "mainFrameHeight";
 	private final static String CONFIG_KEY_LEFT = "mainFrameLeft";
 	private final static String CONFIG_KEY_TOP = "mainFrameTop";
-	private final static String CONFIG_KEY_LAST_DIRECTORY = "lastDirectory";
+	public final static String CONFIG_KEY_LAST_DIRECTORY = "lastDirectory";
 
 	private final static int MAIN_VIEW_OFFSET = 8;
 	private final static ColorRGBA LINE_COLOR_SURROUND = ColorRGBA.BLACK;
@@ -241,7 +241,11 @@ public class GUI extends MainWindow {
 
 				if (fileToOpenAfterStartup != null) {
 					boolean returnImage = false;
-					openImageFile(new File(fileToOpenAfterStartup), returnImage);
+					File fileToOpenNow = new File(fileToOpenAfterStartup);
+					Directory containingDir = fileToOpenNow.getParentDirectory();
+					// for now, store this configuration in memory but do not necessary save if we open picturizer more as image viewer for a second
+					configuration.set(CONFIG_KEY_LAST_DIRECTORY, containingDir.getAbsoluteDirname());
+					openImageFile(fileToOpenNow, returnImage);
 				}
 
 				setPosLabelTexts(0, 0);
@@ -970,6 +974,7 @@ public class GUI extends MainWindow {
 		augFilePicker.setDialogTitle("Open a Picture File to Edit");
 		augFilePicker.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		augFilePicker.setMultiSelectionEnabled(false);
+		augFilePicker.setFileHidingEnabled(false);
 
 		addOpenFileFilters(augFilePicker);
 
@@ -1496,6 +1501,10 @@ public class GUI extends MainWindow {
 	void setZoomFactor(double newZoomFactor) {
 		zoomFactor = newZoomFactor;
 		refreshMainView();
+	}
+
+	public ImageFileCtrl getImageFileCtrl() {
+		return imageFileCtrl;
 	}
 
 }

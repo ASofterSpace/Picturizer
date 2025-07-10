@@ -4,14 +4,18 @@
  */
 package com.asofterspace.picturizer;
 
+import com.asofterspace.toolbox.configuration.ConfigFile;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageLayer;
 import com.asofterspace.toolbox.images.ImageLayerBasedOnImage;
 import com.asofterspace.toolbox.images.ImageMultiLayered;
+import com.asofterspace.toolbox.io.Directory;
+import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.utils.MathUtils;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -230,7 +234,7 @@ public class GUIMenuGlitch {
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				applyRandomGlitch(gui);
+				applyRandomGlitch(gui, false);
 			}
 		});
 		glitch.add(curMenuItem);
@@ -246,7 +250,35 @@ public class GUIMenuGlitch {
 					Thread glitchThread = new Thread() {
 						public void run() {
 							while (glitchThreadRunning) {
-								applyRandomGlitch(gui);
+								applyRandomGlitch(gui, false);
+								try {
+									// wait 128 ms between glitches
+									Thread.sleep(128);
+								} catch (InterruptedException e) {
+									// task interrupted - let's bail, this is not so important anyway!
+									break;
+								}
+							}
+						}
+					};
+					glitchThread.start();
+				}
+			}
+		});
+		glitch.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Glitch Continuously in Directory of Last Opened File (Start / Stop)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				glitchThreadRunning = !glitchThreadRunning;
+
+				if (glitchThreadRunning) {
+					Thread glitchThread = new Thread() {
+						public void run() {
+							while (glitchThreadRunning) {
+								applyRandomGlitch(gui, true);
 								try {
 									// wait 128 ms between glitches
 									Thread.sleep(128);
@@ -266,7 +298,7 @@ public class GUIMenuGlitch {
 		return glitch;
 	}
 
-	private void applyRandomGlitch(GUI gui) {
+	private void applyRandomGlitch(GUI gui, boolean loadRandomImageFiles) {
 
 		gui.saveCurPicForUndo();
 		ImageMultiLayered iml = gui.getPicture();
@@ -298,15 +330,38 @@ public class GUIMenuGlitch {
 					untilY = baseImg.getHeight() - 1;
 				}
 
-				int whichGlitch = MathUtils.randomInteger(9);
+				int whichGlitch = MathUtils.randomInteger(20);
+				// skip the image loading if we do not want it to happen
+				if (!loadRandomImageFiles) {
+					whichGlitch = whichGlitch + 2;
+				}
 				switch (whichGlitch) {
 					case 0:
+					case 1:
+						// load an image
+						ConfigFile configuration = gui.getConfiguration();
+						String lastDirectory = configuration.getValue(GUI.CONFIG_KEY_LAST_DIRECTORY);
+						if (lastDirectory != null) {
+							Directory lastDir = new Directory(lastDirectory);
+							boolean recursively = false;
+							List<File> imageFiles = lastDir.getAllFiles(recursively);
+							int randomFileNum = MathUtils.randomInteger(imageFiles.size());
+							Image newImg = gui.getImageFileCtrl().loadImageFromFile(imageFiles.get(randomFileNum));
+							int drawAtX = MathUtils.randomInteger((drawImg.getWidth() * 12) / 10) - ((drawImg.getWidth() * 2) / 10);
+							int drawAtY = MathUtils.randomInteger((drawImg.getHeight() * 12) / 10) - ((drawImg.getHeight() * 2) / 10);
+							drawImg.draw(newImg, drawAtX, drawAtY, fromX, fromY, untilX, untilY);
+						}
+						break;
+					case 2:
+					case 3:
+					case 4:
 						// box-shatter
 						int drawAtX = MathUtils.randomInteger((drawImg.getWidth() * 12) / 10) - ((drawImg.getWidth() * 2) / 10);
 						int drawAtY = MathUtils.randomInteger((drawImg.getHeight() * 12) / 10) - ((drawImg.getHeight() * 2) / 10);
 						drawImg.draw(baseImg, drawAtX, drawAtY, fromX, fromY, untilX, untilY);
 						break;
-					case 1:
+					case 5:
+					case 6:
 						// box-krizzel
 						baseImg.createNoise();
 						int boxAmount = MathUtils.randomInteger(10) + 2;
@@ -324,12 +379,15 @@ public class GUIMenuGlitch {
 							drawImg.draw(baseImg, fromX, fromY, fromX, fromY, untilX, untilY);
 						}
 						break;
-					case 2:
+					case 7:
+					case 8:
+					case 9:
 						// box-pixelate
 						baseImg.pixelate(MathUtils.randomInteger(16)+4);
 						drawImg.draw(baseImg, fromX, fromY, fromX, fromY, untilX, untilY);
 						break;
-					case 3:
+					case 10:
+					case 11:
 						// box-line
 						int lineAmount = MathUtils.randomInteger(7) + 3;
 						for (int l = 0; l < lineAmount; l++) {
