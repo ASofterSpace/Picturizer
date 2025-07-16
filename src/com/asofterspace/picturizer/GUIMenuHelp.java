@@ -77,7 +77,8 @@ public class GUIMenuHelp {
 			public void actionPerformed(ActionEvent e) {
 				String aboutMessage = "This is the " + Picturizer.PROGRAM_TITLE + ".\n" +
 					"Version: " + Picturizer.VERSION_NUMBER + " (" + Picturizer.VERSION_DATE + ")\n" +
-					"Brought to you by: A Softer Space";
+					"Brought to you by: A Softer Space\n\n" +
+					"(To start in commandline mode, open an instruction JSON file.)";
 				JOptionPane.showMessageDialog(null, aboutMessage, "About", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});

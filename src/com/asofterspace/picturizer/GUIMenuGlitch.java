@@ -4,6 +4,7 @@
  */
 package com.asofterspace.picturizer;
 
+import com.asofterspace.picturizer.utils.GlitchUtils;
 import com.asofterspace.toolbox.configuration.ConfigFile;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageLayer;
@@ -42,19 +43,25 @@ public class GUIMenuGlitch {
 				if (layer != null) {
 					if (layer instanceof ImageLayerBasedOnImage) {
 						ImageLayerBasedOnImage il = (ImageLayerBasedOnImage) layer;
-						Image baseImg = il.getImage();
-						Image drawImg = baseImg.copy();
-						int boxAmount = MathUtils.randomInteger(5) + 3;
-						for (int i = 0; i < boxAmount; i++) {
-							int drawAtX = MathUtils.randomInteger((drawImg.getWidth() * 12) / 10) - ((drawImg.getWidth() * 2) / 10);
-							int drawAtY = MathUtils.randomInteger((drawImg.getHeight() * 12) / 10) - ((drawImg.getHeight() * 2) / 10);
-							int fromX = MathUtils.randomInteger(baseImg.getWidth());
-							int fromY = MathUtils.randomInteger(baseImg.getHeight());
-							int untilX = fromX + MathUtils.randomInteger(baseImg.getWidth() - fromX);
-							int untilY = fromY + MathUtils.randomInteger(baseImg.getHeight() - fromY);
-							drawImg.draw(baseImg, drawAtX, drawAtY, fromX, fromY, untilX, untilY);
-						}
-						il.setImage(drawImg);
+						il.setImage(GlitchUtils.boxShatter(il.getImage()));
+						gui.setPictureUndoTakenCareOf(iml);
+					}
+				}
+			}
+		});
+		glitch.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Box-Swap");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				ImageMultiLayered iml = gui.getPicture();
+				ImageLayer layer = iml.getLayer(gui.getCurrentLayerIndex());
+				if (layer != null) {
+					if (layer instanceof ImageLayerBasedOnImage) {
+						ImageLayerBasedOnImage il = (ImageLayerBasedOnImage) layer;
+						il.setImage(GlitchUtils.boxSwap(il.getImage()));
 						gui.setPictureUndoTakenCareOf(iml);
 					}
 				}
@@ -72,24 +79,7 @@ public class GUIMenuGlitch {
 				if (layer != null) {
 					if (layer instanceof ImageLayerBasedOnImage) {
 						ImageLayerBasedOnImage il = (ImageLayerBasedOnImage) layer;
-						Image baseImg = il.getImage();
-						Image drawImg = baseImg.copy();
-						int boxAmount = MathUtils.randomInteger(25) + 10;
-						baseImg.createNoise();
-						for (int i = 0; i < boxAmount; i++) {
-							int fromX = MathUtils.randomInteger(baseImg.getWidth());
-							int fromY = MathUtils.randomInteger(baseImg.getHeight());
-							int divX = 10;
-							int divY = 1;
-							if (MathUtils.randomInteger(2) < 1) {
-								divX = 1;
-								divY = 10;
-							}
-							int untilX = fromX + (MathUtils.randomInteger(baseImg.getWidth()) / divX);
-							int untilY = fromY + (MathUtils.randomInteger(baseImg.getHeight()) / divY);
-							drawImg.draw(baseImg, fromX, fromY, fromX, fromY, untilX, untilY);
-						}
-						il.setImage(drawImg);
+						il.setImage(GlitchUtils.boxKrizzel(il.getImage()));
 						gui.setPictureUndoTakenCareOf(iml);
 					}
 				}
@@ -107,18 +97,7 @@ public class GUIMenuGlitch {
 				if (layer != null) {
 					if (layer instanceof ImageLayerBasedOnImage) {
 						ImageLayerBasedOnImage il = (ImageLayerBasedOnImage) layer;
-						Image baseImg = il.getImage();
-						Image drawImg = baseImg.copy();
-						int boxAmount = MathUtils.randomInteger(5) + 3;
-						baseImg.pixelate(MathUtils.randomInteger(16)+4);
-						for (int i = 0; i < boxAmount; i++) {
-							int fromX = MathUtils.randomInteger(baseImg.getWidth());
-							int fromY = MathUtils.randomInteger(baseImg.getHeight());
-							int untilX = fromX + MathUtils.randomInteger(baseImg.getWidth() - fromX);
-							int untilY = fromY + MathUtils.randomInteger(baseImg.getHeight() - fromY);
-							drawImg.draw(baseImg, fromX, fromY, fromX, fromY, untilX, untilY);
-						}
-						il.setImage(drawImg);
+						il.setImage(GlitchUtils.boxPixelate(il.getImage()));
 						gui.setPictureUndoTakenCareOf(iml);
 					}
 				}
@@ -136,14 +115,7 @@ public class GUIMenuGlitch {
 				if (layer != null) {
 					if (layer instanceof ImageLayerBasedOnImage) {
 						ImageLayerBasedOnImage il = (ImageLayerBasedOnImage) layer;
-						Image baseImg = il.getImage();
-						Image drawImg = baseImg.copy();
-						int lineAmount = MathUtils.randomInteger(25) + 15;
-						for (int l = 0; l < lineAmount; l++) {
-							int curY = MathUtils.randomInteger(baseImg.getHeight());
-							drawImg.drawRectangle(0, curY, baseImg.getWidth() - 1, curY, baseImg.getPixel(0, curY));
-						}
-						il.setImage(drawImg);
+						il.setImage(GlitchUtils.lineifyVertically(il.getImage()));
 						gui.setPictureUndoTakenCareOf(iml);
 					}
 				}
@@ -161,41 +133,8 @@ public class GUIMenuGlitch {
 				if (layer != null) {
 					if (layer instanceof ImageLayerBasedOnImage) {
 						ImageLayerBasedOnImage il = (ImageLayerBasedOnImage) layer;
-						Image baseImg = il.getImage();
-						Image drawImg = baseImg.copy();
-
-						int boxAmount = MathUtils.randomInteger(5) + 3;
-						for (int i = 0; i < boxAmount; i++) {
-
-							int midX = MathUtils.randomInteger(baseImg.getWidth());
-							int midY = MathUtils.randomInteger(baseImg.getHeight());
-							int wid = MathUtils.randomInteger(baseImg.getWidth() / 3);
-							int hei = MathUtils.randomInteger(baseImg.getHeight() / 3);
-							int fromX = midX - wid;
-							int fromY = midY - hei;
-							int untilX = midX + wid;
-							int untilY = midY + hei;
-							if (fromX < 0) {
-								fromX = 0;
-							}
-							if (fromY < 0) {
-								fromY = 0;
-							}
-							if (untilX >= baseImg.getWidth()) {
-								untilX = baseImg.getWidth() - 1;
-							}
-							if (untilY >= baseImg.getHeight()) {
-								untilY = baseImg.getHeight() - 1;
-							}
-
-							int lineAmount = MathUtils.randomInteger(9) + 3;
-							for (int l = 0; l < lineAmount; l++) {
-								int curY = fromY + MathUtils.randomInteger(untilY - fromY);
-								drawImg.drawRectangle(fromX, curY, untilX, curY, baseImg.getPixel(0, curY));
-							}
-							il.setImage(drawImg);
-							gui.setPictureUndoTakenCareOf(iml);
-						}
+						il.setImage(GlitchUtils.boxLineifyVertically(il.getImage()));
+						gui.setPictureUndoTakenCareOf(iml);
 					}
 				}
 			}
@@ -212,17 +151,7 @@ public class GUIMenuGlitch {
 				if (layer != null) {
 					if (layer instanceof ImageLayerBasedOnImage) {
 						ImageLayerBasedOnImage il = (ImageLayerBasedOnImage) layer;
-						Image baseImg = il.getImage();
-						Image drawImg = baseImg.copy();
-						int pixAmount = MathUtils.randomInteger(15) + 5;
-						int pixSize = MathUtils.randomInteger(9) + 3;
-						for (int p = 0; p < pixAmount; p++) {
-							int curX = MathUtils.randomInteger(baseImg.getWidth() / pixSize);
-							int curY = MathUtils.randomInteger(baseImg.getHeight() / pixSize);
-							drawImg.drawRectangle(curX*pixSize, curY*pixSize, (curX+1)*pixSize, (curY+1)*pixSize,
-								baseImg.getPixel(curX*pixSize, curY*pixSize));
-						}
-						il.setImage(drawImg);
+						il.setImage(GlitchUtils.individualPixels(il.getImage()));
 						gui.setPictureUndoTakenCareOf(iml);
 					}
 				}
@@ -362,6 +291,16 @@ public class GUIMenuGlitch {
 						break;
 					case 5:
 					case 6:
+						// box-swap
+						int fromX2 = MathUtils.randomInteger(baseImg.getWidth());
+						int fromY2 = MathUtils.randomInteger(baseImg.getHeight());
+						int untilX2 = fromX2 + untilX - fromX;
+						int untilY2 = fromY2 + untilY - fromY;
+						drawImg.draw(baseImg, fromX2, fromY2, fromX, fromY, untilX, untilY);
+						drawImg.draw(baseImg, fromX, fromY, fromX2, fromY2, untilX2, untilY2);
+						break;
+					case 7:
+					case 8:
 						// box-krizzel
 						baseImg.createNoise();
 						int boxAmount = MathUtils.randomInteger(10) + 2;
@@ -379,15 +318,15 @@ public class GUIMenuGlitch {
 							drawImg.draw(baseImg, fromX, fromY, fromX, fromY, untilX, untilY);
 						}
 						break;
-					case 7:
-					case 8:
 					case 9:
+					case 10:
+					case 11:
 						// box-pixelate
 						baseImg.pixelate(MathUtils.randomInteger(16)+4);
 						drawImg.draw(baseImg, fromX, fromY, fromX, fromY, untilX, untilY);
 						break;
-					case 10:
-					case 11:
+					case 12:
+					case 13:
 						// box-line
 						int lineAmount = MathUtils.randomInteger(7) + 3;
 						for (int l = 0; l < lineAmount; l++) {

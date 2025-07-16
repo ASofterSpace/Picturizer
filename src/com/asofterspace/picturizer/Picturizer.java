@@ -4,7 +4,9 @@
  */
 package com.asofterspace.picturizer;
 
+import com.asofterspace.picturizer.commandline.CommandLineHandler;
 import com.asofterspace.toolbox.configuration.ConfigFile;
+import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.io.IoUtils;
 import com.asofterspace.toolbox.utils.Record;
 import com.asofterspace.toolbox.Utils;
@@ -15,8 +17,8 @@ import javax.swing.SwingUtilities;
 public class Picturizer {
 
 	public final static String PROGRAM_TITLE = "Picturizer";
-	public final static String VERSION_NUMBER = "0.0.2.9(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
-	public final static String VERSION_DATE = "9. November 2019 - 10. July 2025";
+	public final static String VERSION_NUMBER = "0.0.3.0(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
+	public final static String VERSION_DATE = "9. November 2019 - 15. July 2025";
 
 	private static ConfigFile config;
 
@@ -42,15 +44,21 @@ public class Picturizer {
 
 		String fileToOpen = IoUtils.assembleArgumentsIntoOne(args);
 
-		if (fileToOpen == null) {
-			System.out.println("Pictures, wheee! \\o/");
-		} else {
-			System.out.println("Playing with '" + fileToOpen + "'...");
-		}
-
 		// load config
 		boolean onlyUseDefaultIfBroken = true;
 		config = new ConfigFile("settings", true, Record.emptyObject(), onlyUseDefaultIfBroken);
+
+		if (fileToOpen == null) {
+			System.out.println("Starting GUI to play with pictures, wheee! \\o/");
+		} else {
+			if (fileToOpen.toLowerCase().endsWith(".json")) {
+				System.out.println("Starting in commandline-mode with instruction file '" + fileToOpen + "'...");
+				CommandLineHandler clHandler = new CommandLineHandler(new File(fileToOpen));
+				clHandler.run();
+			} else {
+				System.out.println("Starting GUI to play with input file '" + fileToOpen + "'...");
+			}
+		}
 
 		SwingUtilities.invokeLater(new GUI(config, fileToOpen));
 	}
