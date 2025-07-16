@@ -2,7 +2,10 @@
  * Unlicensed code created by A Softer Space, 2025
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui.menu;
+
+import com.asofterspace.picturizer.gui.CreateGridGUI;
+import com.asofterspace.picturizer.gui.GUI;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,10 +16,10 @@ import javax.swing.JMenuItem;
 
 public class GUIMenuGrid {
 
-	private CreateGridGUI createGridGUI = null;
+	private static CreateGridGUI createGridGUI = null;
 
 
-	JMenu createMenu(GUI gui) {
+	public JMenu createMenu(GUI gui) {
 
 		JMenu grid = new JMenu("Grid");
 
@@ -43,7 +46,7 @@ public class GUIMenuGrid {
 		return grid;
 	}
 
-	void showGridGUI(GUI gui, boolean createNew) {
+	static void showGridGUI(GUI gui, boolean createNew) {
 
 		if (createGridGUI == null) {
 			createGridGUI = new CreateGridGUI(gui);

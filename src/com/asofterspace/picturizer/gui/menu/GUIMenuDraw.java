@@ -2,8 +2,10 @@
  * Unlicensed code created by A Softer Space, 2025
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui.menu;
 
+import com.asofterspace.picturizer.gui.GUI;
+import com.asofterspace.picturizer.gui.Tool;
 import com.asofterspace.toolbox.gui.GuiUtils;
 
 import java.awt.event.ActionEvent;
@@ -44,7 +46,7 @@ public class GUIMenuDraw {
 	private JMenuItem drawAreaBG;
 
 
-	JMenu createMenu(GUI gui) {
+	public JMenu createMenu(GUI gui) {
 
 		JMenu draw = new JMenu("Draw");
 
@@ -201,7 +203,7 @@ public class GUIMenuDraw {
 		return draw;
 	}
 
-	void refreshTools(Tool activeTool, int activeToolSize) {
+	public void refreshTools(Tool activeTool, int activeToolSize) {
 		GUIMenuTools.adjustToolTitle(drawPenFG1, TOOL_TEXTS_PEN_FG + "1", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 1));
 		GUIMenuTools.adjustToolTitle(drawPenFG2, TOOL_TEXTS_PEN_FG + "2", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 2));
 		GUIMenuTools.adjustToolTitle(drawPenFG4, TOOL_TEXTS_PEN_FG + "4", (activeTool == Tool.DRAW_PEN_FG) && (activeToolSize == 4));

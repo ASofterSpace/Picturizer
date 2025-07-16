@@ -2,8 +2,9 @@
  * Unlicensed code created by A Softer Space, 2025
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui.menu;
 
+import com.asofterspace.picturizer.gui.GUI;
 import com.asofterspace.toolbox.images.ColorRGBA;
 
 import java.awt.Color;
@@ -16,7 +17,7 @@ import javax.swing.JMenuItem;
 
 public class GUIMenuWindow {
 
-	JMenu createMenu(GUI gui) {
+	public JMenu createMenu(GUI gui) {
 
 		JMenu view = new JMenu("Window");
 

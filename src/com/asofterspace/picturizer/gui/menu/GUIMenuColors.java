@@ -2,8 +2,11 @@
  * Unlicensed code created by A Softer Space, 2025
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui.menu;
 
+import com.asofterspace.picturizer.gui.ColorPickerGUI;
+import com.asofterspace.picturizer.gui.GUI;
+import com.asofterspace.picturizer.gui.Tool;
 import com.asofterspace.toolbox.images.ColorRGBA;
 
 import java.awt.event.ActionEvent;
@@ -20,7 +23,7 @@ public class GUIMenuColors {
 
 	private ColorPickerGUI colorPickerGUI = null;
 
-	private boolean colorToBePickedIsForeground = true;
+	private static boolean colorToBePickedIsForeground = true;
 
 	private JMenuItem setForegroundToPipette;
 	private JMenuItem setForegroundToPipette4;
@@ -28,7 +31,7 @@ public class GUIMenuColors {
 	private JMenuItem setBackgroundToPipette;
 
 
-	JMenu createMenu(GUI gui) {
+	public JMenu createMenu(GUI gui) {
 
 		JMenu colors = new JMenu("Colors");
 
@@ -146,7 +149,7 @@ public class GUIMenuColors {
 		return colors;
 	}
 
-	public void setPickedColor(GUI gui, ColorRGBA newColor) {
+	public static void setPickedColor(GUI gui, ColorRGBA newColor) {
 		if (colorToBePickedIsForeground) {
 			gui.setForegroundColor(newColor);
 		} else {
@@ -154,7 +157,7 @@ public class GUIMenuColors {
 		}
 	}
 
-	void refreshTools(Tool activeTool, int activeToolSize) {
+	public void refreshTools(Tool activeTool, int activeToolSize) {
 		GUIMenuTools.adjustToolTitle(setForegroundToPipette, TOOL_TEXTS_PIPETTE_FG, (activeTool == Tool.PIPETTE_FG) && (activeToolSize == 1));
 		GUIMenuTools.adjustToolTitle(setForegroundToPipette4, TOOL_TEXTS_PIPETTE_FG + " + 4 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (activeToolSize == 5));
 		GUIMenuTools.adjustToolTitle(setForegroundToPipette12, TOOL_TEXTS_PIPETTE_FG + " + 12 Pixels Around", (activeTool == Tool.PIPETTE_FG) && (activeToolSize == 13));

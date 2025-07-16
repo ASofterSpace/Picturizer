@@ -2,10 +2,10 @@
  * Unlicensed code created by A Softer Space, 2025
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui.menu;
 
+import com.asofterspace.picturizer.gui.GUI;
 import com.asofterspace.toolbox.images.Image;
-import com.asofterspace.toolbox.images.ImageLayer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,7 +16,7 @@ import javax.swing.JMenuItem;
 
 public class GUIMenuMixing {
 
-	JMenu createMenu(GUI gui) {
+	public JMenu createMenu(GUI gui) {
 
 		JMenu mixing = new JMenu("Mixing");
 

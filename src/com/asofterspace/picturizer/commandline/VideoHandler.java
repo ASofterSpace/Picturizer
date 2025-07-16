@@ -4,6 +4,7 @@
  */
 package com.asofterspace.picturizer.commandline;
 
+import com.asofterspace.picturizer.video.VideoFrame;
 import com.asofterspace.toolbox.utils.Record;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ public class VideoHandler {
 	private Record videoRoot = null;
 
 
-	public CommandLineHandler(Record videoRootRec) {
+	public VideoHandler(Record videoRootRec) {
 		this.videoRoot = videoRootRec;
 	}
 

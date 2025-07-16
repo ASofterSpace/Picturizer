@@ -2,10 +2,9 @@
  * Unlicensed code created by A Softer Space, 2025
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui.menu;
 
-import com.asofterspace.toolbox.images.Image;
-import com.asofterspace.toolbox.images.ImageLayer;
+import com.asofterspace.picturizer.gui.GUI;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,7 +15,7 @@ import javax.swing.JMenuItem;
 
 public class GUIMenuIntensify {
 
-	JMenu createMenu(GUI gui) {
+	public JMenu createMenu(GUI gui) {
 
 		JMenu intensify = new JMenu("Intensify");
 
@@ -83,7 +82,7 @@ public class GUIMenuIntensify {
 		});
 		intensify.add(curMenuItem);
 
-		gui.guiMenuPixels.addPixelLevelDiffMapButtons(gui, intensify);
+		GUIMenuPixels.addPixelLevelDiffMapButtons(gui, intensify);
 
 		return intensify;
 	}

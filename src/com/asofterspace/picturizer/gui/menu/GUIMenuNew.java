@@ -2,8 +2,10 @@
  * Unlicensed code created by A Softer Space, 2025
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui.menu;
 
+import com.asofterspace.picturizer.gui.GUI;
+import com.asofterspace.picturizer.gui.QrGUI;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
@@ -29,7 +31,7 @@ public class GUIMenuNew {
 	private QrGUI qrGUI = null;
 
 
-	JMenu createMenu(GUI gui) {
+	public JMenu createMenu(GUI gui) {
 
 		JMenu newFile = new JMenu("New");
 
@@ -136,7 +138,7 @@ public class GUIMenuNew {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				boolean createNew = true;
-				gui.guiMenuGrid.showGridGUI(gui, createNew);
+				GUIMenuGrid.showGridGUI(gui, createNew);
 			}
 		});
 		newFile.add(newGrid1);
@@ -144,7 +146,7 @@ public class GUIMenuNew {
 		return newFile;
 	}
 
-	void createNewEmptyFile(GUI gui) {
+	public void createNewEmptyFile(GUI gui) {
 		createNewNoisyFile(gui, 0);
 	}
 

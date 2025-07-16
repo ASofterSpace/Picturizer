@@ -2,8 +2,27 @@
  * Unlicensed code created by A Softer Space, 2019
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui;
 
+import com.asofterspace.picturizer.gui.menu.GUIMenuChannels;
+import com.asofterspace.picturizer.gui.menu.GUIMenuColors;
+import com.asofterspace.picturizer.gui.menu.GUIMenuDampen;
+import com.asofterspace.picturizer.gui.menu.GUIMenuDarkenBrighten;
+import com.asofterspace.picturizer.gui.menu.GUIMenuDraw;
+import com.asofterspace.picturizer.gui.menu.GUIMenuEdit;
+import com.asofterspace.picturizer.gui.menu.GUIMenuFile;
+import com.asofterspace.picturizer.gui.menu.GUIMenuGlitch;
+import com.asofterspace.picturizer.gui.menu.GUIMenuGrid;
+import com.asofterspace.picturizer.gui.menu.GUIMenuHelp;
+import com.asofterspace.picturizer.gui.menu.GUIMenuIntensify;
+import com.asofterspace.picturizer.gui.menu.GUIMenuInvert;
+import com.asofterspace.picturizer.gui.menu.GUIMenuLayers;
+import com.asofterspace.picturizer.gui.menu.GUIMenuMixing;
+import com.asofterspace.picturizer.gui.menu.GUIMenuNew;
+import com.asofterspace.picturizer.gui.menu.GUIMenuPixels;
+import com.asofterspace.picturizer.gui.menu.GUIMenuTools;
+import com.asofterspace.picturizer.gui.menu.GUIMenuWindow;
+import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.toolbox.configuration.ConfigFile;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
@@ -101,24 +120,24 @@ public class GUI extends MainWindow {
 	private JLabel curPosWLabel;
 	private JLabel curPosHLabel;
 
-	GUIMenuFile guiMenuFile;
-	GUIMenuNew guiMenuNew;
-	GUIMenuEdit guiMenuEdit;
-	GUIMenuLayers guiMenuLayers;
-	GUIMenuTools guiMenuTools;
-	GUIMenuGrid guiMenuGrid;
-	GUIMenuColors guiMenuColors;
-	GUIMenuDraw guiMenuDraw;
-	GUIMenuPixels guiMenuPixels;
-	GUIMenuChannels guiMenuChannels;
-	GUIMenuInvert guiMenuInvert;
-	GUIMenuDampen guiMenuDampen;
-	GUIMenuDarkenBrighten guiMenuDarkenBrighten;
-	GUIMenuIntensify guiMenuIntensify;
-	GUIMenuGlitch guiMenuGlitch;
-	GUIMenuMixing guiMenuMixing;
-	GUIMenuWindow guiMenuWindow;
-	GUIMenuHelp guiMenuHelp;
+	private GUIMenuFile guiMenuFile;
+	private GUIMenuNew guiMenuNew;
+	private GUIMenuEdit guiMenuEdit;
+	private GUIMenuLayers guiMenuLayers;
+	private GUIMenuTools guiMenuTools;
+	private GUIMenuGrid guiMenuGrid;
+	private GUIMenuColors guiMenuColors;
+	private GUIMenuDraw guiMenuDraw;
+	private GUIMenuPixels guiMenuPixels;
+	private GUIMenuChannels guiMenuChannels;
+	private GUIMenuInvert guiMenuInvert;
+	private GUIMenuDampen guiMenuDampen;
+	private GUIMenuDarkenBrighten guiMenuDarkenBrighten;
+	private GUIMenuIntensify guiMenuIntensify;
+	private GUIMenuGlitch guiMenuGlitch;
+	private GUIMenuMixing guiMenuMixing;
+	private GUIMenuWindow guiMenuWindow;
+	private GUIMenuHelp guiMenuHelp;
 
 	private GUIButtonHolder guiButtonHolder;
 
@@ -132,6 +151,8 @@ public class GUI extends MainWindow {
 	private ImageIcon imageViewer;
 	private JLabel imageViewerLabel;
 	private ImageMultiLayered picture;
+	private ImageMultiLayered undoablePicture5;
+	private ImageMultiLayered undoablePicture4;
 	private ImageMultiLayered undoablePicture3;
 	private ImageMultiLayered undoablePicture2;
 	private ImageMultiLayered undoablePicture1;
@@ -923,7 +944,7 @@ public class GUI extends MainWindow {
 		return picture.bake();
 	}
 
-	ImageMultiLayered getPicture() {
+	public ImageMultiLayered getPicture() {
 		return picture;
 	}
 
@@ -941,7 +962,7 @@ public class GUI extends MainWindow {
 		refreshLayerView();
 	}
 
-	void setPictureUndoTakenCareOf(ImageMultiLayered newPicture) {
+	public void setPictureUndoTakenCareOf(ImageMultiLayered newPicture) {
 
 		picture = newPicture;
 
@@ -951,11 +972,11 @@ public class GUI extends MainWindow {
 		refreshTitleBarAndSaveExportItems();
 	}
 
-	ImageMultiLayered getUndoablePicture() {
+	public ImageMultiLayered getUndoablePicture() {
 		return undoablePicture;
 	}
 
-	Image openFile(boolean returnImage) {
+	public Image openFile(boolean returnImage) {
 
 		// TODO :: de-localize the JFileChooser (by default it seems localized, which is inconsistent when the rest of the program is in English...)
 		// (while you're at it, make Öffnen into Save for the save dialog, but keep it as Open for the open dialog... ^^)
@@ -1027,7 +1048,7 @@ public class GUI extends MainWindow {
 		return null;
 	}
 
-	void saveOrExportFile(boolean exporting) {
+	public void saveOrExportFile(boolean exporting) {
 
 		JFileChooser augFilePicker;
 
@@ -1094,7 +1115,7 @@ public class GUI extends MainWindow {
 		}
 	}
 
-	void saveFileAgain() {
+	public void saveFileAgain() {
 		saveImageToFile(picture, new File(lastSavePath));
 	}
 
@@ -1110,11 +1131,11 @@ public class GUI extends MainWindow {
 		refreshTitleBarAndSaveExportItems();
 	}
 
-	void exportFileAgain() {
+	public void exportFileAgain() {
 		exportImageToFile(picture.bake(), new File(lastExportPath));
 	}
 
-	void exportImageToFile(Image picture, File selectedFile) {
+	public void exportImageToFile(Image picture, File selectedFile) {
 		imageFileCtrl.saveImageToFile(picture, selectedFile);
 		lastExportPath = selectedFile.getCanonicalFilename();
 		refreshTitleBarAndSaveExportItems();
@@ -1144,7 +1165,7 @@ public class GUI extends MainWindow {
 		}
 	}
 
-	void refreshMainView() {
+	public void refreshMainView() {
 		int offset = MAIN_VIEW_OFFSET;
 		Image zoomedPicture = picture.bake();
 		if ((zoomFactor < 0.95) || (zoomFactor > 1.05)) {
@@ -1206,7 +1227,9 @@ public class GUI extends MainWindow {
 		mainPanelRight.repaint();
 	}
 
-	void saveCurPicForUndo() {
+	public void saveCurPicForUndo() {
+		undoablePicture5 = undoablePicture4;
+		undoablePicture4 = undoablePicture3;
 		undoablePicture3 = undoablePicture2;
 		undoablePicture2 = undoablePicture1;
 		undoablePicture1 = undoablePicture;
@@ -1218,32 +1241,32 @@ public class GUI extends MainWindow {
 		redoablePicture = null;
 	}
 
-	void switchForeAndBackColor() {
+	public void switchForeAndBackColor() {
 		ColorRGBA prevBackgroundColor = backgroundColor;
 		backgroundColor = foregroundColor;
 		foregroundColor = prevBackgroundColor;
 		refreshLeftView();
 	}
 
-	ColorRGBA getForegroundColor() {
+	public ColorRGBA getForegroundColor() {
 		return foregroundColor;
 	}
 
-	void setForegroundColor(ColorRGBA col) {
+	public void setForegroundColor(ColorRGBA col) {
 		foregroundColor = col;
 		refreshLeftView();
 	}
 
-	ColorRGBA getBackgroundColor() {
+	public ColorRGBA getBackgroundColor() {
 		return backgroundColor;
 	}
 
-	void setBackgroundColor(ColorRGBA col) {
+	public void setBackgroundColor(ColorRGBA col) {
 		backgroundColor = col;
 		refreshLeftView();
 	}
 
-	void setWindowBackgroundColor(Color newBgColor) {
+	public void setWindowBackgroundColor(Color newBgColor) {
 		windowBackgroundColor = new ColorRGBA(newBgColor);
 		imageViewerLabel.setBackground(newBgColor);
 		mainPanelLeftViewerLabel.setBackground(newBgColor);
@@ -1253,7 +1276,7 @@ public class GUI extends MainWindow {
 		refreshLeftView();
 	}
 
-	void undo() {
+	public void undo() {
 		if (undoablePicture == null) {
 			return;
 		}
@@ -1262,14 +1285,18 @@ public class GUI extends MainWindow {
 		undoablePicture = undoablePicture1;
 		undoablePicture1 = undoablePicture2;
 		undoablePicture2 = undoablePicture3;
+		undoablePicture3 = undoablePicture4;
+		undoablePicture4 = undoablePicture5;
 		refreshMainView();
 		refreshLayerView();
 	}
 
-	void redo() {
+	public void redo() {
 		if (redoablePicture == null) {
 			return;
 		}
+		undoablePicture5 = undoablePicture4;
+		undoablePicture4 = undoablePicture3;
 		undoablePicture3 = undoablePicture2;
 		undoablePicture2 = undoablePicture1;
 		undoablePicture1 = undoablePicture;
@@ -1292,7 +1319,7 @@ public class GUI extends MainWindow {
 		refreshTools();
 	}
 
-	void setActiveTool(Tool tool) {
+	public void setActiveTool(Tool tool) {
 		if (activeTool == tool) {
 			activeTool = null;
 		} else {
@@ -1301,7 +1328,7 @@ public class GUI extends MainWindow {
 		refreshTools();
 	}
 
-	void setActiveTool(Tool tool, int size) {
+	public void setActiveTool(Tool tool, int size) {
 		if ((activeTool == tool) && (activeToolSize == size)) {
 			activeTool = null;
 		} else {
@@ -1338,7 +1365,7 @@ public class GUI extends MainWindow {
 		guiButtonHolder.refreshTools(activeTool);
 	}
 
-	ImageLayer getCurrentLayer() {
+	public ImageLayer getCurrentLayer() {
 		ImageLayer layer = picture.getLayer(currentLayerIndex);
 		if (layer != null) {
 			return layer;
@@ -1346,7 +1373,7 @@ public class GUI extends MainWindow {
 		return new ImageLayerBasedOnText(0, 0, "", "", 1, foregroundColor);
 	}
 
-	ImageLayerBasedOnImage getCurrentImageLayer() {
+	public ImageLayerBasedOnImage getCurrentImageLayer() {
 		ImageLayer layer = picture.getLayer(currentLayerIndex);
 		if (layer != null) {
 			if (layer instanceof ImageLayerBasedOnImage) {
@@ -1425,7 +1452,7 @@ public class GUI extends MainWindow {
 		mainPanelLeftColorPicker.repaint();
 	}
 
-	void refreshLayerView() {
+	public void refreshLayerView() {
 		if (currentLayerIndex >= picture.getLayerAmount()) {
 			currentLayerIndex = picture.getLayerAmount() - 1;
 		}
@@ -1466,31 +1493,31 @@ public class GUI extends MainWindow {
 		}
 	}
 
-	int getCurrentLayerIndex() {
+	public int getCurrentLayerIndex() {
 		return currentLayerIndex;
 	}
 
-	void setCurrentLayerIndex(int currentLayerIndex) {
+	public void setCurrentLayerIndex(int currentLayerIndex) {
 		this.currentLayerIndex = currentLayerIndex;
 	}
 
-	int getPrevClickX() {
+	public int getPrevClickX() {
 		return prevClickX;
 	}
 
-	int getPrevClickY() {
+	public int getPrevClickY() {
 		return prevClickY;
 	}
 
-	int getLastClickX() {
+	public int getLastClickX() {
 		return lastClickX;
 	}
 
-	int getLastClickY() {
+	public int getLastClickY() {
 		return lastClickY;
 	}
 
-	ConfigFile getConfiguration() {
+	public ConfigFile getConfiguration() {
 		return configuration;
 	}
 

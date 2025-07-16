@@ -2,14 +2,13 @@
  * Unlicensed code created by A Softer Space, 2024
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui;
 
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.utils.StrUtils;
-import com.asofterspace.toolbox.Utils;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

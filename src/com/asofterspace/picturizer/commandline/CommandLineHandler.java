@@ -33,7 +33,7 @@ public class CommandLineHandler {
 			return;
 		}
 
-		String type = inputRoot.get("type");
+		String type = inputRoot.getString("type");
 		if (type == null) {
 			System.out.println("No type given!");
 			return;
@@ -41,8 +41,8 @@ public class CommandLineHandler {
 
 		switch (type) {
 			case "video":
-				VideoHandler vh = new VideoHandler(inputRoot);
-				vh.run(inputRoot.get("config"));
+				VideoHandler vh = new VideoHandler(inputRoot.get("config"));
+				vh.run();
 				break;
 			default:
 				System.out.println("Type '" + type + "' unknown!");

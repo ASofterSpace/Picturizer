@@ -2,12 +2,12 @@
  * Unlicensed code created by A Softer Space, 2023
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui;
 
+import com.asofterspace.picturizer.gui.menu.GUIMenuColors;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.ColorRGBA;
-import com.asofterspace.toolbox.Utils;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -67,7 +67,7 @@ public class ColorPickerGUI {
 		JButton okButton = new JButton("OK, take this");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				gui.guiMenuColors.setPickedColor(gui, getColor());
+				GUIMenuColors.setPickedColor(gui, getColor());
 				ccDialog.dispose();
 			}
 		});

@@ -5,6 +5,7 @@
 package com.asofterspace.picturizer;
 
 import com.asofterspace.picturizer.commandline.CommandLineHandler;
+import com.asofterspace.picturizer.gui.GUI;
 import com.asofterspace.toolbox.configuration.ConfigFile;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.io.IoUtils;

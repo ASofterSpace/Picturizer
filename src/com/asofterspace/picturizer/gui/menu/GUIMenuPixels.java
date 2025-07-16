@@ -2,7 +2,9 @@
  * Unlicensed code created by A Softer Space, 2025
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui.menu;
+
+import com.asofterspace.picturizer.gui.GUI;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,7 +15,7 @@ import javax.swing.JMenuItem;
 
 public class GUIMenuPixels {
 
-	JMenu createMenu(GUI gui) {
+	public JMenu createMenu(GUI gui) {
 
 		JMenu adjustPixels = new JMenu("Pixels");
 
@@ -187,7 +189,7 @@ public class GUIMenuPixels {
 		return adjustPixels;
 	}
 
-	void addPixelLevelDiffMapButtons(GUI gui, JMenuItem parentItem) {
+	static void addPixelLevelDiffMapButtons(GUI gui, JMenuItem parentItem) {
 
 		JMenuItem curMenuItem = new JMenuItem("Create Map of Pixel-Level Differences");
 		curMenuItem.addActionListener(new ActionListener() {

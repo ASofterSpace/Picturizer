@@ -2,8 +2,11 @@
  * Unlicensed code created by A Softer Space, 2025
  * www.asofterspace.com/licenses/unlicense.txt
  */
-package com.asofterspace.picturizer;
+package com.asofterspace.picturizer.gui.menu;
 
+import com.asofterspace.picturizer.gui.ExpandShrinkGUI;
+import com.asofterspace.picturizer.gui.GUI;
+import com.asofterspace.picturizer.gui.ResizeGUI;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageMultiLayered;
@@ -23,7 +26,7 @@ public class GUIMenuEdit {
 	private ResizeGUI resizeGUI = null;
 
 
-	JMenu createMenu(GUI gui) {
+	public JMenu createMenu(GUI gui) {
 
 		JMenu edit = new JMenu("Edit");
 
