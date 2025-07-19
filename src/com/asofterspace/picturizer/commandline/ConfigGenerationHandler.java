@@ -87,6 +87,7 @@ public class ConfigGenerationHandler {
 							case 9:
 							case 12:
 							case 13:
+							case 14:
 								// max 1 at the same time
 								Integer thisEffectOngoingUntil = effectOngoingUntil.get(newEffectNum);
 								if ((thisEffectOngoingUntil != null) && (thisEffectOngoingUntil > cur)) {
@@ -160,6 +161,24 @@ public class ConfigGenerationHandler {
 
 							case 13:
 								r.set("effect", "dampen");
+								break;
+
+							case 14:
+								r.set("effect", "colorize");
+								r.set("r", MathUtils.randomInteger(64) + 90);
+								r.set("g", MathUtils.randomInteger(64) + 24);
+								r.set("b", MathUtils.randomInteger(64) + 100);
+								break;
+
+							case 15:
+								r.set("effect", "box-colorize");
+								r.set("r", MathUtils.randomInteger(64) + 90);
+								r.set("g", MathUtils.randomInteger(64) + 24);
+								r.set("b", MathUtils.randomInteger(64) + 100);
+								r.set("left", left);
+								r.set("top", top);
+								r.set("right", right);
+								r.set("bottom", bottom);
 								break;
 
 							default:

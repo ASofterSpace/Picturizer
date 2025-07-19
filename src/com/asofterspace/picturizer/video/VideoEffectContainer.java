@@ -27,6 +27,10 @@ public class VideoEffectContainer {
 	private Integer right = null;
 	private Integer size = null;
 	private Integer amount = null;
+	private Integer r = null;
+	private Integer g = null;
+	private Integer b = null;
+	private Integer a = null;
 	private ColorRGBA color = null;
 	private int currentRandomState1 = 0;
 	private int currentRandomState2 = 0;
@@ -48,6 +52,10 @@ public class VideoEffectContainer {
 		right = rec.getInteger("right", null);
 		size = rec.getInteger("size", null);
 		amount = rec.getInteger("amount", null);
+		r = rec.getInteger("r", null);
+		g = rec.getInteger("g", null);
+		b = rec.getInteger("b", null);
+		a = rec.getInteger("a", null);
 		String colStr = rec.getString("color", null);
 		if (colStr != null) {
 			color = ColorRGBA.fromString(colStr);
@@ -154,6 +162,16 @@ public class VideoEffectContainer {
 				img.shiftPosition(currentRandomState1, currentRandomState2);
 				currentRandomState1 += MathUtils.randomInteger(5) - 2;
 				currentRandomState2 += MathUtils.randomInteger(5) - 2;
+				break;
+
+			case "colorize":
+				img.editChannels("R", r / 100.0f, "G", g / 100.0f, "B", b / 100.0f);
+				break;
+
+			case "box-colorize":
+				workImg = img.copy();
+				workImg.editChannels("R", r / 100.0f, "G", g / 100.0f, "B", b / 100.0f);
+				img.draw(workImg, left, top, left, top, right, bottom);
 				break;
 
 			case "intensify":
