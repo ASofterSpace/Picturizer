@@ -179,7 +179,7 @@ public class VideoEffectContainer {
 				break;
 
 			case "dampen":
-				img.dampen(1.5f);
+				img.dampen(1.25f);
 				break;
 
 			default:

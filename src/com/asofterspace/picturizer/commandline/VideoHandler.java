@@ -102,6 +102,7 @@ public class VideoHandler {
 					System.out.println("Stopping, as " + stopFile.getCanonicalFilename() + " exists, and deleting the stop file again...");
 					System.out.println("(Feel free to simply restart to start from where this run left off!)");
 					stopFile.delete();
+					break;
 				}
 			}
 		}

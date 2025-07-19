@@ -79,7 +79,7 @@ public class ConfigGenerationHandler {
 							bottom = c;
 						}
 
-						int newEffectNum = MathUtils.randomInteger(20);
+						int newEffectNum = MathUtils.randomInteger(40);
 						switch (newEffectNum) {
 							case 6:
 							case 7:
@@ -141,8 +141,8 @@ public class ConfigGenerationHandler {
 								r.set("top", MathUtils.randomInteger(height));
 								r.set("fromX", left);
 								r.set("fromY", top);
-								r.set("untilX", right);
-								r.set("untilY", bottom);
+								r.set("untilX", left + ((right - left) / 2));
+								r.set("untilY", top + ((bottom - top) / 2));
 								break;
 
 							case 9:
@@ -199,7 +199,7 @@ public class ConfigGenerationHandler {
 						}
 
 						effects.add(r);
-						cur += MathUtils.randomInteger(8);
+						cur += MathUtils.randomInteger(10);
 
 						if (lastPrintAt + 128 < cur) {
 							System.out.println("At " + cur + " / " + to + "...");
