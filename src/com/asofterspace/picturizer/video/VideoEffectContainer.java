@@ -100,28 +100,13 @@ public class VideoEffectContainer {
 				break;
 
 			case "glitch-box-krizzel":
-				/*
-				Image workImg = baseImg.copy();
+				Image workImg = img.copy();
 				workImg.createNoise();
-				int boxAmount = MathUtils.randomInteger(10) + 2;
-				for (int i = 0; i < boxAmount; i++) {
-					fromX = MathUtils.randomInteger(baseImg.getWidth());
-					fromY = MathUtils.randomInteger(baseImg.getHeight());
-					int divX = 25;
-					int divY = 5;
-					if (MathUtils.randomInteger(2) < 1) {
-						divX = 5;
-						divY = 25;
-					}
-					untilX = fromX + (MathUtils.randomInteger(baseImg.getWidth()) / divX);
-					untilY = fromY + (MathUtils.randomInteger(baseImg.getHeight()) / divY);
-					img.draw(workImg, fromX, fromY, fromX, fromY, untilX, untilY);
-				}
-				*/
+				img.draw(workImg, top, left, fromX, fromY, untilX, untilY);
 				break;
 
 			case "glitch-box-pixelate":
-				Image workImg = baseImg.copy();
+				workImg = img.copy();
 				workImg.pixelate(size);
 				img.draw(workImg, left, top, left, top, right, bottom);
 				break;
@@ -137,16 +122,11 @@ public class VideoEffectContainer {
 				break;
 
 			case "glitch-individual-pixels":
-				/*
-				int pixAmount = MathUtils.randomInteger(9) + 3;
-				int pixSize = MathUtils.randomInteger(9) + 3;
-				for (int p = 0; p < pixAmount; p++) {
-					int curX = MathUtils.randomInteger(baseImg.getWidth() / pixSize);
-					int curY = MathUtils.randomInteger(baseImg.getHeight() / pixSize);
-					img.drawRectangle(curX*pixSize, curY*pixSize, (curX+1)*pixSize, (curY+1)*pixSize,
-						baseImg.getPixel(curX*pixSize, curY*pixSize));
-				}
-				*/
+				int pixSize = size;
+				int curX = left/pixSize;
+				int curY = top/pixSize;
+				img.drawRectangle(curX*pixSize, curY*pixSize, (curX+1)*pixSize, (curY+1)*pixSize,
+					baseImg.getPixel(curX*pixSize, curY*pixSize));
 				break;
 
 			case "glitch-rectangle":

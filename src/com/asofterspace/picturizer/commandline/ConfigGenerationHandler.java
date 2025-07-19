@@ -7,6 +7,7 @@ package com.asofterspace.picturizer.commandline;
 import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.io.JsonFile;
+import com.asofterspace.toolbox.io.JsonParseException;
 import com.asofterspace.toolbox.utils.MathUtils;
 import com.asofterspace.toolbox.utils.Record;
 
@@ -29,6 +30,15 @@ public class ConfigGenerationHandler {
 			return;
 		}
 
+		JsonFile originFile = new JsonFile(cgRoot.getString("origin"));
+		Record originRoot = null;
+		try {
+			originRoot = originFile.getAllContents();
+		} catch (JsonParseException e) {
+			System.out.println(e);
+			return;
+		}
+
 		File targetFile = new File(cgRoot.getString("target"));
 
 		String kind = cgRoot.getString("kind");
@@ -36,15 +46,14 @@ public class ConfigGenerationHandler {
 		if (kind != null) {
 			switch (kind) {
 				case "glitch":
-					Record rec = Record.emptyObject();
 					List<Record> effects = new ArrayList<>();
 					int from = cgRoot.getInteger("from", 0);
 					int to = cgRoot.getInteger("to", 0);
 					int width = cgRoot.getInteger("width", 0);
 					int height = cgRoot.getInteger("height", 0);
 					int cur = from;
+					int lastPrintAt = cur;
 					while (cur < to) {
-						int newEffectNum = MathUtils.randomInteger(7);
 						Record r = Record.emptyObject();
 						r.set("from", cur);
 						int toFrame = cur + MathUtils.randomInteger(1024);
@@ -66,6 +75,9 @@ public class ConfigGenerationHandler {
 							top = bottom;
 							bottom = c;
 						}
+
+						int newEffectNum = MathUtils.randomInteger(10);
+
 						switch (newEffectNum) {
 
 							case 0:
@@ -88,30 +100,47 @@ public class ConfigGenerationHandler {
 								break;
 
 							case 2:
+								r.set("effect", "glitch-box-krizzel");
+								r.set("left", MathUtils.randomInteger(width));
+								r.set("top", MathUtils.randomInteger(height));
+								r.set("fromX", left);
+								r.set("fromY", top);
+								r.set("untilX", right);
+								r.set("untilY", bottom);
+								break;
+
+							case 3:
 								r.set("effect", "glitch-rectangle");
 								r.set("left", left);
 								r.set("top", top);
 								r.set("right", right);
 								r.set("bottom", bottom);
-								r.set("color", new ColorRGBA(MathUtils.randomInteger(128) + 128, MathUtils.randomInteger(128),
-									MathUtils.randomInteger(128) + 128));
+								r.set("color", (new ColorRGBA(MathUtils.randomInteger(128) + 128, MathUtils.randomInteger(128),
+									MathUtils.randomInteger(128) + 128)).toString());
 								break;
 
-							case 3:
+							case 4:
 								r.set("effect", "glitch-stripes");
 								r.set("amount", MathUtils.randomInteger(32)+16);
 								break;
 
-							case 4:
+							case 5:
 								r.set("effect", "glitch-wobble");
 								break;
 
-							case 5:
+							case 6:
 								r.set("effect", "intensify");
 								break;
 
-							case 6:
+							case 7:
 								r.set("effect", "dampen");
+								break;
+
+							default:
+								r.set("effect", "glitch-individual-pixels");
+								r.set("left", MathUtils.randomInteger(width));
+								r.set("top", MathUtils.randomInteger(height));
+								r.set("size", MathUtils.randomInteger(16) + 4);
 								break;
 						}
 
@@ -125,11 +154,18 @@ public class ConfigGenerationHandler {
 						}
 
 						effects.add(r);
-						cur += MathUtils.randomInteger(8);
+						cur += MathUtils.randomInteger(5);
+
+						if (lastPrintAt + 128 < cur) {
+							System.out.println("At " + cur + " / " + to + "...");
+							lastPrintAt = cur;
+						}
 					}
-					rec.set("effects", effects);
+					Record configRec = originRoot.get("config");
+					configRec.set("effects", effects);
 					JsonFile outFile = new JsonFile(targetFile);
-					outFile.save(rec);
+					outFile.save(originRoot);
+					System.out.println("Saved output, based on " + originFile.getCanonicalFilename() + ", to: " + outFile.getCanonicalFilename());
 					return;
 			}
 		}

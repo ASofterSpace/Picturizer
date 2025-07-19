@@ -65,6 +65,7 @@ public class Picturizer {
 				System.out.println("Starting in commandline-mode with instruction file '" + fileToOpen + "'...");
 				CommandLineHandler clHandler = new CommandLineHandler(new File(fileToOpen));
 				clHandler.run();
+				return;
 			} else {
 				System.out.println("Starting GUI to play with input file '" + fileToOpen + "'...");
 			}
