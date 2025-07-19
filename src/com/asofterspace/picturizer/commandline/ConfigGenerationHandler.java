@@ -30,10 +30,10 @@ public class ConfigGenerationHandler {
 			return;
 		}
 
-		JsonFile originFile = new JsonFile(cgRoot.getString("origin"));
-		Record originRoot = null;
+		JsonFile templateFile = new JsonFile(cgRoot.getString("template"));
+		Record templateRoot = null;
 		try {
-			originRoot = originFile.getAllContents();
+			templateRoot = templateFile.getAllContents();
 		} catch (JsonParseException e) {
 			System.out.println(e);
 			return;
@@ -161,11 +161,11 @@ public class ConfigGenerationHandler {
 							lastPrintAt = cur;
 						}
 					}
-					Record configRec = originRoot.get("config");
+					Record configRec = templateRoot.get("config");
 					configRec.set("effects", effects);
 					JsonFile outFile = new JsonFile(targetFile);
-					outFile.save(originRoot);
-					System.out.println("Saved output, based on " + originFile.getCanonicalFilename() + ", to: " + outFile.getCanonicalFilename());
+					outFile.save(templateRoot);
+					System.out.println("Saved output, based on " + templateFile.getCanonicalFilename() + ", to: " + outFile.getCanonicalFilename());
 					return;
 			}
 		}

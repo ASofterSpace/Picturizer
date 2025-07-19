@@ -8,6 +8,7 @@ import com.asofterspace.picturizer.video.VideoEffectContainer;
 import com.asofterspace.picturizer.video.VideoFrame;
 import com.asofterspace.picturizer.video.VideoInfoContainer;
 import com.asofterspace.toolbox.io.Directory;
+import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.utils.Record;
 
 import java.util.ArrayList;
@@ -59,7 +60,13 @@ public class VideoHandler {
 
 		Directory targetDir = new Directory(videoRoot.getString("targetDir"));
 
-		applyEffects(frames, effectContainers, targetDir);
+		File stopFile = null;
+		String stopFileName = videoRoot.getString("stopFile");
+		if (stopFileName != null) {
+			stopFile = new File(stopFileName);
+		}
+
+		applyEffects(frames, effectContainers, targetDir, stopFile);
 	}
 
 	private List<VideoFrame> convertListOfContainersToFrames(List<VideoInfoContainer> infoContainers) {
@@ -72,7 +79,7 @@ public class VideoHandler {
 		return frames;
 	}
 
-	private void applyEffects(List<VideoFrame> frames, List<VideoEffectContainer> effectContainers, Directory targetDir) {
+	private void applyEffects(List<VideoFrame> frames, List<VideoEffectContainer> effectContainers, Directory targetDir, File stopFile) {
 
 		targetDir.create();
 
@@ -82,11 +89,21 @@ public class VideoHandler {
 			if (num % 64 == 0) {
 				System.out.println("Working on frame " + num + "...");
 			}
-			frame.init(num);
-			frame.apply(effectContainers);
-			frame.save(targetDir);
+			frame.init(num, targetDir);
+			if (!frame.alreadyExists()) {
+				frame.load();
+				frame.apply(effectContainers);
+				frame.save();
+			}
 			frame.clear();
 			num++;
+			if (stopFile != null) {
+				if (stopFile.exists()) {
+					System.out.println("Stopping, as " + stopFile.getCanonicalFilename() + " exists, and deleting the stop file again...");
+					System.out.println("(Feel free to simply restart to start from where this run left off!)");
+					stopFile.delete();
+				}
+			}
 		}
 	}
 }

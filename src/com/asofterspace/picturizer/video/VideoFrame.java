@@ -15,20 +15,25 @@ import java.util.List;
 
 public class VideoFrame {
 
-	private File file = null;
+	private File inputFile = null;
+	private File outputFile = null;
 
 	private int frameNum = 0;
 
 	private Image img = null;
 
 
-	public VideoFrame(File baseOnFile) {
-		this.file = baseOnFile;
+	public VideoFrame(File inputFile) {
+		this.inputFile = inputFile;
 	}
 
-	public void init(int num) {
+	public void init(int num, Directory targetDir) {
 		this.frameNum = num;
-		this.img = Picturizer.getImageFileCtrl().loadImageFromFile(this.file);
+		this.outputFile = new File(targetDir, StrUtils.leftPad0(frameNum, 8) + ".png");
+	}
+
+	public void load() {
+		this.img = Picturizer.getImageFileCtrl().loadImageFromFile(this.inputFile);
 	}
 
 	public void apply(List<VideoEffectContainer> effectContainers) {
@@ -37,13 +42,17 @@ public class VideoFrame {
 		}
 	}
 
-	public void save(Directory targetDir) {
-		File targetFile = new File(targetDir, StrUtils.leftPad0(frameNum, 8) + ".png");
-		Picturizer.getImageFileCtrl().saveImageToFile(this.img, targetFile);
+	public void save() {
+		Picturizer.getImageFileCtrl().saveImageToFile(this.img, outputFile);
+	}
+
+	public boolean alreadyExists() {
+		return outputFile.exists();
 	}
 
 	public void clear() {
-		file = null;
-		img = null;
+		this.inputFile = null;
+		this.outputFile = null;
+		this.img = null;
 	}
 }
