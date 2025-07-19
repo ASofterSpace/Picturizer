@@ -12,7 +12,9 @@ import com.asofterspace.toolbox.utils.MathUtils;
 import com.asofterspace.toolbox.utils.Record;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class ConfigGenerationHandler {
@@ -47,6 +49,7 @@ public class ConfigGenerationHandler {
 			switch (kind) {
 				case "glitch":
 					List<Record> effects = new ArrayList<>();
+					Map<Integer, Integer> effectOngoingUntil = new HashMap<>();
 					int from = cgRoot.getInteger("from", 0);
 					int to = cgRoot.getInteger("to", 0);
 					int width = cgRoot.getInteger("width", 0);
@@ -77,10 +80,28 @@ public class ConfigGenerationHandler {
 						}
 
 						int newEffectNum = MathUtils.randomInteger(20);
+						switch (newEffectNum) {
+							case 6:
+							case 7:
+							case 8:
+							case 9:
+							case 12:
+							case 13:
+								// max 1 at the same time
+								Integer thisEffectOngoingUntil = effectOngoingUntil.get(newEffectNum);
+								if ((thisEffectOngoingUntil != null) && (thisEffectOngoingUntil > cur)) {
+									// if one of these still ongoing, do a default individual pixelation instead
+									newEffectNum = 20;
+								}
+								break;
+						}
+
+						effectOngoingUntil.put(newEffectNum, toFrame);
 
 						switch (newEffectNum) {
 
 							case 0:
+							case 1:
 								r.set("effect", "glitch-box-pixelate");
 								r.set("left", left);
 								r.set("top", top);
@@ -89,7 +110,8 @@ public class ConfigGenerationHandler {
 								r.set("size", MathUtils.randomInteger(16) + 4);
 								break;
 
-							case 1:
+							case 2:
+							case 3:
 								r.set("effect", "glitch-box-shatter");
 								r.set("left", MathUtils.randomInteger(width));
 								r.set("top", MathUtils.randomInteger(height));
@@ -99,17 +121,8 @@ public class ConfigGenerationHandler {
 								r.set("untilY", bottom);
 								break;
 
-							case 2:
-								r.set("effect", "glitch-box-krizzel");
-								r.set("left", MathUtils.randomInteger(width));
-								r.set("top", MathUtils.randomInteger(height));
-								r.set("fromX", left);
-								r.set("fromY", top);
-								r.set("untilX", right);
-								r.set("untilY", bottom);
-								break;
-
-							case 3:
+							case 4:
+							case 5:
 								r.set("effect", "glitch-rectangle");
 								r.set("left", left);
 								r.set("top", top);
@@ -119,20 +132,33 @@ public class ConfigGenerationHandler {
 									MathUtils.randomInteger(128) + 128)).toString());
 								break;
 
-							case 4:
+							case 6:
+							case 7:
+							case 8:
+								r.set("effect", "glitch-box-krizzel");
+								r.set("left", MathUtils.randomInteger(width));
+								r.set("top", MathUtils.randomInteger(height));
+								r.set("fromX", left);
+								r.set("fromY", top);
+								r.set("untilX", right);
+								r.set("untilY", bottom);
+								break;
+
+							case 9:
 								r.set("effect", "glitch-stripes");
 								r.set("amount", MathUtils.randomInteger(32)+16);
 								break;
 
-							case 5:
+							case 10:
+							case 11:
 								r.set("effect", "glitch-wobble");
 								break;
 
-							case 6:
+							case 12:
 								r.set("effect", "intensify");
 								break;
 
-							case 7:
+							case 13:
 								r.set("effect", "dampen");
 								break;
 
