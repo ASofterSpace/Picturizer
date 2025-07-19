@@ -44,6 +44,10 @@ public class CommandLineHandler {
 				VideoHandler vh = new VideoHandler(inputRoot.get("config"));
 				vh.run();
 				break;
+			case "configGenerator":
+				ConfigGenerationHandler cgh = new ConfigGenerationHandler(inputRoot.get("config"));
+				cgh.run();
+				break;
 			default:
 				System.out.println("Type '" + type + "' unknown!");
 				break;

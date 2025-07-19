@@ -7,8 +7,10 @@ package com.asofterspace.picturizer;
 import com.asofterspace.picturizer.commandline.CommandLineHandler;
 import com.asofterspace.picturizer.gui.GUI;
 import com.asofterspace.toolbox.configuration.ConfigFile;
+import com.asofterspace.toolbox.images.ImageFileCtrl;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.io.IoUtils;
+import com.asofterspace.toolbox.pdf.PdfImageHandler;
 import com.asofterspace.toolbox.utils.Record;
 import com.asofterspace.toolbox.Utils;
 
@@ -18,10 +20,12 @@ import javax.swing.SwingUtilities;
 public class Picturizer {
 
 	public final static String PROGRAM_TITLE = "Picturizer";
-	public final static String VERSION_NUMBER = "0.0.3.0(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
-	public final static String VERSION_DATE = "9. November 2019 - 15. July 2025";
+	public final static String VERSION_NUMBER = "0.0.3.2(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
+	public final static String VERSION_DATE = "9. November 2019 - 19. July 2025";
 
 	private static ConfigFile config;
+
+	private static ImageFileCtrl imageFileCtrl;
 
 
 	public static void main(String[] args) {
@@ -43,6 +47,11 @@ public class Picturizer {
 			}
 		}
 
+		// we want to handle as many image formats as we can...
+		// even opening images from PDF files, if possible :)
+		imageFileCtrl = new ImageFileCtrl();
+		imageFileCtrl.addHandler(new PdfImageHandler());
+
 		String fileToOpen = IoUtils.assembleArgumentsIntoOne(args);
 
 		// load config
@@ -62,6 +71,10 @@ public class Picturizer {
 		}
 
 		SwingUtilities.invokeLater(new GUI(config, fileToOpen));
+	}
+
+	public static ImageFileCtrl getImageFileCtrl() {
+		return imageFileCtrl;
 	}
 
 }

@@ -5,6 +5,7 @@
 package com.asofterspace.picturizer.gui.menu;
 
 import com.asofterspace.picturizer.gui.GUI;
+import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.picturizer.utils.GlitchUtils;
 import com.asofterspace.toolbox.configuration.ConfigFile;
 import com.asofterspace.toolbox.images.Image;
@@ -276,7 +277,7 @@ public class GUIMenuGlitch {
 							boolean recursively = false;
 							List<File> imageFiles = lastDir.getAllFiles(recursively);
 							int randomFileNum = MathUtils.randomInteger(imageFiles.size());
-							Image newImg = gui.getImageFileCtrl().loadImageFromFile(imageFiles.get(randomFileNum));
+							Image newImg = Picturizer.getImageFileCtrl().loadImageFromFile(imageFiles.get(randomFileNum));
 							int drawAtX = MathUtils.randomInteger((drawImg.getWidth() * 12) / 10) - ((drawImg.getWidth() * 2) / 10);
 							int drawAtY = MathUtils.randomInteger((drawImg.getHeight() * 12) / 10) - ((drawImg.getHeight() * 2) / 10);
 							drawImg.draw(newImg, drawAtX, drawAtY, fromX, fromY, untilX, untilY);

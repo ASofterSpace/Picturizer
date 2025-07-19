@@ -38,7 +38,6 @@ import com.asofterspace.toolbox.images.ImageMultiLayered;
 import com.asofterspace.toolbox.images.PicFile;
 import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
-import com.asofterspace.toolbox.pdf.PdfImageHandler;
 import com.asofterspace.toolbox.utils.Pair;
 import com.asofterspace.toolbox.utils.StrUtils;
 import com.asofterspace.toolbox.Utils;
@@ -159,7 +158,6 @@ public class GUI extends MainWindow {
 	private ImageMultiLayered undoablePicture;
 	private ImageMultiLayered redoablePicture;
 
-	private ImageFileCtrl imageFileCtrl;
 	private Image colorpickerImg;
 
 	private Tool activeTool = null;
@@ -185,12 +183,7 @@ public class GUI extends MainWindow {
 		this.configuration = configFile;
 		this.fileToOpenAfterStartup = fileToOpen;
 
-		// we want to handle as many image formats as we can...
-		// even opening images from PDF files, if possible :)
-		this.imageFileCtrl = new ImageFileCtrl();
-		this.imageFileCtrl.addHandler(new PdfImageHandler());
-
-		colorpickerImg = imageFileCtrl.loadImageFromFile(new File(
+		colorpickerImg = Picturizer.getImageFileCtrl().loadImageFromFile(new File(
 			 System.getProperty("java.class.path") + "/../res/colorpicker.png"));
 
 		// enable anti-aliasing for swing
@@ -1035,7 +1028,7 @@ public class GUI extends MainWindow {
 			}
 		} else {
 			lastExportPath = selFilename;
-			Image img = imageFileCtrl.loadImageFromFile(imageFile);
+			Image img = Picturizer.getImageFileCtrl().loadImageFromFile(imageFile);
 			if (returnImage) {
 				return img;
 			}
@@ -1136,7 +1129,7 @@ public class GUI extends MainWindow {
 	}
 
 	public void exportImageToFile(Image picture, File selectedFile) {
-		imageFileCtrl.saveImageToFile(picture, selectedFile);
+		Picturizer.getImageFileCtrl().saveImageToFile(picture, selectedFile);
 		lastExportPath = selectedFile.getCanonicalFilename();
 		refreshTitleBarAndSaveExportItems();
 	}
@@ -1528,10 +1521,6 @@ public class GUI extends MainWindow {
 	void setZoomFactor(double newZoomFactor) {
 		zoomFactor = newZoomFactor;
 		refreshMainView();
-	}
-
-	public ImageFileCtrl getImageFileCtrl() {
-		return imageFileCtrl;
 	}
 
 }
