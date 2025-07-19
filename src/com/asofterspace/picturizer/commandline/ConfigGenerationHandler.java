@@ -76,7 +76,7 @@ public class ConfigGenerationHandler {
 							bottom = c;
 						}
 
-						int newEffectNum = MathUtils.randomInteger(10);
+						int newEffectNum = MathUtils.randomInteger(20);
 
 						switch (newEffectNum) {
 
@@ -154,7 +154,7 @@ public class ConfigGenerationHandler {
 						}
 
 						effects.add(r);
-						cur += MathUtils.randomInteger(5);
+						cur += MathUtils.randomInteger(8);
 
 						if (lastPrintAt + 128 < cur) {
 							System.out.println("At " + cur + " / " + to + "...");
