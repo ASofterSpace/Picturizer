@@ -246,35 +246,37 @@ public class VideoEffectContainer {
 
 			case "splice-in-video":
 				int splicedInFrameNum = frameNum - fromFrameNum;
-				File splicedInFrameFile = baseDirFiles.get(splicedInFrameNum);
-				if (splicedInFrameFile != null) {
-					Image splicedInImg = Picturizer.getImageFileCtrl().loadImageFromFile(splicedInFrameFile);
-					if (splicedInImg != null) {
-						boolean keepAspectRatio = true;
+				if (splicedInFrameNum < baseDirFiles.size()) {
+					File splicedInFrameFile = baseDirFiles.get(splicedInFrameNum);
+					if (splicedInFrameFile != null) {
+						Image splicedInImg = Picturizer.getImageFileCtrl().loadImageFromFile(splicedInFrameFile);
+						if (splicedInImg != null) {
+							boolean keepAspectRatio = true;
 
-						boolean drewWithTransition = false;
-						if (maximizeIn > 0) {
-							if (frameNum < fromFrameNum + maximizeIn) {
-								double percSize = (1.0 * (frameNum - fromFrameNum)) / maximizeIn;
-								splicedInImg.resampleTo((int) (percSize * img.getWidth()), (int) (percSize * img.getHeight()), keepAspectRatio);
-								img.draw(splicedInImg, (int) ((percSize * img.getWidth()) / 2), (int) (percSize * img.getHeight()));
-								drewWithTransition = true;
+							boolean drewWithTransition = false;
+							if (maximizeIn != null) {
+								if (frameNum < fromFrameNum + maximizeIn) {
+									double percSize = (1.0 * (frameNum - fromFrameNum)) / maximizeIn;
+									splicedInImg.resampleTo((int) (percSize * img.getWidth()), (int) (percSize * img.getHeight()), keepAspectRatio);
+									img.draw(splicedInImg, (img.getWidth() - splicedInImg.getWidth()) / 2, img.getHeight() - splicedInImg.getHeight());
+									drewWithTransition = true;
+								}
 							}
-						}
-						if (minimizeOut > 0) {
-							if (frameNum > toFrameNum - minimizeOut) {
-								double percSize = (1.0 * (toFrameNum - frameNum)) / minimizeOut;
-								splicedInImg.resampleTo((int) (percSize * img.getWidth()), (int) (percSize * img.getHeight()), keepAspectRatio);
-								img.draw(splicedInImg, (int) ((percSize * img.getWidth()) / 2), (int) (percSize * img.getHeight()));
-								drewWithTransition = true;
+							if (minimizeOut != null) {
+								if (frameNum > toFrameNum - minimizeOut) {
+									double percSize = (1.0 * (toFrameNum - frameNum)) / minimizeOut;
+									splicedInImg.resampleTo((int) (percSize * img.getWidth()), (int) (percSize * img.getHeight()), keepAspectRatio);
+									img.draw(splicedInImg, (img.getWidth() - splicedInImg.getWidth()) / 2, img.getHeight() - splicedInImg.getHeight());
+									drewWithTransition = true;
+								}
 							}
-						}
-						if (!drewWithTransition) {
-							if ((img.getWidth() != splicedInImg.getWidth()) ||
-								(img.getHeight() != splicedInImg.getHeight())) {
-								splicedInImg.resampleTo(img.getWidth(), img.getHeight(), keepAspectRatio);
+							if (!drewWithTransition) {
+								if ((img.getWidth() != splicedInImg.getWidth()) ||
+									(img.getHeight() != splicedInImg.getHeight())) {
+									splicedInImg.resampleTo(img.getWidth(), img.getHeight(), keepAspectRatio);
+								}
+								img.draw(splicedInImg, 0, 0);
 							}
-							img.draw(splicedInImg, 0, 0);
 						}
 					}
 				}

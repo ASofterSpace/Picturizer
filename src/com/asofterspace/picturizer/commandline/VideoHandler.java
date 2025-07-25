@@ -67,8 +67,9 @@ public class VideoHandler {
 		}
 
 		boolean onlySaveChanged = videoRoot.getBoolean("onlySaveChanged", false);
+		int targetFileNameDigits = videoRoot.getInteger("targetFileNameDigits", 8);
 
-		applyEffects(frames, effectContainers, targetDir, stopFile, onlySaveChanged);
+		applyEffects(frames, effectContainers, targetDir, stopFile, onlySaveChanged, targetFileNameDigits);
 	}
 
 	private List<VideoFrame> convertListOfContainersToFrames(List<VideoInfoContainer> infoContainers) {
@@ -82,7 +83,7 @@ public class VideoHandler {
 	}
 
 	private void applyEffects(List<VideoFrame> frames, List<VideoEffectContainer> effectContainers, Directory targetDir, File stopFile,
-		boolean onlySaveChanged) {
+		boolean onlySaveChanged, int targetFileNameDigits) {
 
 		targetDir.create();
 
@@ -92,7 +93,7 @@ public class VideoHandler {
 			if (num % 64 == 0) {
 				System.out.println("Working on frame " + num + "...");
 			}
-			frame.init(num, targetDir);
+			frame.init(num, targetDir, targetFileNameDigits);
 			if (!frame.alreadyExists()) {
 				frame.apply(effectContainers);
 				if ((!onlySaveChanged) || frame.wasChangedByEffect()) {

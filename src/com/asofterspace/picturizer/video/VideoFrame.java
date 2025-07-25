@@ -29,9 +29,9 @@ public class VideoFrame {
 		this.inputFile = inputFile;
 	}
 
-	public void init(int num, Directory targetDir) {
+	public void init(int num, Directory targetDir, int targetFileNameDigits) {
 		this.frameNum = num;
-		this.outputFile = new File(targetDir, StrUtils.leftPad0(frameNum, 8) + ".png");
+		this.outputFile = new File(targetDir, StrUtils.leftPad0(frameNum, targetFileNameDigits) + ".png");
 	}
 
 	public Image getImage() {
