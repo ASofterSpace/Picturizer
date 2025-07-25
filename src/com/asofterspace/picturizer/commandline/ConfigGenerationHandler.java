@@ -5,11 +5,14 @@
 package com.asofterspace.picturizer.commandline;
 
 import com.asofterspace.toolbox.images.ColorRGBA;
+import com.asofterspace.toolbox.images.ImageLayerBasedOnText;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.io.JsonFile;
 import com.asofterspace.toolbox.io.JsonParseException;
+import com.asofterspace.toolbox.io.SimpleFile;
 import com.asofterspace.toolbox.utils.MathUtils;
 import com.asofterspace.toolbox.utils.Record;
+import com.asofterspace.toolbox.utils.StrUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,21 +48,110 @@ public class ConfigGenerationHandler {
 
 		String kind = cgRoot.getString("kind");
 
+		List<Record> effects = new ArrayList<>();
+
+		Record configRec = templateRoot.get("config");
+		if (cgRoot.getBoolean("templateKeepExistingEffects", true)) {
+			effects.addAll(configRec.getArray("effects"));
+		}
+
 		if (kind != null) {
 			switch (kind) {
+				case "subtitles":
+					int width = cgRoot.getInteger("width", 0);
+					int height = cgRoot.getInteger("height", 0);
+					SimpleFile srtFile = new SimpleFile(cgRoot.getString("srtInput"));
+					List<String> srtLines = srtFile.getContents();
+					int lineKind = 0;
+					int curFromFrame = 0;
+					int curToFrame = 0;
+					double fps = cgRoot.getDouble("fps", 24.0);
+					String curSub = null;
+					// List<String> delOutLines = new ArrayList<>();
+					for (String line : srtLines) {
+						switch (lineKind) {
+							case 0:
+								if (!line.equals("")) {
+									lineKind++;
+								}
+								break;
+							case 1:
+								if (line.contains(" --> ")) {
+									curFromFrame = timestampToFrameNum(line.substring(0, line.indexOf(" --> ")), fps);
+									curToFrame = timestampToFrameNum(line.substring(line.indexOf(" --> ") + 5), fps);
+									// for (int f = curFromFrame; f < curToFrame + 1; f++) {
+										// delOutLines.add("rm " + StrUtils.leftPad0(f, 8) + ".png");
+									// }
+									lineKind++;
+								}
+								break;
+							case 2:
+								if (line.equals("")) {
+									Record r = Record.emptyObject();
+									int offsetX = 0;
+									int offsetY = 0;
+									String fontName = "Neuropol-Regular";
+									Integer fontSize = 32;
+									ColorRGBA textColor = new ColorRGBA(MathUtils.randomInteger(128) + 128, MathUtils.randomInteger(128),
+										MathUtils.randomInteger(128) + 128);
+									ImageLayerBasedOnText ilText = new ImageLayerBasedOnText(offsetX, offsetY, curSub, fontName, fontSize, textColor);
+									int textWidth = ilText.getWidth();
+									r.set("effect", "text");
+									r.set("from", curFromFrame);
+									r.set("to", curToFrame);
+									r.set("font", fontName);
+									r.set("size", fontSize);
+									r.set("left", MathUtils.randomInteger(width - textWidth));
+									r.set("top", MathUtils.randomInteger(height / 10));
+									r.set("text", curSub);
+									r.set("r", textColor.getR());
+									r.set("g", textColor.getG());
+									r.set("b", textColor.getB());
+									// r.set("color", textColor.toString());
+									int len = curToFrame - curFromFrame;
+									if (MathUtils.randomInteger(5) < 3) {
+										r.set("fadeIn", MathUtils.randomInteger(len / 4));
+									}
+									if (MathUtils.randomInteger(5) < 3) {
+										r.set("fadeOut", MathUtils.randomInteger(len / 4));
+									}
+									effects.add(r);
+									lineKind = 0;
+									curSub = null;
+								} else {
+									if (curSub == null) {
+										curSub = line;
+									} else {
+										curSub += "\n" + line;
+									}
+								}
+								break;
+						}
+					}
+					configRec.set("effects", effects);
+					JsonFile outFile = new JsonFile(targetFile);
+					outFile.save(templateRoot);
+					// SimpleFile delFile = new SimpleFile("delete_subtitle_frames.sh");
+					// delFile.saveContents(delOutLines);
+					System.out.println("Saved output, based on " + templateFile.getCanonicalFilename() + ", to: " + outFile.getCanonicalFilename());
+					return;
+
 				case "glitch":
-					List<Record> effects = new ArrayList<>();
 					Map<Integer, Integer> effectOngoingUntil = new HashMap<>();
 					int from = cgRoot.getInteger("from", 0);
 					int to = cgRoot.getInteger("to", 0);
-					int width = cgRoot.getInteger("width", 0);
-					int height = cgRoot.getInteger("height", 0);
+					width = cgRoot.getInteger("width", 0);
+					height = cgRoot.getInteger("height", 0);
 					int cur = from;
 					int lastPrintAt = cur;
 					while (cur < to) {
 						Record r = Record.emptyObject();
 						r.set("from", cur);
-						int toFrame = cur + MathUtils.randomInteger(1024);
+						int duration = MathUtils.randomInteger(512);
+						if (duration % 2 == 0) {
+							duration = duration / 2;
+						}
+						int toFrame = cur + duration;
 						if (toFrame > to) {
 							toFrame = to;
 						}
@@ -189,12 +281,11 @@ public class ConfigGenerationHandler {
 								break;
 						}
 
+						int len = toFrame - cur;
 						if (MathUtils.randomInteger(5) < 3) {
-							int len = toFrame - cur;
 							r.set("fadeIn", MathUtils.randomInteger(len / 2));
 						}
 						if (MathUtils.randomInteger(5) < 3) {
-							int len = toFrame - cur;
 							r.set("fadeOut", MathUtils.randomInteger(len / 2));
 						}
 
@@ -206,9 +297,8 @@ public class ConfigGenerationHandler {
 							lastPrintAt = cur;
 						}
 					}
-					Record configRec = templateRoot.get("config");
 					configRec.set("effects", effects);
-					JsonFile outFile = new JsonFile(targetFile);
+					outFile = new JsonFile(targetFile);
 					outFile.save(templateRoot);
 					System.out.println("Saved output, based on " + templateFile.getCanonicalFilename() + ", to: " + outFile.getCanonicalFilename());
 					return;
@@ -216,5 +306,31 @@ public class ConfigGenerationHandler {
 		}
 
 		System.out.println("Unknown config generation kind: " + kind);
+	}
+
+	private static int timestampToFrameNum(String timestampStr, double fps) {
+		int result = 0;
+		if (timestampStr.contains(".")) {
+			result += (int) (fps * StrUtils.strToDouble("0." + timestampStr.substring(timestampStr.indexOf(".") + 1)));
+			timestampStr = timestampStr.substring(0, timestampStr.indexOf("."));
+		}
+		if (timestampStr.contains(",")) {
+			result += (int) (fps * StrUtils.strToDouble("0." + timestampStr.substring(timestampStr.indexOf(",") + 1)));
+			timestampStr = timestampStr.substring(0, timestampStr.indexOf(","));
+		}
+		if (timestampStr.contains(":")) {
+			result += (int) (fps * StrUtils.strToInt(timestampStr.substring(timestampStr.lastIndexOf(":") + 1)));
+			timestampStr = timestampStr.substring(0, timestampStr.lastIndexOf(":"));
+			if (timestampStr.contains(":")) {
+				result += (int) (fps * 60 * StrUtils.strToInt(timestampStr.substring(timestampStr.lastIndexOf(":") + 1)));
+				timestampStr = timestampStr.substring(0, timestampStr.lastIndexOf(":"));
+				result += (int) (fps * 60 * 60 * StrUtils.strToInt(timestampStr));
+			} else {
+				result += (int) (fps * 60 * StrUtils.strToInt(timestampStr));
+			}
+		} else {
+			result += (int) (fps * StrUtils.strToInt(timestampStr));
+		}
+		return result;
 	}
 }

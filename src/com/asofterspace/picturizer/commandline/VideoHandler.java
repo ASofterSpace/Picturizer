@@ -66,7 +66,9 @@ public class VideoHandler {
 			stopFile = new File(stopFileName);
 		}
 
-		applyEffects(frames, effectContainers, targetDir, stopFile);
+		boolean onlySaveChanged = videoRoot.getBoolean("onlySaveChanged", false);
+
+		applyEffects(frames, effectContainers, targetDir, stopFile, onlySaveChanged);
 	}
 
 	private List<VideoFrame> convertListOfContainersToFrames(List<VideoInfoContainer> infoContainers) {
@@ -79,7 +81,8 @@ public class VideoHandler {
 		return frames;
 	}
 
-	private void applyEffects(List<VideoFrame> frames, List<VideoEffectContainer> effectContainers, Directory targetDir, File stopFile) {
+	private void applyEffects(List<VideoFrame> frames, List<VideoEffectContainer> effectContainers, Directory targetDir, File stopFile,
+		boolean onlySaveChanged) {
 
 		targetDir.create();
 
@@ -91,9 +94,10 @@ public class VideoHandler {
 			}
 			frame.init(num, targetDir);
 			if (!frame.alreadyExists()) {
-				frame.load();
 				frame.apply(effectContainers);
-				frame.save();
+				if ((!onlySaveChanged) || frame.wasChangedByEffect()) {
+					frame.save();
+				}
 			}
 			frame.clear();
 			num++;

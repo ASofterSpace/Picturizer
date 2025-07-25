@@ -22,6 +22,8 @@ public class VideoFrame {
 
 	private Image img = null;
 
+	private boolean changedByEffect = false;
+
 
 	public VideoFrame(File inputFile) {
 		this.inputFile = inputFile;
@@ -32,14 +34,24 @@ public class VideoFrame {
 		this.outputFile = new File(targetDir, StrUtils.leftPad0(frameNum, 8) + ".png");
 	}
 
-	public void load() {
-		this.img = Picturizer.getImageFileCtrl().loadImageFromFile(this.inputFile);
+	public Image getImage() {
+		if (this.img == null) {
+			this.img = Picturizer.getImageFileCtrl().loadImageFromFile(this.inputFile);
+		}
+		return this.img;
 	}
 
 	public void apply(List<VideoEffectContainer> effectContainers) {
 		for (VideoEffectContainer effectContainer : effectContainers) {
-			effectContainer.applyTo(frameNum, img);
+			boolean didChange = effectContainer.applyTo(frameNum, this);
+			if (didChange) {
+				changedByEffect = true;
+			}
 		}
+	}
+
+	public boolean wasChangedByEffect() {
+		return changedByEffect;
 	}
 
 	public void save() {

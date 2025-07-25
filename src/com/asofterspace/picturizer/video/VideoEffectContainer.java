@@ -4,10 +4,15 @@
  */
 package com.asofterspace.picturizer.video;
 
+import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
+import com.asofterspace.toolbox.io.Directory;
+import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.utils.MathUtils;
 import com.asofterspace.toolbox.utils.Record;
+
+import java.util.List;
 
 
 public class VideoEffectContainer {
@@ -15,8 +20,12 @@ public class VideoEffectContainer {
 	private int fromFrameNum = 0;
 	private int toFrameNum = -1;
 	private String effect = null;
+	private String text = null;
+	private String font = null;
 	private Integer fadeIn = null;
 	private Integer fadeOut = null;
+	private Integer maximizeIn = null;
+	private Integer minimizeOut = null;
 	private Integer top = null;
 	private Integer left = null;
 	private Integer bottom = null;
@@ -32,6 +41,8 @@ public class VideoEffectContainer {
 	private Integer b = null;
 	private Integer a = null;
 	private ColorRGBA color = null;
+	private Directory baseDir = null;
+	private List<File> baseDirFiles = null;
 	private int currentRandomState1 = 0;
 	private int currentRandomState2 = 0;
 
@@ -40,8 +51,12 @@ public class VideoEffectContainer {
 		fromFrameNum = rec.getInteger("from", 0);
 		toFrameNum = rec.getInteger("to", -1);
 		effect = rec.getString("effect");
+		font = rec.getString("font");
+		text = rec.getString("text");
 		fadeIn = rec.getInteger("fadeIn", null);
 		fadeOut = rec.getInteger("fadeOut", null);
+		maximizeIn = rec.getInteger("maximizeIn", null);
+		minimizeOut = rec.getInteger("minimizeOut", null);
 		top = rec.getInteger("top", null);
 		left = rec.getInteger("left", null);
 		bottom = rec.getInteger("bottom", null);
@@ -60,19 +75,26 @@ public class VideoEffectContainer {
 		if (colStr != null) {
 			color = ColorRGBA.fromString(colStr);
 		}
+		String baseDirStr = rec.getString("baseDir", null);
+		if (baseDirStr != null) {
+			baseDir = new Directory(baseDirStr);
+			boolean recursively = false;
+			baseDirFiles = baseDir.getAllFiles(recursively);
+		}
 	}
 
-	public void applyTo(int frameNum, Image img) {
+	public boolean applyTo(int frameNum, VideoFrame vidFrame) {
 		if (frameNum < fromFrameNum) {
-			return;
+			return false;
 		}
 		if (frameNum > toFrameNum) {
-			return;
+			return false;
 		}
 		if (effect == null) {
 			System.out.println("Encountered null effect!");
-			return;
+			return false;
 		}
+		Image img = vidFrame.getImage();
 		Image baseImg = img.copy();
 		switch (effect) {
 			case "glitch-load-image":
@@ -182,6 +204,82 @@ public class VideoEffectContainer {
 				img.dampen(1.25f);
 				break;
 
+			case "text":
+				// not currently supported with transparent drawing!
+				Boolean useAntiAliasing = false;
+
+				ColorRGBA textColor = color;
+				if (textColor == null) {
+					r += MathUtils.randomInteger(3) - 1;
+					g += MathUtils.randomInteger(3) - 1;
+					b += MathUtils.randomInteger(3) - 1;
+					if (r > 255) {
+						r = 255;
+					}
+					if (r < 0) {
+						r = 0;
+					}
+					if (g > 255) {
+						g = 255;
+					}
+					if (g < 0) {
+						g = 0;
+					}
+					if (b > 255) {
+						b = 255;
+					}
+					if (b < 0) {
+						b = 0;
+					}
+					textColor = new ColorRGBA(r, g, b);
+				}
+
+				img.drawTextTransparently(text, top + 2, null, null, left - 1,
+					font, size, useAntiAliasing, ColorRGBA.BLACK);
+				img.drawTextTransparently(text, top - 1, null, null, left + 2,
+					font, size, useAntiAliasing, ColorRGBA.BLACK);
+				img.drawTextTransparently(text, top + 2, null, null, left + 2,
+					font, size, useAntiAliasing, ColorRGBA.BLACK);
+				img.drawTextTransparently(text, top, null, null, left,
+					font, size, useAntiAliasing, textColor);
+				break;
+
+			case "splice-in-video":
+				int splicedInFrameNum = frameNum - fromFrameNum;
+				File splicedInFrameFile = baseDirFiles.get(splicedInFrameNum);
+				if (splicedInFrameFile != null) {
+					Image splicedInImg = Picturizer.getImageFileCtrl().loadImageFromFile(splicedInFrameFile);
+					if (splicedInImg != null) {
+						boolean keepAspectRatio = true;
+
+						boolean drewWithTransition = false;
+						if (maximizeIn > 0) {
+							if (frameNum < fromFrameNum + maximizeIn) {
+								double percSize = (1.0 * (frameNum - fromFrameNum)) / maximizeIn;
+								splicedInImg.resampleTo((int) (percSize * img.getWidth()), (int) (percSize * img.getHeight()), keepAspectRatio);
+								img.draw(splicedInImg, (int) ((percSize * img.getWidth()) / 2), (int) (percSize * img.getHeight()));
+								drewWithTransition = true;
+							}
+						}
+						if (minimizeOut > 0) {
+							if (frameNum > toFrameNum - minimizeOut) {
+								double percSize = (1.0 * (toFrameNum - frameNum)) / minimizeOut;
+								splicedInImg.resampleTo((int) (percSize * img.getWidth()), (int) (percSize * img.getHeight()), keepAspectRatio);
+								img.draw(splicedInImg, (int) ((percSize * img.getWidth()) / 2), (int) (percSize * img.getHeight()));
+								drewWithTransition = true;
+							}
+						}
+						if (!drewWithTransition) {
+							if ((img.getWidth() != splicedInImg.getWidth()) ||
+								(img.getHeight() != splicedInImg.getHeight())) {
+								splicedInImg.resampleTo(img.getWidth(), img.getHeight(), keepAspectRatio);
+							}
+							img.draw(splicedInImg, 0, 0);
+						}
+					}
+				}
+				break;
+
 			default:
 				System.out.println("Encountered unknown effect: '" + effect + "'");
 				break;
@@ -202,6 +300,8 @@ public class VideoEffectContainer {
 
 			}
 		}
+
+		return true;
 	}
 
 }
