@@ -17,8 +17,8 @@ import java.util.List;
 
 public class VideoEffectContainer {
 
-	private int fromFrameNum = 0;
-	private int toFrameNum = -1;
+	private Integer fromFrameNum = null;
+	private Integer toFrameNum = null;
 	private String effect = null;
 	private String text = null;
 	private String font = null;
@@ -35,6 +35,7 @@ public class VideoEffectContainer {
 	private Integer untilY = null;
 	private Integer right = null;
 	private Integer size = null;
+	private Integer wobble = null;
 	private Integer amount = null;
 	private Integer r = null;
 	private Integer g = null;
@@ -45,11 +46,12 @@ public class VideoEffectContainer {
 	private List<File> baseDirFiles = null;
 	private int currentRandomState1 = 0;
 	private int currentRandomState2 = 0;
+	private VideoFrame savedVidFrame = null;
 
 
 	public VideoEffectContainer(Record rec) {
-		fromFrameNum = rec.getInteger("from", 0);
-		toFrameNum = rec.getInteger("to", -1);
+		fromFrameNum = rec.getInteger("from", null);
+		toFrameNum = rec.getInteger("to", null);
 		effect = rec.getString("effect");
 		font = rec.getString("font");
 		text = rec.getString("text");
@@ -66,6 +68,7 @@ public class VideoEffectContainer {
 		untilY = rec.getInteger("untilY", null);
 		right = rec.getInteger("right", null);
 		size = rec.getInteger("size", null);
+		wobble = rec.getInteger("wobble", null);
 		amount = rec.getInteger("amount", null);
 		r = rec.getInteger("r", null);
 		g = rec.getInteger("g", null);
@@ -83,17 +86,60 @@ public class VideoEffectContainer {
 		}
 	}
 
-	public boolean applyTo(int frameNum, VideoFrame vidFrame) {
-		if (frameNum < fromFrameNum) {
+	public boolean applyTo(int frameNum, VideoFrame vidFrame, VideoFrame lastVidFrame) {
+		if ((fromFrameNum != null) && (frameNum < fromFrameNum)) {
 			return false;
 		}
-		if (frameNum > toFrameNum) {
+		if ((toFrameNum != null) && (frameNum > toFrameNum)) {
 			return false;
 		}
 		if (effect == null) {
 			System.out.println("Encountered null effect!");
 			return false;
 		}
+
+		int fromFrameNumSafe = frameNum;
+		if (fromFrameNum != null) {
+			fromFrameNumSafe = fromFrameNum;
+		}
+		int toFrameNumSafe = frameNum;
+		if (toFrameNum != null) {
+			toFrameNumSafe = toFrameNum;
+		}
+
+		// general / overall effects that might not even work on each image, so no need to lead it
+		switch (effect) {
+			case "video-base-transitions":
+				if (vidFrame.isFirstFrameOfSequence()) {
+					currentRandomState1 = maximizeIn;
+					if (savedVidFrame != null) {
+						savedVidFrame.unlock();
+						savedVidFrame.clear();
+					}
+					savedVidFrame = lastVidFrame;
+					if (savedVidFrame != null) {
+						savedVidFrame.lock();
+					}
+				}
+				if (currentRandomState1 > 0) {
+					if (savedVidFrame != null) {
+						Image img = vidFrame.getImage();
+						Image baseImg = img.copy();
+						img.draw(savedVidFrame.getImage(), 0, 0);
+						double percSize = (1.0 * (maximizeIn - currentRandomState1)) / maximizeIn;
+						boolean keepAspectRatio = true;
+						baseImg.resampleTo((int) (percSize * img.getWidth()), (int) (percSize * img.getHeight()), keepAspectRatio);
+						img.draw(baseImg, (img.getWidth() - baseImg.getWidth()) / 2, img.getHeight() - baseImg.getHeight());
+						currentRandomState1--;
+						return true;
+					} else {
+						currentRandomState1 = 0;
+					}
+				}
+				return false;
+		}
+
+		// effects that genuinely work on all affected frame images, so we can load it once centrally here
 		Image img = vidFrame.getImage();
 		Image baseImg = img.copy();
 		switch (effect) {
@@ -182,8 +228,11 @@ public class VideoEffectContainer {
 
 			case "glitch-wobble":
 				img.shiftPosition(currentRandomState1, currentRandomState2);
-				currentRandomState1 += MathUtils.randomInteger(5) - 2;
-				currentRandomState2 += MathUtils.randomInteger(5) - 2;
+				if (wobble == null) {
+					wobble = 2;
+				}
+				currentRandomState1 += MathUtils.randomInteger(1 + (2 * wobble)) - wobble;
+				currentRandomState2 += MathUtils.randomInteger(1 + (2 * wobble)) - wobble;
 				break;
 
 			case "colorize":
@@ -234,18 +283,23 @@ public class VideoEffectContainer {
 					textColor = new ColorRGBA(r, g, b);
 				}
 
-				img.drawTextTransparently(text, top + 2, null, null, left - 1,
+				img.drawTextTransparently(text, top + currentRandomState1 + 2, null, null, left + currentRandomState2 - 1,
 					font, size, useAntiAliasing, ColorRGBA.BLACK);
-				img.drawTextTransparently(text, top - 1, null, null, left + 2,
+				img.drawTextTransparently(text, top + currentRandomState1 - 1, null, null, left + currentRandomState2 + 2,
 					font, size, useAntiAliasing, ColorRGBA.BLACK);
-				img.drawTextTransparently(text, top + 2, null, null, left + 2,
+				img.drawTextTransparently(text, top + currentRandomState1 + 2, null, null, left + currentRandomState2 + 2,
 					font, size, useAntiAliasing, ColorRGBA.BLACK);
-				img.drawTextTransparently(text, top, null, null, left,
+				img.drawTextTransparently(text, top + currentRandomState1, null, null, left + currentRandomState2,
 					font, size, useAntiAliasing, textColor);
+
+				if (wobble != null) {
+					currentRandomState1 += MathUtils.randomInteger(1 + (2 * wobble)) - wobble;
+					currentRandomState2 += MathUtils.randomInteger(1 + (2 * wobble)) - wobble;
+				}
 				break;
 
 			case "splice-in-video":
-				int splicedInFrameNum = frameNum - fromFrameNum;
+				int splicedInFrameNum = frameNum - fromFrameNumSafe;
 				if (splicedInFrameNum < baseDirFiles.size()) {
 					File splicedInFrameFile = baseDirFiles.get(splicedInFrameNum);
 					if (splicedInFrameFile != null) {
@@ -255,16 +309,16 @@ public class VideoEffectContainer {
 
 							boolean drewWithTransition = false;
 							if (maximizeIn != null) {
-								if (frameNum < fromFrameNum + maximizeIn) {
-									double percSize = (1.0 * (frameNum - fromFrameNum)) / maximizeIn;
+								if (frameNum < fromFrameNumSafe + maximizeIn) {
+									double percSize = (1.0 * (frameNum - fromFrameNumSafe)) / maximizeIn;
 									splicedInImg.resampleTo((int) (percSize * img.getWidth()), (int) (percSize * img.getHeight()), keepAspectRatio);
 									img.draw(splicedInImg, (img.getWidth() - splicedInImg.getWidth()) / 2, img.getHeight() - splicedInImg.getHeight());
 									drewWithTransition = true;
 								}
 							}
 							if (minimizeOut != null) {
-								if (frameNum > toFrameNum - minimizeOut) {
-									double percSize = (1.0 * (toFrameNum - frameNum)) / minimizeOut;
+								if (frameNum > toFrameNumSafe - minimizeOut) {
+									double percSize = (1.0 * (toFrameNumSafe - frameNum)) / minimizeOut;
 									splicedInImg.resampleTo((int) (percSize * img.getWidth()), (int) (percSize * img.getHeight()), keepAspectRatio);
 									img.draw(splicedInImg, (img.getWidth() - splicedInImg.getWidth()) / 2, img.getHeight() - splicedInImg.getHeight());
 									drewWithTransition = true;
@@ -288,18 +342,16 @@ public class VideoEffectContainer {
 		}
 
 		if (fadeIn != null) {
-			if (frameNum - fromFrameNum < fadeIn) {
-				float fadeAmount = (frameNum - fromFrameNum) / (1.0f * fadeIn);
+			if (frameNum - fromFrameNumSafe < fadeIn) {
+				float fadeAmount = (frameNum - fromFrameNumSafe) / (1.0f * fadeIn);
 				img.intermixImage(baseImg, fadeAmount);
-
 			}
 		}
 
 		if (fadeOut != null) {
-			if (toFrameNum - frameNum < fadeOut) {
-				float fadeAmount = (toFrameNum - frameNum) / (1.0f * fadeOut);
+			if (toFrameNumSafe - frameNum < fadeOut) {
+				float fadeAmount = (toFrameNumSafe - frameNum) / (1.0f * fadeOut);
 				img.intermixImage(baseImg, fadeAmount);
-
 			}
 		}
 

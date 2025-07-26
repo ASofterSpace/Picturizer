@@ -58,6 +58,13 @@ public class VideoHandler {
 
 		List<VideoFrame> frames = convertListOfContainersToFrames(baseContainers);
 
+		// List<String> framesOut = new ArrayList<>();
+		// for (VideoFrame frame : frames) {
+			// framesOut.add(frame.toString());
+		// }
+		// SimpleFile framesOutFile = new SimpleFile("framesOutFile.txt");
+		// framesOutFile.saveContents(framesOut);
+
 		Directory targetDir = new Directory(videoRoot.getString("targetDir"));
 
 		File stopFile = null;
@@ -89,18 +96,23 @@ public class VideoHandler {
 
 		int num = 0;
 
+		VideoFrame lastVidFrame = null;
+
 		for (VideoFrame frame : frames) {
 			if (num % 64 == 0) {
 				System.out.println("Working on frame " + num + "...");
 			}
 			frame.init(num, targetDir, targetFileNameDigits);
 			if (!frame.alreadyExists()) {
-				frame.apply(effectContainers);
+				frame.apply(effectContainers, lastVidFrame);
 				if ((!onlySaveChanged) || frame.wasChangedByEffect()) {
 					frame.save();
 				}
 			}
-			frame.clear();
+			if (lastVidFrame != null) {
+				lastVidFrame.clear();
+			}
+			lastVidFrame = frame;
 			num++;
 			if (stopFile != null) {
 				if (stopFile.exists()) {

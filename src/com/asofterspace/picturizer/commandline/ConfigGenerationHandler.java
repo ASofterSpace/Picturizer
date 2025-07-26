@@ -66,6 +66,8 @@ public class ConfigGenerationHandler {
 					int curFromFrame = 0;
 					int curToFrame = 0;
 					double fps = cgRoot.getDouble("fps", 24.0);
+					String fontName = cgRoot.getString("fontName", "Neuropol-Regular");
+					Integer fontSize = cgRoot.getInteger("fontSize", 32);
 					String curSub = null;
 					// List<String> delOutLines = new ArrayList<>();
 					for (String line : srtLines) {
@@ -90,8 +92,6 @@ public class ConfigGenerationHandler {
 									Record r = Record.emptyObject();
 									int offsetX = 0;
 									int offsetY = 0;
-									String fontName = "Neuropol-Regular";
-									Integer fontSize = 32;
 									ColorRGBA textColor = new ColorRGBA(MathUtils.randomInteger(128) + 128, MathUtils.randomInteger(128),
 										MathUtils.randomInteger(128) + 128);
 									ImageLayerBasedOnText ilText = new ImageLayerBasedOnText(offsetX, offsetY, curSub, fontName, fontSize, textColor);

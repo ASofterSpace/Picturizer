@@ -40,6 +40,7 @@ public class VideoInfoContainer {
 			if (from == null) {
 				started = true;
 			}
+			boolean isFirstFrameOfSequence = true;
 			for (File file : frameFiles) {
 				if (!started) {
 					if (from.equals(file.getLocalFilename())) {
@@ -47,7 +48,8 @@ public class VideoInfoContainer {
 					}
 				}
 				if (started) {
-					frames.add(new VideoFrame(file));
+					frames.add(new VideoFrame(file, isFirstFrameOfSequence));
+					isFirstFrameOfSequence = false;
 				}
 				if (to != null) {
 					if (to.equals(file.getLocalFilename())) {
