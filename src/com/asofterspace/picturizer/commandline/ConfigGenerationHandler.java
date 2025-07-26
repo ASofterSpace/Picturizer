@@ -146,7 +146,7 @@ public class ConfigGenerationHandler {
 					int lastPrintAt = cur;
 
 					Record addGlitchyTexts = cgRoot.get("addGlitchyTexts");
-					int framesUntilNextTextAvg = 100;
+					int glitchTextRate = 10;
 					int durationAvgInFrames = 100;
 					int addGlitchyTextsFontSize = 10;
 					int addGlitchyTextsFontSizeMaxDistFromAvg = 0;
@@ -154,7 +154,7 @@ public class ConfigGenerationHandler {
 					int addGlitchyTextsWobble = 0;
 					List<String> addGlitchyTextsTexts = null;
 					if (addGlitchyTexts != null) {
-						framesUntilNextTextAvg = addGlitchyTexts.getInteger("framesUntilNextTextAvg", 100);
+						glitchTextRate = addGlitchyTexts.getInteger("rate", 100);
 						durationAvgInFrames = addGlitchyTexts.getInteger("durationAvgInFrames", 100);
 						addGlitchyTextsFontSize = addGlitchyTexts.getInteger("fontSize", 10);
 						addGlitchyTextsFontSizeMaxDistFromAvg = addGlitchyTexts.getInteger("fontSizeMaxDistFromAvg", 0);
@@ -166,7 +166,7 @@ public class ConfigGenerationHandler {
 					while (cur < to) {
 
 						if ((addGlitchyTexts != null) && (addGlitchyTextsTexts != null)) {
-							if (MathUtils.randomInteger(framesUntilNextTextAvg*2) < 1) {
+							if (MathUtils.randomInteger(glitchTextRate) < 1) {
 								Record r = Record.emptyObject();
 								int offsetX = 0;
 								int offsetY = 0;
