@@ -152,6 +152,7 @@ public class ConfigGenerationHandler {
 					int addGlitchyTextsFontSizeMaxDistFromAvg = 0;
 					String addGlitchyTextsFontName = "";
 					int addGlitchyTextsWobble = 0;
+					int addGlitchyTextsWobbleMaxDistFromAvg = 0;
 					List<String> addGlitchyTextsTexts = null;
 					if (addGlitchyTexts != null) {
 						glitchTextRate = addGlitchyTexts.getInteger("rate", 100);
@@ -160,6 +161,7 @@ public class ConfigGenerationHandler {
 						addGlitchyTextsFontSizeMaxDistFromAvg = addGlitchyTexts.getInteger("fontSizeMaxDistFromAvg", 0);
 						addGlitchyTextsFontName = addGlitchyTexts.getString("fontName", "");
 						addGlitchyTextsWobble = addGlitchyTexts.getInteger("wobble", 0);
+						addGlitchyTextsWobbleMaxDistFromAvg = addGlitchyTexts.getInteger("wobbleMaxDistFromAvg", 0);
 						addGlitchyTextsTexts = addGlitchyTexts.getArrayAsStringList("texts");
 					}
 
@@ -175,7 +177,7 @@ public class ConfigGenerationHandler {
 								if (curToFrame > to) {
 									curToFrame = to;
 								}
-								int curFontSize = addGlitchyTextsFontSize + MathUtils.randomInteger(addGlitchyTextsFontSizeMaxDistFromAvg*2) -
+								int curFontSize = addGlitchyTextsFontSize + MathUtils.randomInteger(1+(addGlitchyTextsFontSizeMaxDistFromAvg*2)) -
 									addGlitchyTextsFontSizeMaxDistFromAvg;
 								String curText = addGlitchyTextsTexts.get(MathUtils.randomInteger(addGlitchyTextsTexts.size()));
 								ColorRGBA textColor = new ColorRGBA(MathUtils.randomInteger(128) + 128, MathUtils.randomInteger(128),
@@ -189,7 +191,8 @@ public class ConfigGenerationHandler {
 								r.set("to", curToFrame);
 								r.set("font", addGlitchyTextsFontName);
 								r.set("size", curFontSize);
-								r.set("wobble", addGlitchyTextsWobble);
+								r.set("wobble", addGlitchyTextsWobble + MathUtils.randomInteger(1+(addGlitchyTextsWobbleMaxDistFromAvg*2)) -
+									addGlitchyTextsWobbleMaxDistFromAvg);
 								r.set("left", MathUtils.randomInteger(width - textWidth));
 								r.set("top", MathUtils.randomInteger(height - textHeight));
 								r.set("text", curText);

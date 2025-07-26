@@ -106,6 +106,11 @@ public class VideoHandler {
 		int num = 0;
 
 		VideoFrame lastVidFrame = null;
+		if (frames.size() > 0) {
+			lastVidFrame = frames.get(frames.size() - 1);
+			lastVidFrame.init(frames.size() - 1, targetDir, targetFileNameDigits);
+			lastVidFrame.lock();
+		}
 
 		for (VideoFrame frame : frames) {
 			if (num % 64 == 0) {
