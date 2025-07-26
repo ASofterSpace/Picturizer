@@ -58,6 +58,15 @@ public class VideoHandler {
 
 		List<VideoFrame> frames = convertListOfContainersToFrames(baseContainers);
 
+		int loopVideoAmount = videoRoot.getInteger("loopVideoAmount", 1);
+		if (loopVideoAmount > 1) {
+			List<VideoFrame> mergeFrames = new ArrayList<>();
+			for (int i = 0; i < loopVideoAmount; i++) {
+				mergeFrames.addAll(frames);
+			}
+			frames = mergeFrames;
+		}
+
 		// List<String> framesOut = new ArrayList<>();
 		// for (VideoFrame frame : frames) {
 			// framesOut.add(frame.toString());

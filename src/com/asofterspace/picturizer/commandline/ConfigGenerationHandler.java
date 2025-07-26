@@ -144,7 +144,70 @@ public class ConfigGenerationHandler {
 					height = cgRoot.getInteger("height", 0);
 					int cur = from;
 					int lastPrintAt = cur;
+
+					Record addGlitchyTexts = cgRoot.get("addGlitchyTexts");
+					int framesUntilNextTextAvg = 100;
+					int durationAvgInFrames = 100;
+					int addGlitchyTextsFontSize = 10;
+					int addGlitchyTextsFontSizeMaxDistFromAvg = 0;
+					String addGlitchyTextsFontName = "";
+					int addGlitchyTextsWobble = 0;
+					List<String> addGlitchyTextsTexts = null;
+					if (addGlitchyTexts != null) {
+						framesUntilNextTextAvg = addGlitchyTexts.getInteger("framesUntilNextTextAvg", 100);
+						durationAvgInFrames = addGlitchyTexts.getInteger("durationAvgInFrames", 100);
+						addGlitchyTextsFontSize = addGlitchyTexts.getInteger("fontSize", 10);
+						addGlitchyTextsFontSizeMaxDistFromAvg = addGlitchyTexts.getInteger("fontSizeMaxDistFromAvg", 0);
+						addGlitchyTextsFontName = addGlitchyTexts.getString("fontName", "");
+						addGlitchyTextsWobble = addGlitchyTexts.getInteger("wobble", 0);
+						addGlitchyTextsTexts = addGlitchyTexts.getArrayAsStringList("texts");
+					}
+
 					while (cur < to) {
+
+						if ((addGlitchyTexts != null) && (addGlitchyTextsTexts != null)) {
+							if (MathUtils.randomInteger(framesUntilNextTextAvg*2) < 1) {
+								Record r = Record.emptyObject();
+								int offsetX = 0;
+								int offsetY = 0;
+								curFromFrame = cur;
+								curToFrame = cur + MathUtils.randomInteger(durationAvgInFrames*2);
+								if (curToFrame > to) {
+									curToFrame = to;
+								}
+								int curFontSize = addGlitchyTextsFontSize + MathUtils.randomInteger(addGlitchyTextsFontSizeMaxDistFromAvg*2) -
+									addGlitchyTextsFontSizeMaxDistFromAvg;
+								String curText = addGlitchyTextsTexts.get(MathUtils.randomInteger(addGlitchyTextsTexts.size()));
+								ColorRGBA textColor = new ColorRGBA(MathUtils.randomInteger(128) + 128, MathUtils.randomInteger(128),
+									MathUtils.randomInteger(128) + 128);
+								ImageLayerBasedOnText ilText = new ImageLayerBasedOnText(offsetX, offsetY, curText,
+									addGlitchyTextsFontName, curFontSize, textColor);
+								int textWidth = ilText.getWidth();
+								int textHeight = ilText.getHeight();
+								r.set("effect", "text");
+								r.set("from", curFromFrame);
+								r.set("to", curToFrame);
+								r.set("font", addGlitchyTextsFontName);
+								r.set("size", curFontSize);
+								r.set("wobble", addGlitchyTextsWobble);
+								r.set("left", MathUtils.randomInteger(width - textWidth));
+								r.set("top", MathUtils.randomInteger(height - textHeight));
+								r.set("text", curText);
+								r.set("r", textColor.getR());
+								r.set("g", textColor.getG());
+								r.set("b", textColor.getB());
+								// r.set("color", textColor.toString());
+								int len = curToFrame - curFromFrame;
+								if (MathUtils.randomInteger(5) < 3) {
+									r.set("fadeIn", MathUtils.randomInteger(len / 4));
+								}
+								if (MathUtils.randomInteger(5) < 3) {
+									r.set("fadeOut", MathUtils.randomInteger(len / 4));
+								}
+								effects.add(r);
+							}
+						}
+
 						Record r = Record.emptyObject();
 						r.set("from", cur);
 						int duration = MathUtils.randomInteger(512);
