@@ -83,7 +83,8 @@ public class VideoFrame {
 		if (this.locked > 0) {
 			return;
 		}
-		this.inputFile = null;
+		// do not clear the input file so that the VideoFrame can be re-initialized for a looped video
+		// this.inputFile = null;
 		this.outputFile = null;
 		this.img = null;
 	}
