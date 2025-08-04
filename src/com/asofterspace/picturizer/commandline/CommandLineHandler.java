@@ -40,6 +40,10 @@ public class CommandLineHandler {
 		}
 
 		switch (type) {
+			case "multi":
+				MultiPictureEditHandler mpeh = new MultiPictureEditHandler(inputRoot.get("config"));
+				mpeh.run();
+				break;
 			case "video":
 				VideoHandler vh = new VideoHandler(inputRoot.get("config"));
 				vh.run();

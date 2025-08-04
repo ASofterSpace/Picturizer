@@ -35,3 +35,6 @@ bin
 
 # temp files
 /temp/
+
+# input file examples
+/input_examples/
