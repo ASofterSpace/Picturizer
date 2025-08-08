@@ -35,6 +35,24 @@ public class GUIMenuGlitch {
 
 		JMenuItem curMenuItem;
 
+		curMenuItem = new JMenuItem("Full Picture Offset Color-Shift");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.saveCurPicForUndo();
+				ImageMultiLayered iml = gui.getPicture();
+				ImageLayer layer = iml.getLayer(gui.getCurrentLayerIndex());
+				if (layer != null) {
+					if (layer instanceof ImageLayerBasedOnImage) {
+						ImageLayerBasedOnImage il = (ImageLayerBasedOnImage) layer;
+						il.setImage(GlitchUtils.fullpicOffsetColorShift(il.getImage()));
+						gui.setPictureUndoTakenCareOf(iml);
+					}
+				}
+			}
+		});
+		glitch.add(curMenuItem);
+
 		curMenuItem = new JMenuItem("Box-Shatter");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override

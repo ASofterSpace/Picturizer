@@ -246,6 +246,7 @@ public class ConfigGenerationHandler {
 							case 12:
 							case 13:
 							case 14:
+							case 16:
 								// max 1 at the same time
 								Integer thisEffectOngoingUntil = effectOngoingUntil.get(newEffectNum);
 								if ((thisEffectOngoingUntil != null) && (thisEffectOngoingUntil > cur)) {
@@ -337,6 +338,16 @@ public class ConfigGenerationHandler {
 								r.set("top", top);
 								r.set("right", right);
 								r.set("bottom", bottom);
+								break;
+
+							case 16:
+								r.set("effect", "offset-color-shift");
+								r.set("r", MathUtils.randomInteger(64) + 98);
+								r.set("g", MathUtils.randomInteger(64) + 38);
+								r.set("b", MathUtils.randomInteger(64) + 108);
+								int offset = MathUtils.randomInteger(width / 30) + 3;
+								r.set("fromX", offset);
+								r.set("fromY", offset);
 								break;
 
 							default:

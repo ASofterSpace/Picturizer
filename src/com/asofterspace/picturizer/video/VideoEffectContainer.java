@@ -139,6 +139,8 @@ public class VideoEffectContainer {
 				return false;
 		}
 
+		boolean allowOverflow = false;
+
 		// effects that genuinely work on all affected frame images, so we can load it once centrally here
 		Image img = vidFrame.getImage();
 		Image baseImg = img.copy();
@@ -215,7 +217,7 @@ public class VideoEffectContainer {
 			case "glitch-stripes":
 				// turn the whole picture stripe-y (so darker stripes, maybe 32 light and 32 dark ones?)
 				workImg = img.copy();
-				workImg.editChannels("R", 0.75, "G", 0.75, "B", 0.75);
+				workImg.editChannels("R", 0.75, "G", 0.75, "B", 0.75, allowOverflow);
 				int stripeAmount = amount;
 				for (int i = 0; i < stripeAmount; i++) {
 					int x1 = 0;
@@ -236,17 +238,25 @@ public class VideoEffectContainer {
 				break;
 
 			case "colorize":
-				img.editChannels("R", r / 100.0f, "G", g / 100.0f, "B", b / 100.0f);
+				img.editChannels("R", r / 100.0f, "G", g / 100.0f, "B", b / 100.0f, allowOverflow);
 				break;
 
 			case "box-colorize":
 				workImg = img.copy();
-				workImg.editChannels("R", r / 100.0f, "G", g / 100.0f, "B", b / 100.0f);
+				workImg.editChannels("R", r / 100.0f, "G", g / 100.0f, "B", b / 100.0f, allowOverflow);
 				img.draw(workImg, left, top, left, top, right, bottom);
 				break;
 
 			case "intensify":
 				img.intensify();
+				break;
+
+			case "offset-color-shift":
+				workImg = img.copy();
+				workImg.editChannels("R", r / 100.0f, "G", g / 100.0f, "B", b / 100.0f, allowOverflow);
+				Image shiftedImg = workImg.copy();
+				shiftedImg.draw(workImg, fromX, fromY);
+				img.intermixImageMax(shiftedImg);
 				break;
 
 			case "dampen":

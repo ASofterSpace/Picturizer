@@ -10,6 +10,21 @@ import com.asofterspace.toolbox.utils.MathUtils;
 
 public class GlitchUtils {
 
+	public static Image fullpicOffsetColorShift(Image img) {
+		Image drawImg = img.copy();
+		boolean allowOverflow = false;
+		drawImg.editChannels("R", 1.2 + (MathUtils.randomDouble() / 5),
+							 "G", 0.6 + (MathUtils.randomDouble() / 5),
+							 "B", 1.3 + (MathUtils.randomDouble() / 5),
+							 allowOverflow);
+		Image shiftedImg = drawImg.copy();
+		int offset = MathUtils.randomInteger(drawImg.getWidth() / 30) + 3;
+		shiftedImg.draw(drawImg, offset, offset);
+
+		shiftedImg.intermixImageMax(img);
+		return shiftedImg;
+	}
+
 	public static Image boxShatter(Image img) {
 		Image drawImg = img.copy();
 		int boxAmount = MathUtils.randomInteger(5) + 3;
