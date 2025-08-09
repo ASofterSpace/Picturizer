@@ -262,7 +262,7 @@ public class VideoEffectContainer {
 			case "zoom-color-shift":
 				workImg = img.copy();
 				workImg.editChannels("R", r / 100.0f, "G", g / 100.0f, "B", b / 100.0f, allowOverflow);
-				Image shiftedImg = workImg.copy();
+				shiftedImg = workImg.copy();
 				double zoom = fromX / 1000.0;
 				workImg.resampleTo((int) (workImg.getWidth() * zoom), (int) (workImg.getHeight() * zoom));
 				shiftedImg.draw(workImg, (img.getWidth() - workImg.getWidth()) / 2, (img.getHeight() - workImg.getHeight()) / 2);
