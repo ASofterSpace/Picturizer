@@ -25,6 +25,22 @@ public class GlitchUtils {
 		return shiftedImg;
 	}
 
+	public static Image fullpicZoomColorShift(Image img) {
+		Image drawImg = img.copy();
+		boolean allowOverflow = false;
+		drawImg.editChannels("R", 1.2 + (MathUtils.randomDouble() / 5),
+							 "G", 0.6 + (MathUtils.randomDouble() / 5),
+							 "B", 1.3 + (MathUtils.randomDouble() / 5),
+							 allowOverflow);
+		Image shiftedImg = drawImg.copy();
+		double zoom = 1.02 + (MathUtils.randomDouble() / 15);
+		drawImg.resampleTo((int) (drawImg.getWidth() * zoom), (int) (drawImg.getHeight() * zoom));
+		shiftedImg.draw(drawImg, (img.getWidth() - drawImg.getWidth()) / 2, (img.getHeight() - drawImg.getHeight()) / 2);
+
+		shiftedImg.intermixImageMax(img);
+		return shiftedImg;
+	}
+
 	public static Image boxShatter(Image img) {
 		Image drawImg = img.copy();
 		int boxAmount = MathUtils.randomInteger(5) + 3;

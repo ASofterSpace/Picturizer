@@ -247,6 +247,7 @@ public class ConfigGenerationHandler {
 							case 13:
 							case 14:
 							case 16:
+							case 17:
 								// max 1 at the same time
 								Integer thisEffectOngoingUntil = effectOngoingUntil.get(newEffectNum);
 								if ((thisEffectOngoingUntil != null) && (thisEffectOngoingUntil > cur)) {
@@ -348,6 +349,15 @@ public class ConfigGenerationHandler {
 								int offset = MathUtils.randomInteger(width / 30) + 3;
 								r.set("fromX", offset);
 								r.set("fromY", offset);
+								break;
+
+							case 17:
+								r.set("effect", "zoom-color-shift");
+								r.set("r", MathUtils.randomInteger(64) + 98);
+								r.set("g", MathUtils.randomInteger(64) + 38);
+								r.set("b", MathUtils.randomInteger(64) + 108);
+								double zoom = 1.02 + (MathUtils.randomDouble() / 15);
+								r.set("fromX", (int) (1000 * zoom));
 								break;
 
 							default:
