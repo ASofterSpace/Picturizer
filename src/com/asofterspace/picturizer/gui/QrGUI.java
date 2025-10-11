@@ -4,6 +4,7 @@
  */
 package com.asofterspace.picturizer.gui;
 
+import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.toolbox.barcodes.QrCode;
 import com.asofterspace.toolbox.barcodes.QrCodeFactory;
 import com.asofterspace.toolbox.gui.Arrangement;
@@ -55,7 +56,7 @@ public class QrGUI {
 	private JDialog createGUI() {
 
 		// Create the window
-		final JDialog qrDialog = new JDialog(gui.getMainFrame(), "Create QR Code", true);
+		final JDialog qrDialog = new JDialog(gui.getMainFrame(), Picturizer.PROGRAM_TITLE + " - Create QR Code", true);
 		GridBagLayout qrDialogLayout = new GridBagLayout();
 		qrDialog.setLayout(qrDialogLayout);
 		qrDialog.getRootPane().setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));

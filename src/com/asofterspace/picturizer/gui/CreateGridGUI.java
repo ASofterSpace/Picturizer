@@ -4,6 +4,7 @@
  */
 package com.asofterspace.picturizer.gui;
 
+import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.ColorRGBA;
@@ -64,7 +65,7 @@ public class CreateGridGUI {
 	private JDialog createGUI() {
 
 		// Create the window
-		this.dialog = new JDialog(gui.getMainFrame(), "", true);
+		this.dialog = new JDialog(gui.getMainFrame(), Picturizer.PROGRAM_TITLE + " - Create Grid", true);
 		GridBagLayout dialogLayout = new GridBagLayout();
 		dialog.setLayout(dialogLayout);
 		dialog.getRootPane().setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));

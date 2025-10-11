@@ -4,6 +4,7 @@
  */
 package com.asofterspace.picturizer.gui;
 
+import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.ColorRGBA;
@@ -49,6 +50,7 @@ public class ExpandShrinkGUI {
 	// (when the difference of this to now is high), but not to listeners to our own changes
 	// (when the difference is low)
 	private long lastSelfMadeInputTime = 0;
+	private final static int OFFSET_TO_PREVENT_SELF_CALLING_MS = 64;
 
 
 	public ExpandShrinkGUI(GUI gui) {
@@ -91,7 +93,7 @@ public class ExpandShrinkGUI {
 		};
 
 		// Create the window
-		this.dialog = new JDialog(gui.getMainFrame(), "", true);
+		this.dialog = new JDialog(gui.getMainFrame(), Picturizer.PROGRAM_TITLE + " - Expand/Shrink", true);
 		GridBagLayout dialogLayout = new GridBagLayout();
 		dialog.setLayout(dialogLayout);
 		dialog.getRootPane().setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -230,10 +232,11 @@ public class ExpandShrinkGUI {
 
 	private void refreshTopLeftRightBottom() {
 
-		if (System.currentTimeMillis() - lastSelfMadeInputTime < 10) {
+		long curTimeMillis = System.currentTimeMillis();
+		if (curTimeMillis - lastSelfMadeInputTime < OFFSET_TO_PREVENT_SELF_CALLING_MS) {
 			return;
 		}
-		lastSelfMadeInputTime = System.currentTimeMillis();
+		lastSelfMadeInputTime = curTimeMillis;
 
 		Integer left = StrUtils.strToInt(inputFieldLeft.getText(), 0);
 		Integer width = StrUtils.strToInt(inputFieldWidth.getText(), 0);
@@ -252,10 +255,11 @@ public class ExpandShrinkGUI {
 
 	private void refreshWidthHeight() {
 
-		if (System.currentTimeMillis() - lastSelfMadeInputTime < 10) {
+		long curTimeMillis = System.currentTimeMillis();
+		if (curTimeMillis - lastSelfMadeInputTime < OFFSET_TO_PREVENT_SELF_CALLING_MS) {
 			return;
 		}
-		lastSelfMadeInputTime = System.currentTimeMillis();
+		lastSelfMadeInputTime = curTimeMillis;
 
 		Integer left = StrUtils.strToInt(inputFieldLeft.getText(), 0);
 		Integer right = StrUtils.strToInt(inputFieldRight.getText(), 0);

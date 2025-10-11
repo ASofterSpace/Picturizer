@@ -5,6 +5,7 @@
 package com.asofterspace.picturizer.gui;
 
 import com.asofterspace.picturizer.gui.menu.GUIMenuColors;
+import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.ColorRGBA;
@@ -45,7 +46,7 @@ public class ColorPickerGUI {
 	private JDialog createGUI() {
 
 		// Create the window
-		final JDialog ccDialog = new JDialog(gui.getMainFrame(), "Pick a Color", true);
+		final JDialog ccDialog = new JDialog(gui.getMainFrame(), Picturizer.PROGRAM_TITLE + " - Pick a Color", true);
 		GridBagLayout ccDialogLayout = new GridBagLayout();
 		ccDialog.setLayout(ccDialogLayout);
 		ccDialog.getRootPane().setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));

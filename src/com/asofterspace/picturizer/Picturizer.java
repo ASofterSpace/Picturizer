@@ -20,8 +20,8 @@ import javax.swing.SwingUtilities;
 public class Picturizer {
 
 	public final static String PROGRAM_TITLE = "Picturizer";
-	public final static String VERSION_NUMBER = "0.0.3.7(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
-	public final static String VERSION_DATE = "9. November 2019 - 8. August 2025";
+	public final static String VERSION_NUMBER = "0.0.3.8(" + Utils.TOOLBOX_VERSION_NUMBER + ")";
+	public final static String VERSION_DATE = "9. November 2019 - 11. Oktober 2025";
 
 	private static ConfigFile config;
 

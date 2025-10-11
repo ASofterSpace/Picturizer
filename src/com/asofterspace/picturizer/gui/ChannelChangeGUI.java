@@ -5,6 +5,7 @@
 package com.asofterspace.picturizer.gui;
 
 import com.asofterspace.picturizer.gui.menu.GUIMenuChannels;
+import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.Image;
@@ -55,7 +56,7 @@ public class ChannelChangeGUI {
 	private JDialog createGUI() {
 
 		// Create the window
-		final JDialog ccDialog = new JDialog(gui.getMainFrame(), GUIMenuChannels.ADJUST_CHANNEL_GUI_STR, true);
+		final JDialog ccDialog = new JDialog(gui.getMainFrame(), Picturizer.PROGRAM_TITLE + " - " + GUIMenuChannels.ADJUST_CHANNEL_GUI_STR, true);
 		GridBagLayout ccDialogLayout = new GridBagLayout();
 		ccDialog.setLayout(ccDialogLayout);
 		ccDialog.getRootPane().setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
