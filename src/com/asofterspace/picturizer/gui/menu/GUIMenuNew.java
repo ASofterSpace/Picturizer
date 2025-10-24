@@ -35,23 +35,59 @@ public class GUIMenuNew {
 
 		JMenu newFile = new JMenu("New");
 
-		JMenuItem emptyFile = new JMenuItem("Empty (of same size as current image = clear with background color)");
-		emptyFile.addActionListener(new ActionListener() {
+		JMenuItem curItem = new JMenuItem("Empty (of same size as current image = clear with background color)");
+		curItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				createNewEmptyFile(gui);
 			}
 		});
-		newFile.add(emptyFile);
+		newFile.add(curItem);
 
-		JMenuItem noiseFile = new JMenuItem("Noise (of same size as current image)");
-		noiseFile.addActionListener(new ActionListener() {
+		curItem = new JMenuItem("Noise (of same size as current image)");
+		curItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				createNewNoisyFile(gui, 1);
 			}
 		});
-		newFile.add(noiseFile);
+		newFile.add(curItem);
+
+		curItem = new JMenuItem("Diamond (with foreground on background color of same size as current image)");
+		curItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int newWidth = 128;
+				int newHeight = 128;
+				ImageMultiLayered picture = gui.getPicture();
+				if (picture != null) {
+					newWidth = picture.getWidth();
+					newHeight = picture.getHeight();
+				}
+				Image newImg = new Image(newWidth, newHeight, gui.getBackgroundColor());
+				newImg.drawDiamond(0, 0, newWidth-1, newHeight-1, gui.getForegroundColor());
+				gui.setPicture(newImg);
+			}
+		});
+		newFile.add(curItem);
+
+		curItem = new JMenuItem("Ellipse (with foreground on background color of same size as current image)");
+		curItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int newWidth = 128;
+				int newHeight = 128;
+				ImageMultiLayered picture = gui.getPicture();
+				if (picture != null) {
+					newWidth = picture.getWidth();
+					newHeight = picture.getHeight();
+				}
+				Image newImg = new Image(newWidth, newHeight, gui.getBackgroundColor());
+				newImg.drawEllipse(0, 0, newWidth-1, newHeight-1, gui.getForegroundColor());
+				gui.setPicture(newImg);
+			}
+		});
+		newFile.add(curItem);
 
 		JMenuItem screenshotFile = new JMenuItem("Screenshot");
 		screenshotFile.addActionListener(new ActionListener() {
