@@ -827,6 +827,39 @@ public class GUI extends MainWindow {
 								}
 							}
 							break;
+
+						case DRAW_ELLIPSE_FG:
+						case DRAW_ELLIPSE_BG:
+							newPoint = new Pair<>(x, y);
+							if (lastDrawPoints.size() > 0) {
+								Pair<Integer, Integer> prevPoint = lastDrawPoints.get(0);
+								lastDrawPoints = new ArrayList<>();
+								lastDrawPoints.add(prevPoint);
+								lastDrawPoints.add(newPoint);
+								ColorRGBA drawColor = foregroundColor;
+								if (activeTool == Tool.DRAW_ELLIPSE_BG) {
+									drawColor = backgroundColor;
+								}
+								int x1 = lastDrawPoints.get(0).getX();
+								int x2 = lastDrawPoints.get(1).getX();
+								int y1 = lastDrawPoints.get(0).getY();
+								int y2 = lastDrawPoints.get(1).getY();
+								if (x2 < x1) {
+									x2 = lastDrawPoints.get(0).getX();
+									x1 = lastDrawPoints.get(1).getX();
+								}
+								if (y2 < y1) {
+									y2 = lastDrawPoints.get(0).getY();
+									y1 = lastDrawPoints.get(1).getY();
+								}
+								Image drawImg = pictureBeforePointDrawing.copy();
+								drawImg.drawEllipse(x1, y1, x2, y2, drawColor);
+								getCurrentImageLayer().setImage(drawImg);
+								setPictureUndoTakenCareOf(picture);
+							} else {
+								lastDrawPoints.add(newPoint);
+							}
+							break;
 					}
 				}
 
@@ -1342,6 +1375,8 @@ public class GUI extends MainWindow {
 				case DRAW_RECTANGLE_BG:
 				case DRAW_QUADS_FG:
 				case DRAW_QUADS_BG:
+				case DRAW_ELLIPSE_FG:
+				case DRAW_ELLIPSE_BG:
 				case DRAW_AREA_FG:
 				case DRAW_AREA_BG:
 					this.lastDrawPoints = new ArrayList<>();

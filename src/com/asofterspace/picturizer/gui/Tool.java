@@ -31,6 +31,10 @@ public enum Tool {
 	DRAW_QUADS_FG,
 	DRAW_QUADS_BG,
 
+	// draw ellipse with foreground / background color
+	DRAW_ELLIPSE_FG,
+	DRAW_ELLIPSE_BG,
+
 	// draw area with foreground / background color
 	DRAW_AREA_FG,
 	DRAW_AREA_BG;

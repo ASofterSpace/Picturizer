@@ -36,6 +36,7 @@ public class GUIButtonHolder {
 	private JButton roughFillBtn;
 	private JButton rectBtn;
 	private JButton quadsBtn;
+	private JButton ellipseBtn;
 	private JButton areaBtn;
 
 	private List<JButton> zoomButtons = new ArrayList<>();
@@ -140,6 +141,15 @@ public class GUIButtonHolder {
 
 		row++;
 
+		ellipseBtn = new JButton("Elps");
+		ellipseBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.forceActiveTool(Tool.DRAW_ELLIPSE_FG);
+			}
+		});
+		addBtn(ellipseBtn, 0, row, parent);
+
 		areaBtn = new JButton("Area");
 		areaBtn.addActionListener(new ActionListener() {
 			@Override
@@ -230,6 +240,7 @@ public class GUIButtonHolder {
 		roughFillBtn.setBackground((activeTool == Tool.FILL_ROUGHLY_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		rectBtn.setBackground((activeTool == Tool.DRAW_RECTANGLE_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		quadsBtn.setBackground((activeTool == Tool.DRAW_QUADS_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
+		ellipseBtn.setBackground((activeTool == Tool.DRAW_ELLIPSE_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		areaBtn.setBackground((activeTool == Tool.DRAW_AREA_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 	}
 

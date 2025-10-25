@@ -25,6 +25,8 @@ public class GUIMenuDraw {
 	private final static String TOOL_TEXTS_RECTANGLE_BG = "Draw Rectangle with Background Color";
 	private final static String TOOL_TEXTS_QUADS_FG = "Draw Quadrangle with Foreground Color";
 	private final static String TOOL_TEXTS_QUADS_BG = "Draw Quadrangle with Background Color";
+	private final static String TOOL_TEXTS_ELLIPSE_FG = "Draw Ellipse with Foreground Color";
+	private final static String TOOL_TEXTS_ELLIPSE_BG = "Draw Ellipse with Background Color";
 	private final static String TOOL_TEXTS_AREA_FG = "Draw Area with Foreground Color";
 	private final static String TOOL_TEXTS_AREA_BG = "Draw Area with Background Color";
 
@@ -42,6 +44,8 @@ public class GUIMenuDraw {
 	private JMenuItem drawRectangleBG;
 	private JMenuItem drawQuadsFG;
 	private JMenuItem drawQuadsBG;
+	private JMenuItem drawEllipseFG;
+	private JMenuItem drawEllipseBG;
 	private JMenuItem drawAreaFG;
 	private JMenuItem drawAreaBG;
 
@@ -182,6 +186,24 @@ public class GUIMenuDraw {
 		});
 		draw.add(drawQuadsBG);
 
+		drawEllipseFG = new JMenuItem(TOOL_TEXTS_ELLIPSE_FG);
+		drawEllipseFG.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.setActiveTool(Tool.DRAW_ELLIPSE_FG);
+			}
+		});
+		draw.add(drawEllipseFG);
+
+		drawEllipseBG = new JMenuItem(TOOL_TEXTS_ELLIPSE_BG);
+		drawEllipseBG.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.setActiveTool(Tool.DRAW_ELLIPSE_BG);
+			}
+		});
+		draw.add(drawEllipseBG);
+
 		drawAreaFG = new JMenuItem(TOOL_TEXTS_AREA_FG);
 		drawAreaFG.addActionListener(new ActionListener() {
 			@Override
@@ -218,6 +240,8 @@ public class GUIMenuDraw {
 		GUIMenuTools.adjustToolTitle(drawRectangleBG, TOOL_TEXTS_RECTANGLE_BG, activeTool == Tool.DRAW_RECTANGLE_BG);
 		GUIMenuTools.adjustToolTitle(drawQuadsFG, TOOL_TEXTS_QUADS_FG, activeTool == Tool.DRAW_QUADS_FG);
 		GUIMenuTools.adjustToolTitle(drawQuadsBG, TOOL_TEXTS_QUADS_BG, activeTool == Tool.DRAW_QUADS_BG);
+		GUIMenuTools.adjustToolTitle(drawEllipseFG, TOOL_TEXTS_ELLIPSE_FG, activeTool == Tool.DRAW_ELLIPSE_FG);
+		GUIMenuTools.adjustToolTitle(drawEllipseBG, TOOL_TEXTS_ELLIPSE_BG, activeTool == Tool.DRAW_ELLIPSE_BG);
 		GUIMenuTools.adjustToolTitle(drawAreaFG, TOOL_TEXTS_AREA_FG, activeTool == Tool.DRAW_AREA_FG);
 		GUIMenuTools.adjustToolTitle(drawAreaBG, TOOL_TEXTS_AREA_BG, activeTool == Tool.DRAW_AREA_BG);
 	}
