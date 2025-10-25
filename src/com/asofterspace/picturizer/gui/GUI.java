@@ -852,8 +852,14 @@ public class GUI extends MainWindow {
 									y2 = lastDrawPoints.get(0).getY();
 									y1 = lastDrawPoints.get(1).getY();
 								}
+								// we actually want to draw from top midpoint to right midpoint with our clicking,
+								// as that is easier to wrap our head around than inscribing an ellipse into
+								// a clicked rectangle whose corners are far away from the actual ellipse,
+								// so we have to think back to where the startX and startY would be
+								int startX = x1 - (x2 - x1);
+								int endY = y2 + (y2 - y1);
 								Image drawImg = pictureBeforePointDrawing.copy();
-								drawImg.drawEllipse(x1, y1, x2, y2, drawColor);
+								drawImg.drawEllipse(startX, y1, x2, endY, drawColor);
 								getCurrentImageLayer().setImage(drawImg);
 								setPictureUndoTakenCareOf(picture);
 							} else {
