@@ -83,6 +83,14 @@ public class MultiPictureEditHandler {
 					result = newRes;
 					break;
 				default:
+					if (action.startsWith("resampleToWidth:")) {
+						action = action.substring(16);
+						int newWidth = StrUtils.strToInt(action);
+						for (Image img : result) {
+							int newHeight = (img.getHeight() * newWidth) / img.getWidth();
+							img.resampleTo(newWidth, newHeight);
+						}
+					}
 					break;
 			}
 		}
