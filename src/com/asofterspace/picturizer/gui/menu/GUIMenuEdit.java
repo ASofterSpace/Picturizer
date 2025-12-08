@@ -145,6 +145,17 @@ public class GUIMenuEdit {
 		});
 		edit.add(expandShrinkImgArea);
 
+		JMenuItem shrinkImgAreaToVisContent = new JMenuItem("Shrink Image Area to Visible Content");
+		shrinkImgAreaToVisContent.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Image img = gui.getPicture().bake();
+				img.shrinkToVisibleContent();
+				gui.setPicture(img);
+			}
+		});
+		edit.add(shrinkImgAreaToVisContent);
+
 		JMenuItem resizeImgArea = new JMenuItem("Resize Image Area");
 		resizeImgArea.addActionListener(new ActionListener() {
 			@Override
