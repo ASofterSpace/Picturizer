@@ -33,11 +33,13 @@ public class VideoEffectContainer {
 	private Integer top = null;
 	private Integer left = null;
 	private Integer bottom = null;
+	private Integer right = null;
 	private Integer fromX = null;
 	private Integer fromY = null;
+	private Integer midX = null;
+	private Integer midY = null;
 	private Integer untilX = null;
 	private Integer untilY = null;
-	private Integer right = null;
 	private Integer size = null;
 	private Integer wobble = null;
 	private Integer amount = null;
@@ -70,6 +72,8 @@ public class VideoEffectContainer {
 		bottom = rec.getInteger("bottom", null);
 		fromX = rec.getInteger("fromX", null);
 		fromY = rec.getInteger("fromY", null);
+		midX = rec.getInteger("midX", null);
+		midY = rec.getInteger("midY", null);
 		untilX = rec.getInteger("untilX", null);
 		untilY = rec.getInteger("untilY", null);
 		right = rec.getInteger("right", null);
@@ -176,11 +180,15 @@ public class VideoEffectContainer {
 		}
 		switch (effect) {
 			case "hide-image-part":
-				img.drawRectangle(left, top, right, bottom, color);
+				if ((midX != null) && (midY != null)) {
+					img.drawRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
+				} else {
+					img.drawRectangle(fromX, fromY, untilX, untilY, color);
+				}
 				break;
 
 			case "appear-image-part":
-				img.drawRectangle(left, top, right, bottom, color);
+				img.drawRectangle(fromX, fromY, untilX, untilY, color);
 				float amountOfFramesForThisEffectf = toFrameNumSafe - fromFrameNumSafe;
 				float fadeAmount = (toFrameNumSafe - frameNum) / amountOfFramesForThisEffectf;
 				img.intermixImage(baseImg, fadeAmount);
@@ -190,8 +198,8 @@ public class VideoEffectContainer {
 				break;
 
 			case "wobble-image-part":
-				Image imgPart = img.copy(top, right, bottom, left);
-				img.drawRectangle(left, top, right, bottom, color);
+				Image imgPart = img.copy(fromY, untilX, untilY, fromX);
+				img.drawRectangle(fromX, fromY, untilX, untilY, color);
 				amountOfFramesForThisEffectf = toFrameNumSafe - fromFrameNumSafe;
 				float resizeFactor = 1.0f;
 				// wobble in four parts, which are actually three:
@@ -225,17 +233,17 @@ public class VideoEffectContainer {
 				int widthAfter = (int) (widthBefore * resizeFactor);
 				int heightAfter = (int) (heightBefore * resizeFactor);
 				imgPart.resampleTo(widthAfter, heightAfter);
-				int topOffset = (heightBefore - heightAfter) / 2;
-				int leftOffset = (widthBefore - widthAfter) / 2;
+				int yOffset = (heightBefore - heightAfter) / 2;
+				int xOffset = (widthBefore - widthAfter) / 2;
 				if (debug) {
 					debugLine += ", resizeFactor: " + resizeFactor + ")";
 				}
 				// draw transparently when expanding, but non-transparently when shrinking (as the background
 				// is drawn over anyway and non-transparently is faster)
 				if (resizeFactor > 1.0f) {
-					img.draw(imgPart, left + leftOffset, top + topOffset, color);
+					img.draw(imgPart, fromX + xOffset, fromY + yOffset, color);
 				} else {
-					img.draw(imgPart, left + leftOffset, top + topOffset);
+					img.draw(imgPart, fromX + xOffset, fromY + yOffset);
 				}
 				break;
 
