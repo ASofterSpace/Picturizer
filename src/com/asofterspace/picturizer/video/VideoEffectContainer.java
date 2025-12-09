@@ -19,9 +19,11 @@ public class VideoEffectContainer {
 
 	private static final boolean debug = false;
 
-	private Integer fromFrameNum = null;
-	private Integer toFrameNum = null;
-	private String effect = null;
+	private String storedEffect = null;
+	private Integer storedFromFrameNum = null;
+	private Integer storedToFrameNum = null;
+	private Integer storedTo2FrameNum = null;
+	private Integer storedTo3FrameNum = null;
 	private String text = null;
 	private String font = null;
 	private Integer fadeIn = null;
@@ -52,9 +54,11 @@ public class VideoEffectContainer {
 
 
 	public VideoEffectContainer(Record rec) {
-		fromFrameNum = rec.getInteger("from", null);
-		toFrameNum = rec.getInteger("to", null);
-		effect = rec.getString("effect");
+		storedFromFrameNum = rec.getInteger("from", null);
+		storedToFrameNum = rec.getInteger("to", null);
+		storedTo2FrameNum = rec.getInteger("to2", null);
+		storedTo3FrameNum = rec.getInteger("to3", null);
+		storedEffect = rec.getString("effect");
 		font = rec.getString("font");
 		text = rec.getString("text");
 		fadeIn = rec.getInteger("fadeIn", null);
@@ -89,6 +93,25 @@ public class VideoEffectContainer {
 	}
 
 	public boolean applyTo(int frameNum, int lastFrameNum, VideoFrame vidFrame, VideoFrame prevVidFrame) {
+		String effect = storedEffect;
+		Integer fromFrameNum = storedFromFrameNum;
+		Integer toFrameNum = storedToFrameNum;
+		if ("hide-appear-wobble-image-part".equals(effect)) {
+			if (frameNum < storedToFrameNum) {
+				effect = "hide-image-part";
+			} else {
+				if (frameNum < storedTo2FrameNum) {
+					effect = "appear-image-part";
+					fromFrameNum = storedToFrameNum;
+					toFrameNum = storedTo2FrameNum;
+				} else {
+					effect = "wobble-image-part";
+					fromFrameNum = storedTo2FrameNum;
+					toFrameNum = storedTo3FrameNum;
+				}
+			}
+		}
+
 		if ((fromFrameNum != null) && (frameNum < fromFrameNum)) {
 			return false;
 		}
