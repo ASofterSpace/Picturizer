@@ -104,6 +104,11 @@ public class VideoEffectContainer {
 			if (frameNum < storedToFrameNum) {
 				effect = "hide-image-part";
 			} else {
+				// actually go directly to wobble but fade in the wobble
+				effect = "appear-wobble-image-part";
+				fromFrameNum = storedToFrameNum;
+				toFrameNum = storedTo2FrameNum;
+				/*
 				if (frameNum < storedTo2FrameNum) {
 					effect = "appear-image-part";
 					fromFrameNum = storedToFrameNum;
@@ -113,6 +118,7 @@ public class VideoEffectContainer {
 					fromFrameNum = storedTo2FrameNum;
 					toFrameNum = storedTo3FrameNum;
 				}
+				*/
 			}
 		}
 
@@ -180,6 +186,7 @@ public class VideoEffectContainer {
 		}
 		switch (effect) {
 			case "hide-image-part":
+				// if (midX,midY) is given, draw a rotated rectangle
 				if ((midX != null) && (midY != null)) {
 					img.drawRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
 				} else {
@@ -188,7 +195,12 @@ public class VideoEffectContainer {
 				break;
 
 			case "appear-image-part":
-				img.drawRectangle(fromX, fromY, untilX, untilY, color);
+				// if (midX,midY) is given, draw a rotated rectangle
+				if ((midX != null) && (midY != null)) {
+					img.drawRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
+				} else {
+					img.drawRectangle(fromX, fromY, untilX, untilY, color);
+				}
 				float amountOfFramesForThisEffectf = toFrameNumSafe - fromFrameNumSafe;
 				float fadeAmount = (toFrameNumSafe - frameNum) / amountOfFramesForThisEffectf;
 				img.intermixImage(baseImg, fadeAmount);
@@ -197,9 +209,17 @@ public class VideoEffectContainer {
 				}
 				break;
 
+			case "appear-wobble-image-part":
 			case "wobble-image-part":
-				Image imgPart = img.copy(fromY, untilX, untilY, fromX);
-				img.drawRectangle(fromX, fromY, untilX, untilY, color);
+				Image imgPart = null;
+				// if (midX,midY) is given, draw a rotated rectangle
+				if ((midX != null) && (midY != null)) {
+					imgPart = img.copyRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
+					img.drawRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
+				} else {
+					imgPart = img.copy(fromY, untilX, untilY, fromX);
+					img.drawRectangle(fromX, fromY, untilX, untilY, color);
+				}
 				amountOfFramesForThisEffectf = toFrameNumSafe - fromFrameNumSafe;
 				float resizeFactor = 1.0f;
 				// wobble in four parts, which are actually three:
@@ -238,13 +258,39 @@ public class VideoEffectContainer {
 				if (debug) {
 					debugLine += ", resizeFactor: " + resizeFactor + ")";
 				}
-				// draw transparently when expanding, but non-transparently when shrinking (as the background
-				// is drawn over anyway and non-transparently is faster)
-				if (resizeFactor > 1.0f) {
-					img.draw(imgPart, fromX + xOffset, fromY + yOffset, color);
-				} else {
-					img.draw(imgPart, fromX + xOffset, fromY + yOffset);
+
+				Image extraImg = null;
+				if ("appear-wobble-image-part".equals(effect)) {
+					extraImg = img.copy();
 				}
+
+				if ((midX != null) && (midY != null)) {
+					int otherMidX = fromX + untilX - midX;
+					int otherMidY = fromY + untilY - midY;
+					int minX = MathUtils.min(fromX, midX, untilX, otherMidX);
+					int minY = MathUtils.min(fromY, midY, untilY, otherMidY);
+					img.draw(imgPart, minX + xOffset, minY + yOffset, color);
+				} else {
+					int minX = MathUtils.min(fromX, untilX);
+					int minY = MathUtils.min(fromY, untilY);
+					// draw transparently when expanding or using a rotated rectangle,
+					// but non-transparently when shrinking a normal rectangle
+					// (as the background is drawn over anyway and non-transparently is faster)
+					if (resizeFactor > 1.0f) {
+						img.draw(imgPart, minX + xOffset, minY + yOffset, color);
+					} else {
+						img.draw(imgPart, minX + xOffset, minY + yOffset);
+					}
+				}
+
+				if (extraImg != null) {
+					float amountOfFramesForFade = amountOfFramesForThisEffectf / 8;
+					fadeAmount = (frameNum - fromFrameNumSafe) / amountOfFramesForFade;
+					if (fadeAmount < 1.0f) {
+						img.intermixImage(extraImg, fadeAmount);
+					}
+				}
+
 				break;
 
 			case "glitch-load-image":
