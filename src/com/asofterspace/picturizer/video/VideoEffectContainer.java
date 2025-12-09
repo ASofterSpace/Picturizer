@@ -17,6 +17,8 @@ import java.util.List;
 
 public class VideoEffectContainer {
 
+	private static final boolean debug = false;
+
 	private Integer fromFrameNum = null;
 	private Integer toFrameNum = null;
 	private String effect = null;
@@ -86,7 +88,7 @@ public class VideoEffectContainer {
 		}
 	}
 
-	public boolean applyTo(int frameNum, VideoFrame vidFrame, VideoFrame lastVidFrame) {
+	public boolean applyTo(int frameNum, int lastFrameNum, VideoFrame vidFrame, VideoFrame prevVidFrame) {
 		if ((fromFrameNum != null) && (frameNum < fromFrameNum)) {
 			return false;
 		}
@@ -98,11 +100,11 @@ public class VideoEffectContainer {
 			return false;
 		}
 
-		int fromFrameNumSafe = frameNum;
+		int fromFrameNumSafe = 0;
 		if (fromFrameNum != null) {
 			fromFrameNumSafe = fromFrameNum;
 		}
-		int toFrameNumSafe = frameNum;
+		int toFrameNumSafe = lastFrameNum;
 		if (toFrameNum != null) {
 			toFrameNumSafe = toFrameNum;
 		}
@@ -116,7 +118,7 @@ public class VideoEffectContainer {
 						savedVidFrame.unlock();
 						savedVidFrame.clear();
 					}
-					savedVidFrame = lastVidFrame;
+					savedVidFrame = prevVidFrame;
 					if (savedVidFrame != null) {
 						savedVidFrame.lock();
 					}
@@ -144,7 +146,76 @@ public class VideoEffectContainer {
 		// effects that genuinely work on all affected frame images, so we can load it once centrally here
 		Image img = vidFrame.getImage();
 		Image baseImg = img.copy();
+
+		String debugLine = null;
+		if (debug) {
+			debugLine = frameNum + ": " + effect;
+		}
 		switch (effect) {
+			case "hide-image-part":
+				img.drawRectangle(left, top, right, bottom, color);
+				break;
+
+			case "appear-image-part":
+				img.drawRectangle(left, top, right, bottom, color);
+				float amountOfFramesForThisEffectf = toFrameNumSafe - fromFrameNumSafe;
+				float fadeAmount = (toFrameNumSafe - frameNum) / amountOfFramesForThisEffectf;
+				img.intermixImage(baseImg, fadeAmount);
+				if (debug) {
+					debugLine += " (fadeAmount: " + fadeAmount + ")";
+				}
+				break;
+
+			case "wobble-image-part":
+				Image imgPart = img.copy(top, right, bottom, left);
+				img.drawRectangle(left, top, right, bottom, color);
+				amountOfFramesForThisEffectf = toFrameNumSafe - fromFrameNumSafe;
+				float resizeFactor = 1.0f;
+				// wobble in four parts, which are actually three:
+				// (1): go back (shrink)
+				if (frameNum < fromFrameNumSafe + (amountOfFramesForThisEffectf / 4)) {
+					float target = fromFrameNumSafe + (amountOfFramesForThisEffectf / 4);
+					resizeFactor = ((target - frameNum) / amountOfFramesForThisEffectf) + 0.75f;
+					if (debug) {
+						debugLine += " (case (1)";
+					}
+				} else {
+					// (2): go forward (expand) until regular amount
+					// (3): go forward (expand) further
+					if (frameNum < fromFrameNumSafe + ((amountOfFramesForThisEffectf * 3) / 4)) {
+						float target = fromFrameNumSafe + ((amountOfFramesForThisEffectf * 3) / 4);
+						resizeFactor = (((2 * (frameNum - target)) / amountOfFramesForThisEffectf) / 2) + 1.25f;
+						if (debug) {
+							debugLine += " (case (2)/(3)";
+						}
+					} else {
+						// (4): go back (shrink) until original
+						float target = fromFrameNumSafe + amountOfFramesForThisEffectf;
+						resizeFactor = ((target - frameNum) / amountOfFramesForThisEffectf) + 1.0f;
+						if (debug) {
+							debugLine += " (case (4)";
+						}
+					}
+				}
+				int widthBefore = imgPart.getWidth();
+				int heightBefore = imgPart.getHeight();
+				int widthAfter = (int) (widthBefore * resizeFactor);
+				int heightAfter = (int) (heightBefore * resizeFactor);
+				imgPart.resampleTo(widthAfter, heightAfter);
+				int topOffset = (heightBefore - heightAfter) / 2;
+				int leftOffset = (widthBefore - widthAfter) / 2;
+				if (debug) {
+					debugLine += ", resizeFactor: " + resizeFactor + ")";
+				}
+				// draw transparently when expanding, but non-transparently when shrinking (as the background
+				// is drawn over anyway and non-transparently is faster)
+				if (resizeFactor > 1.0f) {
+					img.draw(imgPart, left + leftOffset, top + topOffset, color);
+				} else {
+					img.draw(imgPart, left + leftOffset, top + topOffset);
+				}
+				break;
+
 			case "glitch-load-image":
 				/*
 				ConfigFile configuration = gui.getConfiguration();
@@ -373,6 +444,10 @@ public class VideoEffectContainer {
 				float fadeAmount = (toFrameNumSafe - frameNum) / (1.0f * fadeOut);
 				img.intermixImage(baseImg, fadeAmount);
 			}
+		}
+
+		if (debug) {
+			System.out.println(debugLine);
 		}
 
 		return true;

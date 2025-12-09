@@ -8,6 +8,7 @@ import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.utils.Record;
 import com.asofterspace.toolbox.utils.SortUtils;
+import com.asofterspace.toolbox.utils.StrUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +58,22 @@ public class VideoInfoContainer {
 					}
 				}
 			}
+			return frames;
+		}
+
+		// taking this exact file...
+		String fileStr = initFromRec.getString("file");
+		if (fileStr != null) {
+			File frameFile = new File(fileStr);
+			// ... and taking it as many times as the count argument indicates
+			String countStr = initFromRec.getString("count");
+			int count = StrUtils.strToInt(countStr, 1);
+			boolean isFirstFrameOfSequence = true;
+			for (int i = 0; i < count; i++) {
+				frames.add(new VideoFrame(frameFile, isFirstFrameOfSequence));
+				isFirstFrameOfSequence = false;
+			}
+			return frames;
 		}
 
 		return frames;

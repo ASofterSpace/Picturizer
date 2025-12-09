@@ -105,37 +105,41 @@ public class VideoHandler {
 
 		int num = 0;
 
-		VideoFrame lastVidFrame = null;
+		VideoFrame prevVidFrame = null;
 		if (frames.size() > 0) {
-			lastVidFrame = frames.get(frames.size() - 1);
-			lastVidFrame.init(frames.size() - 1, targetDir, targetFileNameDigits);
-			lastVidFrame.lock();
+			prevVidFrame = frames.get(frames.size() - 1);
+			prevVidFrame.init(frames.size() - 1, targetDir, targetFileNameDigits);
+			prevVidFrame.lock();
 		}
 
+		int lastFrameNum = frames.size();
+
 		for (VideoFrame frame : frames) {
-			if (num % 64 == 0) {
-				System.out.println("Working on frame " + num + "...");
+			if (num % 16 == 0) {
+				System.out.println("Working on frame " + num + " / " + lastFrameNum + "...");
 			}
 			frame.init(num, targetDir, targetFileNameDigits);
 			if (!frame.alreadyExists()) {
-				frame.apply(effectContainers, lastVidFrame);
+				frame.apply(effectContainers, lastFrameNum, prevVidFrame);
 				if ((!onlySaveChanged) || frame.wasChangedByEffect()) {
 					frame.save();
 				}
 			}
-			if (lastVidFrame != null) {
-				lastVidFrame.clear();
+			if (prevVidFrame != null) {
+				prevVidFrame.clear();
 			}
-			lastVidFrame = frame;
+			prevVidFrame = frame;
 			num++;
 			if (stopFile != null) {
 				if (stopFile.exists()) {
 					System.out.println("Stopping, as " + stopFile.getCanonicalFilename() + " exists, and deleting the stop file again...");
 					System.out.println("(Feel free to simply restart to start from where this run left off!)");
 					stopFile.delete();
-					break;
+					return;
 				}
 			}
 		}
+
+		System.out.println("Frame " + num + " / " + lastFrameNum + " done! ^-^");
 	}
 }

@@ -44,9 +44,9 @@ public class VideoFrame {
 		return this.img;
 	}
 
-	public void apply(List<VideoEffectContainer> effectContainers, VideoFrame lastVidFrame) {
+	public void apply(List<VideoEffectContainer> effectContainers, int lastFrameNum, VideoFrame prevVidFrame) {
 		for (VideoEffectContainer effectContainer : effectContainers) {
-			boolean didChange = effectContainer.applyTo(frameNum, this, lastVidFrame);
+			boolean didChange = effectContainer.applyTo(frameNum, lastFrameNum, this, prevVidFrame);
 			if (didChange) {
 				changedByEffect = true;
 			}
