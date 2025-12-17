@@ -94,7 +94,7 @@ public class ConfigGenerationHandler {
 									int offsetY = 0;
 									ColorRGBA textColor = new ColorRGBA(MathUtils.randomInteger(128) + 128, MathUtils.randomInteger(128),
 										MathUtils.randomInteger(128) + 128);
-									ImageLayerBasedOnText ilText = new ImageLayerBasedOnText(offsetX, offsetY, curSub, fontName, fontSize, textColor);
+									ImageLayerBasedOnText ilText = new ImageLayerBasedOnText(offsetX, offsetY, curSub, fontName, fontSize, textColor, 0, null);
 									int textWidth = ilText.getWidth();
 									r.set("effect", "text");
 									r.set("from", curFromFrame);
@@ -183,7 +183,7 @@ public class ConfigGenerationHandler {
 								ColorRGBA textColor = new ColorRGBA(MathUtils.randomInteger(128) + 128, MathUtils.randomInteger(128),
 									MathUtils.randomInteger(128) + 128);
 								ImageLayerBasedOnText ilText = new ImageLayerBasedOnText(offsetX, offsetY, curText,
-									addGlitchyTextsFontName, curFontSize, textColor);
+									addGlitchyTextsFontName, curFontSize, textColor, 0, null);
 								int textWidth = ilText.getWidth();
 								int textHeight = ilText.getHeight();
 								r.set("effect", "text");

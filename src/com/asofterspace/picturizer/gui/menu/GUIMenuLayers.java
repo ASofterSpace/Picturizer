@@ -127,7 +127,8 @@ public class GUIMenuLayers {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				gui.saveCurPicForUndo();
-				ImageLayerBasedOnText layer = new ImageLayerBasedOnText(0, 0, "Hello!", "Calibri", 32, gui.getForegroundColor());
+				ImageLayerBasedOnText layer = new ImageLayerBasedOnText(0, 0, "Hello!", "Calibri", 32,
+					gui.getForegroundColor(), 0, gui.getBackgroundColor());
 				gui.getPicture().addLayer(layer);
 				gui.setCurrentLayerIndex(gui.getPicture().getLayerAmount() - 1);
 				gui.setPictureUndoTakenCareOf(gui.getPicture());

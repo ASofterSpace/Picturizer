@@ -113,6 +113,7 @@ public class GUI extends MainWindow {
 	private JTextField textLayerFontNameInput;
 	private JTextField textLayerFontSizeInput;
 	private JTextField textLayerColorInput;
+	private JTextField textLayerOutlineColorInput;
 	private JTextField textLayerTextInput;
 	private JLabel curPosXLabel;
 	private JLabel curPosYLabel;
@@ -557,8 +558,11 @@ public class GUI extends MainWindow {
 		textLayerColorInput = new JTextField();
 		textLayerPanel.add(textLayerColorInput, new Arrangement(5, 0, 0.2, 1.0));
 
+		textLayerOutlineColorInput = new JTextField();
+		textLayerPanel.add(textLayerOutlineColorInput, new Arrangement(6, 0, 0.2, 1.0));
+
 		textLayerTextInput = new JTextField();
-		textLayerPanel.add(textLayerTextInput, new Arrangement(6, 0, 1.0, 1.0));
+		textLayerPanel.add(textLayerTextInput, new Arrangement(7, 0, 1.0, 1.0));
 
 		JButton textLayerApplyBtn = new JButton("Apply");
 		textLayerApplyBtn.addActionListener(new ActionListener() {
@@ -570,12 +574,24 @@ public class GUI extends MainWindow {
 				txtLayer.setFontName(textLayerFontNameInput.getText());
 				txtLayer.setFontSize(StrUtils.strToInt(textLayerFontSizeInput.getText(), 10));
 				txtLayer.setTextColor(ColorRGBA.fromString(textLayerColorInput.getText()));
+				String outlineStr = textLayerOutlineColorInput.getText();
+				if ("".equals(outlineStr)) {
+					txtLayer.setOutlineSize(0);
+				} else {
+					if (outlineStr.contains(":")) {
+						txtLayer.setOutlineSize(StrUtils.strToInt(outlineStr.substring(0, outlineStr.indexOf(":"))));
+						txtLayer.setOutlineColor(ColorRGBA.fromString(outlineStr.substring(outlineStr.lastIndexOf(":") + 1)));
+					} else {
+						txtLayer.setOutlineSize(StrUtils.strToInt(outlineStr));
+						txtLayer.setOutlineColor(ColorRGBA.BLACK);
+					}
+				}
 				txtLayer.setText(textLayerTextInput.getText());
 				refreshMainView();
 				refreshLayerView();
 			}
 		});
-		textLayerPanel.add(textLayerApplyBtn, new Arrangement(7, 0, 0.0, 1.0));
+		textLayerPanel.add(textLayerApplyBtn, new Arrangement(8, 0, 0.0, 1.0));
 
 
 		imgLayerPanel = new JPanel();
@@ -1413,7 +1429,7 @@ public class GUI extends MainWindow {
 		if (layer != null) {
 			return layer;
 		}
-		return new ImageLayerBasedOnText(0, 0, "", "", 1, foregroundColor);
+		return new ImageLayerBasedOnText(0, 0, "", "", 1, foregroundColor, 0, backgroundColor);
 	}
 
 	public ImageLayerBasedOnImage getCurrentImageLayer() {
@@ -1442,7 +1458,7 @@ public class GUI extends MainWindow {
 
 		GuiUtils.complain("The currently selected layer is not a text layer!");
 		// return a layer not attached to anything to that requests to this are just ignored - as the complaining is already done...
-		return new ImageLayerBasedOnText(0, 0, "", "", 1, foregroundColor);
+		return new ImageLayerBasedOnText(0, 0, "", "", 1, foregroundColor, 0, backgroundColor);
 	}
 
 	public String getTextLayerCaptionText() {
@@ -1518,6 +1534,7 @@ public class GUI extends MainWindow {
 				textLayerFontNameInput.setText(txtLayer.getFontName());
 				textLayerFontSizeInput.setText(""+txtLayer.getFontSize());
 				textLayerColorInput.setText(txtLayer.getTextColor().toString());
+				textLayerOutlineColorInput.setText(txtLayer.getOutlineSize() + " : " + txtLayer.getOutlineColor());
 				textLayerTextInput.setText(txtLayer.getText());
 				textLayerPanel.setVisible(true);
 			}
