@@ -6,6 +6,7 @@ package com.asofterspace.picturizer.gui.menu;
 
 import com.asofterspace.picturizer.gui.GUI;
 import com.asofterspace.picturizer.Picturizer;
+import com.asofterspace.toolbox.gui.GuiUtils;
 
 import java.awt.Color;
 import java.awt.Desktop;
@@ -24,8 +25,10 @@ public class GUIMenuHelp {
 
 		JMenu huh = new JMenu("?");
 
-		JMenuItem showFGColorCode = new JMenuItem("Show Foreground Color Code");
-		showFGColorCode.addActionListener(new ActionListener() {
+		JMenuItem curItem;
+
+		curItem = new JMenuItem("Show Foreground Color Code");
+		curItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String msg = "Hex Code: " + gui.getForegroundColor().toHexString() + "\n" +
@@ -33,10 +36,21 @@ public class GUIMenuHelp {
 				JOptionPane.showMessageDialog(null, msg, "Color", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
-		huh.add(showFGColorCode);
+		huh.add(curItem);
 
-		JMenuItem showBGColorCode = new JMenuItem("Show Background Color Code");
-		showBGColorCode.addActionListener(new ActionListener() {
+		curItem = new JMenuItem("Copy Foreground Color Code to Clipboard");
+		curItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String msg = "Hex Code: " + gui.getForegroundColor().toHexString() + "\n" +
+					"rgba Code: " + gui.getForegroundColor().toString();
+				GuiUtils.copyToClipboard(msg);
+			}
+		});
+		huh.add(curItem);
+
+		curItem = new JMenuItem("Show Background Color Code");
+		curItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String msg = "Hex Code: " + gui.getBackgroundColor().toHexString() + "\n" +
@@ -44,10 +58,21 @@ public class GUIMenuHelp {
 				JOptionPane.showMessageDialog(null, msg, "Color", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
-		huh.add(showBGColorCode);
+		huh.add(curItem);
 
-		JMenuItem showSize = new JMenuItem("Show Picture Size");
-		showSize.addActionListener(new ActionListener() {
+		curItem = new JMenuItem("Copy Background Color Code to Clipboard");
+		curItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String msg = "Hex Code: " + gui.getBackgroundColor().toHexString() + "\n" +
+					"rgba Code: " + gui.getBackgroundColor().toString();
+				GuiUtils.copyToClipboard(msg);
+			}
+		});
+		huh.add(curItem);
+
+		curItem = new JMenuItem("Show Picture Size");
+		curItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String msg = "Picture Area Width: " + gui.getPicture().getWidth() + " px\n" +
@@ -57,7 +82,20 @@ public class GUIMenuHelp {
 				JOptionPane.showMessageDialog(null, msg, "Size", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
-		huh.add(showSize);
+		huh.add(curItem);
+
+		curItem = new JMenuItem("Copy Picture Size to Clipboard");
+		curItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String msg = "Picture Area Width: " + gui.getPicture().getWidth() + " px\n" +
+					"Picture Area Height: " + gui.getPicture().getHeight() + " px\n" +
+					"Current Layer Width: " + gui.getPicture().getLayer(gui.getCurrentLayerIndex()).getWidth() + " px\n" +
+					"Current Layer Height: " + gui.getPicture().getLayer(gui.getCurrentLayerIndex()).getHeight() + " px";
+				GuiUtils.copyToClipboard(msg);
+			}
+		});
+		huh.add(curItem);
 
 		huh.addSeparator();
 

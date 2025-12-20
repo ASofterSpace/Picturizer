@@ -185,12 +185,52 @@ public class VideoEffectContainer {
 			debugLine = frameNum + ": " + effect;
 		}
 		switch (effect) {
+			case "open-bars-horz":
+				Integer cFromX = fromX;
+				Integer cFromY = fromY;
+				Integer cUntilX = untilX;
+				Integer cUntilY = untilY;
+				if (cFromX == null) {
+					cFromX = 0;
+				}
+				if (cFromY == null) {
+					cFromY = 0;
+				}
+				if (cUntilX == null) {
+					cUntilX = img.getWidth();
+				}
+				if (cUntilY == null) {
+					cUntilY = img.getHeight();
+				}
+				int amountOfFramesForThisEffect = toFrameNumSafe - fromFrameNumSafe;
+				int curOffset = ((cUntilY - cUntilX) * (toFrameNumSafe - frameNum)) / (2 * amountOfFramesForThisEffect);
+
+				img.drawRectangle(cFromX, cFromY, cUntilX, cFromY + curOffset, color);
+				img.drawRectangle(cFromX, cUntilY - curOffset, cUntilX, cUntilY, color);
+				break;
+
 			case "hide-image-part":
 				// if (midX,midY) is given, draw a rotated rectangle
 				if ((midX != null) && (midY != null)) {
 					img.drawRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
 				} else {
-					img.drawRectangle(fromX, fromY, untilX, untilY, color);
+					cFromX = fromX;
+					cFromY = fromY;
+					cUntilX = untilX;
+					cUntilY = untilY;
+					if (cFromX == null) {
+						cFromX = 0;
+					}
+					if (cFromY == null) {
+						cFromY = 0;
+					}
+					if (cUntilX == null) {
+						cUntilX = img.getWidth();
+					}
+					if (cUntilY == null) {
+						cUntilY = img.getHeight();
+					}
+					img.drawRectangle(cFromX, cFromY, cUntilX, cUntilY, color);
 				}
 				break;
 
