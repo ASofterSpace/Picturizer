@@ -203,8 +203,8 @@ public class VideoEffectContainer {
 					cUntilY = img.getHeight();
 				}
 				int amountOfFramesForThisEffect = toFrameNumSafe - fromFrameNumSafe;
-				int curOffset = ((cUntilY - cUntilX) * (toFrameNumSafe - frameNum)) / (2 * amountOfFramesForThisEffect);
-
+				int curOffset = ((cUntilY - cFromY) * (toFrameNumSafe - frameNum)) / (2 * amountOfFramesForThisEffect);
+				// System.out.println("frameNum: " + frameNum + ", curOffset: " + curOffset + ", amountOfFramesForThisEffect: " + amountOfFramesForThisEffect);
 				img.drawRectangle(cFromX, cFromY, cUntilX, cFromY + curOffset, color);
 				img.drawRectangle(cFromX, cUntilY - curOffset, cUntilX, cUntilY, color);
 				break;
