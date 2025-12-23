@@ -43,6 +43,7 @@ public class VideoEffectContainer {
 	private Integer size = null;
 	private Integer wobble = null;
 	private Integer amount = null;
+	private Double factor = null;
 	private Integer r = null;
 	private Integer g = null;
 	private Integer b = null;
@@ -53,6 +54,7 @@ public class VideoEffectContainer {
 	private int currentRandomState1 = 0;
 	private int currentRandomState2 = 0;
 	private VideoFrame savedVidFrame = null;
+	private Image effectImg = null;
 
 
 	public VideoEffectContainer(Record rec) {
@@ -80,6 +82,7 @@ public class VideoEffectContainer {
 		size = rec.getInteger("size", null);
 		wobble = rec.getInteger("wobble", null);
 		amount = rec.getInteger("amount", null);
+		factor = rec.getDouble("factor", null);
 		r = rec.getInteger("r", null);
 		g = rec.getInteger("g", null);
 		b = rec.getInteger("b", null);
@@ -93,6 +96,10 @@ public class VideoEffectContainer {
 			baseDir = new Directory(baseDirStr);
 			boolean recursively = false;
 			baseDirFiles = baseDir.getAllFiles(recursively);
+		}
+		String effectImgStr = rec.getString("effectImg", null);
+		if (effectImgStr != null) {
+			effectImg = Picturizer.getImageFileCtrl().loadImageFromFile(new File(effectImgStr));
 		}
 	}
 
@@ -235,15 +242,22 @@ public class VideoEffectContainer {
 				break;
 
 			case "appear-image-part":
-				// if (midX,midY) is given, draw a rotated rectangle
-				if ((midX != null) && (midY != null)) {
-					img.drawRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
-				} else {
-					img.drawRectangle(fromX, fromY, untilX, untilY, color);
-				}
 				float amountOfFramesForThisEffectf = toFrameNumSafe - fromFrameNumSafe;
 				float fadeAmount = (toFrameNumSafe - frameNum) / amountOfFramesForThisEffectf;
-				img.intermixImage(baseImg, fadeAmount);
+				if (effectImg != null) {
+					Image effectImgCur = effectImg.copy();
+					effectImgCur.resampleTo(untilX - fromX, untilY - fromY);
+					img.draw(effectImgCur, fromX, untilX);
+					img.intermixImage(baseImg, 1.0f - fadeAmount);
+				} else {
+					// if (midX,midY) is given, draw a rotated rectangle
+					if ((midX != null) && (midY != null)) {
+						img.drawRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
+					} else {
+						img.drawRectangle(fromX, fromY, untilX, untilY, color);
+					}
+					img.intermixImage(baseImg, fadeAmount);
+				}
 				if (debug) {
 					debugLine += " (fadeAmount: " + fadeAmount + ")";
 				}
@@ -252,13 +266,19 @@ public class VideoEffectContainer {
 			case "appear-wobble-image-part":
 			case "wobble-image-part":
 				Image imgPart = null;
-				// if (midX,midY) is given, draw a rotated rectangle
-				if ((midX != null) && (midY != null)) {
-					imgPart = img.copyRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
-					img.drawRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
-				} else {
-					imgPart = img.copy(fromY, untilX, untilY, fromX);
+				if (effectImg != null) {
+					imgPart = effectImg.copy();
+					imgPart.resampleTo(untilX - fromX, untilY - fromY);
 					img.drawRectangle(fromX, fromY, untilX, untilY, color);
+				} else {
+					// if (midX,midY) is given, draw a rotated rectangle
+					if ((midX != null) && (midY != null)) {
+						imgPart = img.copyRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
+						img.drawRotatedRectangle(fromX, fromY, midX, midY, untilX, untilY, color);
+					} else {
+						imgPart = img.copy(fromY, untilX, untilY, fromX);
+						img.drawRectangle(fromX, fromY, untilX, untilY, color);
+					}
 				}
 				amountOfFramesForThisEffectf = toFrameNumSafe - fromFrameNumSafe;
 				float resizeFactor = 1.0f;
@@ -323,6 +343,7 @@ public class VideoEffectContainer {
 					}
 				}
 
+				// add an extra appear to the wobble
 				if (extraImg != null) {
 					float amountOfFramesForFade = amountOfFramesForThisEffectf / 8;
 					fadeAmount = (frameNum - fromFrameNumSafe) / amountOfFramesForFade;
@@ -330,6 +351,53 @@ public class VideoEffectContainer {
 						img.intermixImage(extraImg, fadeAmount);
 					}
 				}
+
+				break;
+
+			case "move-scale-image-part":
+				imgPart = null;
+				if (effectImg != null) {
+					imgPart = effectImg.copy();
+					if ((untilX != null) && (fromX != null) && (untilY != null) && (fromY != null)) {
+						imgPart.resampleTo(untilX - fromX, untilY - fromY);
+					}
+				} else {
+					imgPart = img.copy(fromY, untilX, untilY, fromX);
+					img.drawRectangle(fromX, fromY, untilX, untilY, color);
+				}
+
+				double amountOfFramesForThisEffectd = toFrameNumSafe - fromFrameNumSafe;
+				// this is from 1.0 to 0.0
+				double fadeAmountd = (toFrameNumSafe - frameNum) / amountOfFramesForThisEffectd;
+				double fadeAmountSaveForDebug = fadeAmountd;
+				// we want to go from 1.0 to factor (e.g. 2.0 or 0.5)
+				// so now: from 0.0 to 1.0
+				fadeAmountd = 1.0d - fadeAmountd;
+				/*
+				// and now: from 0.0 to factor - 1.0
+				fadeAmountd = fadeAmountd * (factor - 1.0d);
+				// and now: from 1.0 to factor
+				fadeAmountd = fadeAmountd + 1.0d;
+				*/
+
+				int startWidth = right - left;
+				int startHeight = bottom - top;
+				int startMidX = left + (startWidth / 2);
+				int startMidY = top + (startHeight / 2);
+				int endWidth = (int) (startWidth * factor);
+				int endHeight = (int) (startHeight * factor);
+
+				int curMidX = startMidX + (int) (fadeAmountd * (midX - startMidX));
+				int curMidY = startMidY + (int) (fadeAmountd * (midY - startMidY));
+				int curWidth = startWidth + (int) (fadeAmountd * (endWidth - startWidth));
+				int curHeight = startHeight + (int) (fadeAmountd * (endHeight - startHeight));
+				int curLeft = curMidX - (curWidth / 2);
+				int curRight = curMidY - (curHeight / 2);
+
+				imgPart.resampleTo(curWidth, curHeight);
+				img.draw(imgPart, curLeft, curRight);
+				System.out.println("DEBUG: fadeAmountSaveForDebug: " + fadeAmountSaveForDebug + ", fadeAmountd: " + fadeAmountd +
+				", startWidth: " + startWidth + ", endWidth: " + endWidth + ", curWidth: " + curWidth);
 
 				break;
 
