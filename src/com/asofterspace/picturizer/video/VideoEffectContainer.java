@@ -247,7 +247,7 @@ public class VideoEffectContainer {
 				if (effectImg != null) {
 					Image effectImgCur = effectImg.copy();
 					effectImgCur.resampleTo(untilX - fromX, untilY - fromY);
-					img.draw(effectImgCur, fromX, untilX);
+					img.draw(effectImgCur, fromX, fromY);
 					img.intermixImage(baseImg, 1.0f - fadeAmount);
 				} else {
 					// if (midX,midY) is given, draw a rotated rectangle
@@ -354,7 +354,19 @@ public class VideoEffectContainer {
 
 				break;
 
+			// scale-image-part is like move-scale-image-part, just...
+			// we don't move, we only show the final position ^^'
+			case "scale-image-part":
 			case "move-scale-image-part":
+				if (factor == null) {
+					factor = 1.0d;
+				}
+				if (midX == null) {
+					midX = left + ((right - left) / 2);
+				}
+				if (midY == null) {
+					midY = top + ((bottom - top) / 2);
+				}
 				imgPart = null;
 				if (effectImg != null) {
 					imgPart = effectImg.copy();
@@ -366,19 +378,14 @@ public class VideoEffectContainer {
 					img.drawRectangle(fromX, fromY, untilX, untilY, color);
 				}
 
-				double amountOfFramesForThisEffectd = toFrameNumSafe - fromFrameNumSafe;
-				// this is from 1.0 to 0.0
-				double fadeAmountd = (toFrameNumSafe - frameNum) / amountOfFramesForThisEffectd;
-				double fadeAmountSaveForDebug = fadeAmountd;
-				// we want to go from 1.0 to factor (e.g. 2.0 or 0.5)
-				// so now: from 0.0 to 1.0
-				fadeAmountd = 1.0d - fadeAmountd;
-				/*
-				// and now: from 0.0 to factor - 1.0
-				fadeAmountd = fadeAmountd * (factor - 1.0d);
-				// and now: from 1.0 to factor
-				fadeAmountd = fadeAmountd + 1.0d;
-				*/
+				double fadeAmountd = 1.0d;
+				if ("move-scale-image-part".equals(effect)) {
+					double amountOfFramesForThisEffectd = toFrameNumSafe - fromFrameNumSafe;
+					// this is from 1.0 to 0.0
+					fadeAmountd = (toFrameNumSafe - frameNum) / amountOfFramesForThisEffectd;
+					// now: from 0.0 to 1.0
+					fadeAmountd = 1.0d - fadeAmountd;
+				}
 
 				int startWidth = right - left;
 				int startHeight = bottom - top;
@@ -396,8 +403,6 @@ public class VideoEffectContainer {
 
 				imgPart.resampleTo(curWidth, curHeight);
 				img.draw(imgPart, curLeft, curRight);
-				System.out.println("DEBUG: fadeAmountSaveForDebug: " + fadeAmountSaveForDebug + ", fadeAmountd: " + fadeAmountd +
-				", startWidth: " + startWidth + ", endWidth: " + endWidth + ", curWidth: " + curWidth);
 
 				break;
 

@@ -105,7 +105,7 @@ public class ResizeGUI {
 				if (resample) {
 					newPic.resampleTo(newWidth, newHeight);
 				} else {
-					newPic.resize(newWidth, newHeight);
+					newPic.resizeTo(newWidth, newHeight);
 				}
 				gui.setPicture(newPic);
 				dialog.dispose();
