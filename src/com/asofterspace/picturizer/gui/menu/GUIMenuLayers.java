@@ -6,6 +6,7 @@ package com.asofterspace.picturizer.gui.menu;
 
 import com.asofterspace.picturizer.gui.GUI;
 import com.asofterspace.toolbox.gui.GuiUtils;
+import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageLayer;
 import com.asofterspace.toolbox.images.ImageLayerBasedOnImage;
@@ -271,6 +272,44 @@ public class GUIMenuLayers {
 			}
 		});
 		layers.add(moveToBottom);
+
+		JMenuItem moveUpDownToAlignment = new JMenuItem("Move Selected Layer Up/Down to Align with Background");
+		moveUpDownToAlignment.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageLayer curLayer = gui.getCurrentLayer();
+				Image curLayerImg = curLayer.convertToImageLayerBasedOnImage().getImage();
+				int xOff = curLayer.getOffsetX();
+
+				// get image without current layer as “background”
+				Image backgroundLayersImg = gui.getBakedLayersBelowCurrentLayerAsImg();
+
+				// scan background until we find a row that is the same as the top row of this layer
+				int yOff = 0;
+				for (; yOff < backgroundLayersImg.getHeight(); yOff++) {
+					boolean foundIt = true;
+					for (int x = xOff; x < backgroundLayersImg.getWidth(); x++) {
+						ColorRGBA bgPix = backgroundLayersImg.getPixelSafely(x, yOff);
+						if ((bgPix != null) && !bgPix.equals(curLayerImg.getPixelSafely(x - xOff, 0))) {
+							foundIt = false;
+							break;
+						}
+					}
+					if (foundIt) {
+						break;
+					}
+				}
+
+				// ensure the image is big enough
+				gui.expandImageToAtLeast(0, yOff + curLayer.getHeight());
+
+				// move this layer to that y offset
+				curLayer.moveTo(xOff, yOff);
+				gui.refreshMainView();
+				gui.refreshLayerView();
+			}
+		});
+		layers.add(moveUpDownToAlignment);
 
 		JMenuItem moveToCenterH = new JMenuItem("Move Selected Layer to Center (Horizontally)");
 		moveToCenterH.addActionListener(new ActionListener() {

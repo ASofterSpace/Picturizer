@@ -1424,6 +1424,19 @@ public class GUI extends MainWindow {
 		guiButtonHolder.refreshTools(activeTool);
 	}
 
+	public void expandImageToAtLeast(int minWidth, int minHeight) {
+		if (picture.getWidth() < minWidth) {
+			picture.setWidth(minWidth);
+		}
+		if (picture.getHeight() < minHeight) {
+			picture.setHeight(minHeight);
+		}
+	}
+
+	public Image getBakedLayersBelowCurrentLayerAsImg() {
+		return picture.bakeUntilLayer(currentLayerIndex);
+	}
+
 	public ImageLayer getCurrentLayer() {
 		ImageLayer layer = picture.getLayer(currentLayerIndex);
 		if (layer != null) {
