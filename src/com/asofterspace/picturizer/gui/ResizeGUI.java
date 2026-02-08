@@ -90,8 +90,10 @@ public class ResizeGUI {
 
 				if (newWidth < 1) {
 					if (newHeight < 1) {
-						newWidth = 0;
-						newHeight = 0;
+						// no input whatsoever? (or at least nothing helpful? ^^)
+						// do nothing!
+						GuiUtils.complain("Please specify at least a positive width OR height! ^^'");
+						return;
 					} else {
 						newWidth = (newHeight * oldWidth) / oldHeight;
 					}
