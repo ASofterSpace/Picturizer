@@ -9,6 +9,7 @@ import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
+import com.asofterspace.toolbox.utils.MathUtils;
 import com.asofterspace.toolbox.utils.StrUtils;
 
 import java.awt.Dimension;
@@ -115,14 +116,20 @@ public class CreateGridGUI {
 		JButton okButton = new JButton("OK, create grid");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Integer horz = StrUtils.strToInt(inputFieldAmountHorz.getText(), 1);
-				Integer vert = StrUtils.strToInt(inputFieldAmountVert.getText(), 1);
-				Integer width = StrUtils.strToInt(inputFieldWidth.getText(), 0);
-				Integer height = StrUtils.strToInt(inputFieldHeight.getText(), 0);
-				Integer lineThickness = StrUtils.strToInt(inputFieldLineThickness.getText(), 0);
+				Integer horz = calcStrToInt(inputFieldAmountHorz.getText());
+				Integer vert = calcStrToInt(inputFieldAmountVert.getText());
+				Integer width = calcStrToInt(inputFieldWidth.getText());
+				Integer height = calcStrToInt(inputFieldHeight.getText());
+				Integer lineThickness = calcStrToInt(inputFieldLineThickness.getText());
 
 				if ((horz != null) && (vert != null) &&
 					(width != null) && (height != null) && (lineThickness != null)) {
+					if (horz < 1) {
+						horz = 1;
+					}
+					if (vert < 1) {
+						vert = 1;
+					}
 					int fullWidth = (horz * width) + ((horz + 1) * lineThickness);
 					int fullHeight = (vert * height) + ((vert + 1) * lineThickness);
 					Image gridPic = new Image(fullWidth, fullHeight, backgroundColor);
@@ -207,4 +214,7 @@ public class CreateGridGUI {
 		inputFieldHeight.setVisible(modeCreateNewImage);
 	}
 
+	private Integer calcStrToInt(String str) {
+		return StrUtils.strToInt(MathUtils.calculateMathStr(str), 0);
+	}
 }

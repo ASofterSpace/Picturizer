@@ -8,6 +8,7 @@ import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.Image;
+import com.asofterspace.toolbox.utils.MathUtils;
 import com.asofterspace.toolbox.utils.StrUtils;
 
 import java.awt.Dimension;
@@ -85,8 +86,8 @@ public class ResizeGUI {
 				int oldWidth = baseImage.getWidth();
 				int oldHeight = baseImage.getHeight();
 
-				int newWidth = StrUtils.strToInt(inputFieldWidth.getText(), 0);
-				int newHeight = StrUtils.strToInt(inputFieldHeight.getText(), 0);
+				int newWidth = calcStrToInt(inputFieldWidth.getText());
+				int newHeight = calcStrToInt(inputFieldHeight.getText());
 
 				if (newWidth < 1) {
 					if (newHeight < 1) {
@@ -141,5 +142,9 @@ public class ResizeGUI {
 		// use existing image width and height
 		inputFieldWidth.setText("" + currentImg.getWidth());
 		inputFieldHeight.setText("" + currentImg.getHeight());
+	}
+
+	private Integer calcStrToInt(String str) {
+		return StrUtils.strToInt(MathUtils.calculateMathStr(str), 0);
 	}
 }

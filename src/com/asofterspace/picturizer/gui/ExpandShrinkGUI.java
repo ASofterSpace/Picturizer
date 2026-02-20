@@ -9,6 +9,7 @@ import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
+import com.asofterspace.toolbox.utils.MathUtils;
 import com.asofterspace.toolbox.utils.StrUtils;
 
 import java.awt.Dimension;
@@ -177,10 +178,10 @@ public class ExpandShrinkGUI {
 		JButton okButton = new JButton("OK, make adjustments");
 		okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Integer top = StrUtils.strToInt(inputFieldTop.getText(), 0);
-				Integer left = StrUtils.strToInt(inputFieldLeft.getText(), 0);
-				Integer right = StrUtils.strToInt(inputFieldRight.getText(), 0);
-				Integer bottom = StrUtils.strToInt(inputFieldBottom.getText(), 0);
+				Integer top = calcStrToInt(inputFieldTop.getText());
+				Integer left = calcStrToInt(inputFieldLeft.getText());
+				Integer right = calcStrToInt(inputFieldRight.getText());
+				Integer bottom = calcStrToInt(inputFieldBottom.getText());
 
 				if ((top != null) && (left != null) &&
 					(right != null) && (bottom != null)) {
@@ -238,15 +239,15 @@ public class ExpandShrinkGUI {
 		}
 		lastSelfMadeInputTime = curTimeMillis;
 
-		Integer left = StrUtils.strToInt(inputFieldLeft.getText(), 0);
-		Integer width = StrUtils.strToInt(inputFieldWidth.getText(), 0);
+		Integer left = calcStrToInt(inputFieldLeft.getText());
+		Integer width = calcStrToInt(inputFieldWidth.getText());
 		if ((left != null) && (width != null)) {
 			int right = width - baseImage.getWidth() - left;
 			inputFieldRight.setText("" + right);
 		}
 
-		Integer top = StrUtils.strToInt(inputFieldTop.getText(), 0);
-		Integer height = StrUtils.strToInt(inputFieldHeight.getText(), 0);
+		Integer top = calcStrToInt(inputFieldTop.getText());
+		Integer height = calcStrToInt(inputFieldHeight.getText());
 		if ((top != null) && (height != null)) {
 			int bottom = height - baseImage.getHeight() - top;
 			inputFieldBottom.setText("" + bottom);
@@ -261,18 +262,22 @@ public class ExpandShrinkGUI {
 		}
 		lastSelfMadeInputTime = curTimeMillis;
 
-		Integer left = StrUtils.strToInt(inputFieldLeft.getText(), 0);
-		Integer right = StrUtils.strToInt(inputFieldRight.getText(), 0);
+		Integer left = calcStrToInt(inputFieldLeft.getText());
+		Integer right = calcStrToInt(inputFieldRight.getText());
 		if ((left != null) && (right != null)) {
 			int newWidth = baseImage.getWidth() + left + right;
 			inputFieldWidth.setText("" + newWidth);
 		}
 
-		Integer top = StrUtils.strToInt(inputFieldTop.getText(), 0);
-		Integer bottom = StrUtils.strToInt(inputFieldBottom.getText(), 0);
+		Integer top = calcStrToInt(inputFieldTop.getText());
+		Integer bottom = calcStrToInt(inputFieldBottom.getText());
 		if ((top != null) && (bottom != null)) {
 			int newHeight = baseImage.getHeight() + top + bottom;
 			inputFieldHeight.setText("" + newHeight);
 		}
+	}
+
+	private Integer calcStrToInt(String str) {
+		return StrUtils.strToInt(MathUtils.calculateMathStr(str), 0);
 	}
 }
