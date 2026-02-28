@@ -1015,8 +1015,6 @@ public class GUI extends MainWindow {
 		saveCurPicForUndo();
 
 		setPictureUndoTakenCareOf(newPicture);
-
-		refreshLayerView();
 	}
 
 	public void setPictureUndoTakenCareOf(ImageMultiLayered newPicture) {
@@ -1024,6 +1022,7 @@ public class GUI extends MainWindow {
 		picture = newPicture;
 
 		refreshMainView();
+		refreshLayerView();
 
 		savedSinceLastChange = false;
 		refreshTitleBarAndSaveExportItems();

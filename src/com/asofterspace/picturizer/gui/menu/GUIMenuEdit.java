@@ -275,8 +275,9 @@ public class GUIMenuEdit {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				gui.saveCurPicForUndo();
-				gui.getCurrentImageLayer().getImage().reflectHorizontally();
-				gui.setPictureUndoTakenCareOf(gui.getPicture());
+				Image img = gui.getPicture().bake();
+				img.reflectHorizontally();
+				gui.setPictureUndoTakenCareOf(new ImageMultiLayered(img));
 			}
 		});
 		edit.add(reflectHorizontally);
@@ -286,8 +287,9 @@ public class GUIMenuEdit {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				gui.saveCurPicForUndo();
-				gui.getCurrentImageLayer().getImage().reflectVertically();
-				gui.setPictureUndoTakenCareOf(gui.getPicture());
+				Image img = gui.getPicture().bake();
+				img.reflectVertically();
+				gui.setPictureUndoTakenCareOf(new ImageMultiLayered(img));
 			}
 		});
 		edit.add(reflectVertically);
@@ -297,9 +299,8 @@ public class GUIMenuEdit {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				gui.saveCurPicForUndo();
-				Image img = gui.getPicture().bake();
-				img.reflectHorizontally();
-				gui.setPictureUndoTakenCareOf(new ImageMultiLayered(img));
+				gui.getCurrentImageLayer().getImage().reflectHorizontally();
+				gui.setPictureUndoTakenCareOf(gui.getPicture());
 			}
 		});
 		edit.add(reflectHorizontallyCL);
@@ -309,9 +310,8 @@ public class GUIMenuEdit {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				gui.saveCurPicForUndo();
-				Image img = gui.getPicture().bake();
-				img.reflectVertically();
-				gui.setPictureUndoTakenCareOf(new ImageMultiLayered(img));
+				gui.getCurrentImageLayer().getImage().reflectVertically();
+				gui.setPictureUndoTakenCareOf(gui.getPicture());
 			}
 		});
 		edit.add(reflectVerticallyCL);
