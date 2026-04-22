@@ -8,6 +8,7 @@ import com.asofterspace.picturizer.gui.GUI;
 import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.picturizer.utils.GlitchUtils;
 import com.asofterspace.toolbox.configuration.ConfigFile;
+import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageLayer;
 import com.asofterspace.toolbox.images.ImageLayerBasedOnImage;
@@ -71,7 +72,7 @@ public class GUIMenuGlitch {
 		});
 		glitch.add(curMenuItem);
 
-		curMenuItem = new JMenuItem("Box-Shatter");
+		curMenuItem = new JMenuItem("Box-Shatter (Random)");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -89,7 +90,7 @@ public class GUIMenuGlitch {
 		});
 		glitch.add(curMenuItem);
 
-		curMenuItem = new JMenuItem("Box-Swap");
+		curMenuItem = new JMenuItem("Box-Swap (Random)");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -107,7 +108,7 @@ public class GUIMenuGlitch {
 		});
 		glitch.add(curMenuItem);
 
-		curMenuItem = new JMenuItem("Box-Krizzel");
+		curMenuItem = new JMenuItem("Box-Krizzel (Random)");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -125,7 +126,29 @@ public class GUIMenuGlitch {
 		});
 		glitch.add(curMenuItem);
 
-		curMenuItem = new JMenuItem("Box-Pixelate");
+		curMenuItem = new JMenuItem("Box-Krizzel (Bounded by Last Two Clicks)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int prevClickX = gui.getPrevClickX();
+				int prevClickY = gui.getPrevClickY();
+				int lastClickX = gui.getLastClickX();
+				int lastClickY = gui.getLastClickY();
+				int top = Math.min(prevClickY, lastClickY);
+				int right = Math.max(prevClickX, lastClickX);
+				int bottom = Math.max(prevClickY, lastClickY);
+				int left = Math.min(prevClickX, lastClickX);
+
+				if ((right > left) && (bottom > top)) {
+					gui.setPicture(GlitchUtils.boxKrizzel(gui.getPicture().bake(), top, right, bottom, left));
+				} else {
+					GuiUtils.complain("Cannot copy area of with zero width or height!");
+				}
+			}
+		});
+		glitch.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Box-Pixelate (Random)");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -143,7 +166,29 @@ public class GUIMenuGlitch {
 		});
 		glitch.add(curMenuItem);
 
-		curMenuItem = new JMenuItem("Lineify Vertically");
+		curMenuItem = new JMenuItem("Box-Pixelate (Bounded by Last Two Clicks)");
+		curMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int prevClickX = gui.getPrevClickX();
+				int prevClickY = gui.getPrevClickY();
+				int lastClickX = gui.getLastClickX();
+				int lastClickY = gui.getLastClickY();
+				int top = Math.min(prevClickY, lastClickY);
+				int right = Math.max(prevClickX, lastClickX);
+				int bottom = Math.max(prevClickY, lastClickY);
+				int left = Math.min(prevClickX, lastClickX);
+
+				if ((right > left) && (bottom > top)) {
+					gui.setPicture(GlitchUtils.boxPixelate(gui.getPicture().bake(), top, right, bottom, left));
+				} else {
+					GuiUtils.complain("Cannot copy area of with zero width or height!");
+				}
+			}
+		});
+		glitch.add(curMenuItem);
+
+		curMenuItem = new JMenuItem("Lineify Vertically (Random)");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -161,7 +206,7 @@ public class GUIMenuGlitch {
 		});
 		glitch.add(curMenuItem);
 
-		curMenuItem = new JMenuItem("Box-Lineify Vertically");
+		curMenuItem = new JMenuItem("Box-Lineify Vertically (Random)");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -179,7 +224,7 @@ public class GUIMenuGlitch {
 		});
 		glitch.add(curMenuItem);
 
-		curMenuItem = new JMenuItem("Individual Pixels");
+		curMenuItem = new JMenuItem("Individual Pixels (Random)");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -197,7 +242,7 @@ public class GUIMenuGlitch {
 		});
 		glitch.add(curMenuItem);
 
-		curMenuItem = new JMenuItem("Random Glitch");
+		curMenuItem = new JMenuItem("Apply a Random Glitch");
 		curMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

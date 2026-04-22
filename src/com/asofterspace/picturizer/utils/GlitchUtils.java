@@ -94,6 +94,13 @@ public class GlitchUtils {
 		return drawImg;
 	}
 
+	public static Image boxKrizzel(Image img, int top, int right, int bottom, int left) {
+		Image drawImg = img.copy();
+		img.createNoise();
+		drawImg.draw(img, left, top, left, top, right, bottom);
+		return drawImg;
+	}
+
 	public static Image boxPixelate(Image img) {
 		Image drawImg = img.copy();
 		int boxAmount = MathUtils.randomInteger(5) + 3;
@@ -105,6 +112,13 @@ public class GlitchUtils {
 			int untilY = fromY + MathUtils.randomInteger(img.getHeight() - fromY);
 			drawImg.draw(img, fromX, fromY, fromX, fromY, untilX, untilY);
 		}
+		return drawImg;
+	}
+
+	public static Image boxPixelate(Image img, int top, int right, int bottom, int left) {
+		Image drawImg = img.copy();
+		img.pixelate(16);
+		drawImg.draw(img, left, top, left, top, right, bottom);
 		return drawImg;
 	}
 
