@@ -6,6 +6,7 @@ package com.asofterspace.picturizer.gui.menu;
 
 import com.asofterspace.picturizer.gui.GUI;
 import com.asofterspace.toolbox.gui.GuiUtils;
+import com.asofterspace.toolbox.images.CallbackWithImage;
 import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageLayer;
@@ -62,20 +63,22 @@ public class GUIMenuLayers {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				gui.saveCurPicForUndo();
-				boolean returnImage = true;
-				Image img = gui.openFile(returnImage);
-				if (img != null) {
-					String caption = "";
-					File lastOpenedFile = gui.getLastOpenedFile();
-					if (lastOpenedFile != null) {
-						caption = lastOpenedFile.getLocalFilename();
+				gui.openFile(new CallbackWithImage() {
+					public void call(Image img) {
+						if (img != null) {
+							String caption = "";
+							File lastOpenedFile = gui.getLastOpenedFile();
+							if (lastOpenedFile != null) {
+								caption = lastOpenedFile.getLocalFilename();
+							}
+							ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0, img, caption);
+							gui.getPicture().addLayer(layer);
+							gui.setCurrentLayerIndex(gui.getPicture().getLayerAmount() - 1);
+							gui.setPictureUndoTakenCareOf(gui.getPicture());
+							gui.refreshLayerView();
+						}
 					}
-					ImageLayerBasedOnImage layer = new ImageLayerBasedOnImage(0, 0, img, caption);
-					gui.getPicture().addLayer(layer);
-					gui.setCurrentLayerIndex(gui.getPicture().getLayerAmount() - 1);
-					gui.setPictureUndoTakenCareOf(gui.getPicture());
-					gui.refreshLayerView();
-				}
+				});
 			}
 		});
 		layers.add(addImgLayerFile);

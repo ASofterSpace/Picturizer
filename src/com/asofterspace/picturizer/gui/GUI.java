@@ -27,6 +27,8 @@ import com.asofterspace.toolbox.configuration.ConfigFile;
 import com.asofterspace.toolbox.gui.Arrangement;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.gui.MainWindow;
+import com.asofterspace.toolbox.gui.OpenFileDialog;
+import com.asofterspace.toolbox.images.CallbackWithImage;
 import com.asofterspace.toolbox.images.ColorRGBA;
 import com.asofterspace.toolbox.images.Image;
 import com.asofterspace.toolbox.images.ImageFile;
@@ -38,6 +40,7 @@ import com.asofterspace.toolbox.images.ImageMultiLayered;
 import com.asofterspace.toolbox.images.PicFile;
 import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
+import com.asofterspace.toolbox.utils.CallbackWithStatus;
 import com.asofterspace.toolbox.utils.Pair;
 import com.asofterspace.toolbox.utils.StrUtils;
 import com.asofterspace.toolbox.Utils;
@@ -1032,20 +1035,22 @@ public class GUI extends MainWindow {
 		return undoablePicture;
 	}
 
-	public Image openFile(boolean returnImage) {
+	/**
+	 * callbackWhenOpened:
+	 * if set, call the callback with the opened image, but do NOT open it as main picture
+	 * if unset, just open the image as main picture
+	 */
+	public void openFile(CallbackWithImage callbackWhenOpened) {
 
-		// TODO :: de-localize the JFileChooser (by default it seems localized, which is inconsistent when the rest of the program is in English...)
-		// (while you're at it, make Öffnen into Save for the save dialog, but keep it as Open for the open dialog... ^^)
-		// TODO :: actually, write our own file chooser
-		JFileChooser augFilePicker;
+		OpenFileDialog augFilePicker;
 
 		// if we find nothing better, use the last-used directory
 		String lastDirectory = configuration.getValue(CONFIG_KEY_LAST_DIRECTORY);
 
 		if ((lastDirectory != null) && !"".equals(lastDirectory)) {
-			augFilePicker = new JFileChooser(new java.io.File(lastDirectory));
+			augFilePicker = new OpenFileDialog(new Directory(lastDirectory));
 		} else {
-			augFilePicker = new JFileChooser();
+			augFilePicker = new OpenFileDialog();
 		}
 
 		augFilePicker.setDialogTitle("Open a Picture File to Edit");
@@ -1055,24 +1060,30 @@ public class GUI extends MainWindow {
 
 		addOpenFileFilters(augFilePicker);
 
-		int result = augFilePicker.showOpenDialog(mainFrame);
+		augFilePicker.showOpenDialog(new CallbackWithStatus() {
+			public void call(int status) {
+				switch (status) {
 
-		switch (result) {
+					case OpenFileDialog.APPROVE_OPTION:
 
-			case JFileChooser.APPROVE_OPTION:
+						// load the files
+						configuration.set(CONFIG_KEY_LAST_DIRECTORY, augFilePicker.getCurrentDirectory().getAbsoluteDirname());
+						configuration.create();
 
-				// load the files
-				configuration.set(CONFIG_KEY_LAST_DIRECTORY, augFilePicker.getCurrentDirectory().getAbsolutePath());
-				configuration.create();
+						if (callbackWhenOpened == null) {
+							openImageFile(new File(augFilePicker.getSelectedFile()), false);
+						} else {
+							Image img = openImageFile(new File(augFilePicker.getSelectedFile()), true);
+							callbackWhenOpened.call(img);
+						}
+						break;
 
-				return openImageFile(new File(augFilePicker.getSelectedFile()), returnImage);
-
-			case JFileChooser.CANCEL_OPTION:
-				// cancel was pressed... do nothing for now
-				break;
-		}
-
-		return null;
+					case OpenFileDialog.CANCEL_OPTION:
+						// cancel was pressed... do nothing for now
+						break;
+				}
+			}
+		});
 	}
 
 	private Image openImageFile(File imageFile, boolean returnImage) {
@@ -1081,20 +1092,22 @@ public class GUI extends MainWindow {
 
 		lastOpenedFile = imageFile;
 
-		saveCurPicForUndo();
 		if (selFilename.toLowerCase().endsWith(".pic")) {
 			lastSavePath = selFilename;
 			PicFile picFile = new PicFile(selFilename);
-			picture = picFile.getImageMultiLayered();
+			ImageMultiLayered img = picFile.getImageMultiLayered();
 			if (returnImage) {
-				return picture.bake();
+				return img.bake();
 			}
+			saveCurPicForUndo();
+			picture = img;
 		} else {
 			lastExportPath = selFilename;
 			Image img = Picturizer.getImageFileCtrl().loadImageFromFile(imageFile);
 			if (returnImage) {
 				return img;
 			}
+			saveCurPicForUndo();
 			picture = new ImageMultiLayered(img);
 		}
 		refreshMainView();
@@ -1106,15 +1119,15 @@ public class GUI extends MainWindow {
 
 	public void saveOrExportFile(boolean exporting) {
 
-		JFileChooser augFilePicker;
+		OpenFileDialog augFilePicker;
 
 		// if we find nothing better, use the last-used directory
 		String lastDirectory = configuration.getValue(CONFIG_KEY_LAST_DIRECTORY);
 
 		if ((lastDirectory != null) && !"".equals(lastDirectory)) {
-			augFilePicker = new JFileChooser(new java.io.File(lastDirectory));
+			augFilePicker = new OpenFileDialog(new Directory(lastDirectory));
 		} else {
-			augFilePicker = new JFileChooser();
+			augFilePicker = new OpenFileDialog();
 		}
 
 		if (exporting) {
@@ -1127,48 +1140,50 @@ public class GUI extends MainWindow {
 
 		addSaveOrExportFileFilters(augFilePicker, exporting);
 
-		int result = augFilePicker.showSaveDialog(mainFrame);
+		augFilePicker.showSaveDialog(new CallbackWithStatus() {
+			public void call(int status) {
+				switch (status) {
 
-		switch (result) {
+					case OpenFileDialog.APPROVE_OPTION:
 
-			case JFileChooser.APPROVE_OPTION:
+						// save the files
+						configuration.set(CONFIG_KEY_LAST_DIRECTORY, augFilePicker.getCurrentDirectory().getAbsoluteDirname());
+						configuration.create();
 
-				// save the files
-				configuration.set(CONFIG_KEY_LAST_DIRECTORY, augFilePicker.getCurrentDirectory().getAbsolutePath());
-				configuration.create();
-
-				File selectedFile = new File(augFilePicker.getSelectedFile());
-				String selectedExtension = null;
-				FileFilter genericFilter = augFilePicker.getFileFilter();
-				if (genericFilter != null) {
-					if (genericFilter instanceof FileNameExtensionFilter) {
-						FileNameExtensionFilter filter = (FileNameExtensionFilter) genericFilter;
-						if (filter.getExtensions() != null) {
-							if (filter.getExtensions().length > 0) {
-								selectedExtension = filter.getExtensions()[0];
-								if (selectedExtension != null) {
-									selectedExtension = selectedExtension.toLowerCase();
-									if (!selectedFile.getFilename().toLowerCase().endsWith("." + selectedExtension)) {
-										selectedFile = new File(selectedFile.getFilename() + "." + selectedExtension);
+						File selectedFile = new File(augFilePicker.getSelectedFile());
+						String selectedExtension = null;
+						FileFilter genericFilter = augFilePicker.getFileFilter();
+						if (genericFilter != null) {
+							if (genericFilter instanceof FileNameExtensionFilter) {
+								FileNameExtensionFilter filter = (FileNameExtensionFilter) genericFilter;
+								if (filter.getExtensions() != null) {
+									if (filter.getExtensions().length > 0) {
+										selectedExtension = filter.getExtensions()[0];
+										if (selectedExtension != null) {
+											selectedExtension = selectedExtension.toLowerCase();
+											if (!selectedFile.getFilename().toLowerCase().endsWith("." + selectedExtension)) {
+												selectedFile = new File(selectedFile.getFilename() + "." + selectedExtension);
+											}
+										}
 									}
 								}
 							}
 						}
-					}
+
+						if (exporting) {
+							exportImageToFile(picture.bake(), selectedFile);
+						} else {
+							saveImageToFile(picture, selectedFile);
+						}
+
+						break;
+
+					case OpenFileDialog.CANCEL_OPTION:
+						// cancel was pressed... do nothing for now
+						break;
 				}
-
-				if (exporting) {
-					exportImageToFile(picture.bake(), selectedFile);
-				} else {
-					saveImageToFile(picture, selectedFile);
-				}
-
-				break;
-
-			case JFileChooser.CANCEL_OPTION:
-				// cancel was pressed... do nothing for now
-				break;
-		}
+			}
+		});
 	}
 
 	public void saveFileAgain() {
@@ -1197,7 +1212,7 @@ public class GUI extends MainWindow {
 		refreshTitleBarAndSaveExportItems();
 	}
 
-	private void addOpenFileFilters(JFileChooser fileChooser) {
+	private void addOpenFileFilters(OpenFileDialog fileChooser) {
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Picturizer Picture (*.pic)", "pic"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG files (*.jpg, *.jpeg)", "jpg", "jpeg"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Bitmap files (*.bmp)", "bmp"));
@@ -1208,7 +1223,7 @@ public class GUI extends MainWindow {
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Document Format (*.pdf)", "pdf"));
 	}
 
-	private void addSaveOrExportFileFilters(JFileChooser fileChooser, boolean exporting) {
+	private void addSaveOrExportFileFilters(OpenFileDialog fileChooser, boolean exporting) {
 		if (exporting) {
 			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG files (*.jpg, *.jpeg)", "jpg", "jpeg"));
 			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Bitmap files (*.bmp)", "bmp"));

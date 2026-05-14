@@ -6,6 +6,7 @@ package com.asofterspace.picturizer.gui.menu;
 
 import com.asofterspace.picturizer.gui.GUI;
 import com.asofterspace.toolbox.gui.GuiUtils;
+import com.asofterspace.toolbox.images.CallbackWithImage;
 import com.asofterspace.toolbox.io.Directory;
 
 import java.awt.event.ActionEvent;
@@ -35,8 +36,8 @@ public class GUIMenuFile {
 		openFile.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				boolean returnImage = false;
-				gui.openFile(returnImage);
+				CallbackWithImage callback = null;
+				gui.openFile(callback);
 			}
 		});
 		file.add(openFile);
