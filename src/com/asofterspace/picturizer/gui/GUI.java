@@ -25,6 +25,7 @@ import com.asofterspace.picturizer.gui.menu.GUIMenuWindow;
 import com.asofterspace.picturizer.Picturizer;
 import com.asofterspace.toolbox.configuration.ConfigFile;
 import com.asofterspace.toolbox.gui.Arrangement;
+import com.asofterspace.toolbox.gui.FileNameExtensionFilterAllowingAny;
 import com.asofterspace.toolbox.gui.GuiUtils;
 import com.asofterspace.toolbox.gui.MainWindow;
 import com.asofterspace.toolbox.gui.OpenFileDialog;
@@ -1221,6 +1222,7 @@ public class GUI extends MainWindow {
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Gray Map (*.pgm)", "pgm"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Pixel Map (*.ppm)", "ppm"));
 		fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Portable Document Format (*.pdf)", "pdf"));
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilterAllowingAny("Any File (*)", "*"));
 	}
 
 	private void addSaveOrExportFileFilters(OpenFileDialog fileChooser, boolean exporting) {
@@ -1234,6 +1236,7 @@ public class GUI extends MainWindow {
 		} else {
 			fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Picturizer Picture (*.pic)", "pic"));
 		}
+		fileChooser.addChoosableFileFilter(new FileNameExtensionFilterAllowingAny("Any File (*)", "*"));
 	}
 
 	public void refreshMainView() {
