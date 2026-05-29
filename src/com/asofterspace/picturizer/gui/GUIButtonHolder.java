@@ -35,6 +35,7 @@ public class GUIButtonHolder {
 	private JButton fillBtn;
 	private JButton roughFillBtn;
 	private JButton rectBtn;
+	private JButton rectsBtn;
 	private JButton quadsBtn;
 	private JButton ellipseBtn;
 	private JButton areaBtn;
@@ -130,6 +131,26 @@ public class GUIButtonHolder {
 		});
 		addBtn(rectBtn, 0, row, parent);
 
+		rectsBtn = new JButton("Rects");
+		rectsBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.forceActiveTool(Tool.DRAW_RECTANGLES_FG);
+			}
+		});
+		addBtn(rectsBtn, 1, row, parent);
+
+		row++;
+
+		areaBtn = new JButton("Area");
+		areaBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.forceActiveTool(Tool.DRAW_AREA_FG);
+			}
+		});
+		addBtn(areaBtn, 0, row, parent);
+
 		quadsBtn = new JButton("Quads");
 		quadsBtn.addActionListener(new ActionListener() {
 			@Override
@@ -141,7 +162,7 @@ public class GUIButtonHolder {
 
 		row++;
 
-		ellipseBtn = new JButton("Elps");
+		ellipseBtn = new JButton("Elip");
 		ellipseBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -149,15 +170,6 @@ public class GUIButtonHolder {
 			}
 		});
 		addBtn(ellipseBtn, 0, row, parent);
-
-		areaBtn = new JButton("Area");
-		areaBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				gui.forceActiveTool(Tool.DRAW_AREA_FG);
-			}
-		});
-		addBtn(areaBtn, 1, row, parent);
 
 		row++;
 
@@ -239,6 +251,7 @@ public class GUIButtonHolder {
 		fillBtn.setBackground((activeTool == Tool.FILL_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		roughFillBtn.setBackground((activeTool == Tool.FILL_ROUGHLY_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		rectBtn.setBackground((activeTool == Tool.DRAW_RECTANGLE_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
+		rectsBtn.setBackground((activeTool == Tool.DRAW_RECTANGLES_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		quadsBtn.setBackground((activeTool == Tool.DRAW_QUADS_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		ellipseBtn.setBackground((activeTool == Tool.DRAW_ELLIPSE_FG) ? FOCUS_COLOR : DEFAULT_COLOR);
 		areaBtn.setBackground((activeTool == Tool.DRAW_AREA_FG) ? FOCUS_COLOR : DEFAULT_COLOR);

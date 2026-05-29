@@ -791,6 +791,8 @@ public class GUI extends MainWindow {
 
 						case DRAW_RECTANGLE_FG:
 						case DRAW_RECTANGLE_BG:
+						case DRAW_RECTANGLES_FG:
+						case DRAW_RECTANGLES_BG:
 							newPoint = new Pair<>(x, y);
 							if (lastDrawPoints.size() > 0) {
 								Pair<Integer, Integer> prevPoint = lastDrawPoints.get(0);
@@ -798,7 +800,8 @@ public class GUI extends MainWindow {
 								lastDrawPoints.add(prevPoint);
 								lastDrawPoints.add(newPoint);
 								ColorRGBA drawColor = foregroundColor;
-								if (activeTool == Tool.DRAW_RECTANGLE_BG) {
+								if ((activeTool == Tool.DRAW_RECTANGLE_BG) ||
+									(activeTool == Tool.DRAW_RECTANGLES_BG)) {
 									drawColor = backgroundColor;
 								}
 								int x1 = lastDrawPoints.get(0).getX();
@@ -817,6 +820,13 @@ public class GUI extends MainWindow {
 								drawImg.drawRectangle(x1, y1, x2, y2, drawColor);
 								getCurrentImageLayer().setImage(drawImg);
 								setPictureUndoTakenCareOf(picture);
+
+								if ((activeTool == Tool.DRAW_RECTANGLES_FG) ||
+									(activeTool == Tool.DRAW_RECTANGLES_BG)) {
+									Tool curTool = activeTool;
+									forceActiveTool(null);
+									forceActiveTool(curTool);
+								}
 							} else {
 								lastDrawPoints.add(newPoint);
 							}
@@ -1421,6 +1431,7 @@ public class GUI extends MainWindow {
 				case FILL_ROUGHLY_FG:
 				case DRAW_RECTANGLE_FG:
 				case DRAW_RECTANGLE_BG:
+				case DRAW_RECTANGLES_FG:
 				case DRAW_QUADS_FG:
 				case DRAW_QUADS_BG:
 				case DRAW_ELLIPSE_FG:
