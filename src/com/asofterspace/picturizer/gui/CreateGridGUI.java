@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -43,6 +44,7 @@ public class CreateGridGUI {
 	private JLabel explanationLabelHeight;
 	private JTextField inputFieldHeight;
 	private JTextField inputFieldLineThickness;
+	private JCheckBox addLineAroundSwitch;
 
 	// whether we create a new image (true) or align an existing image into a grid (false)
 	private boolean modeCreateNewImage = true;
@@ -59,6 +61,7 @@ public class CreateGridGUI {
 		this.inputFieldWidth = new JTextField();
 		this.inputFieldHeight = new JTextField();
 		this.inputFieldLineThickness = new JTextField();
+		this.addLineAroundSwitch = new JCheckBox();
 
 		createGUI();
 	}
@@ -107,11 +110,15 @@ public class CreateGridGUI {
 		inputFieldLineThickness.setPreferredSize(new Dimension(75, 20));
 		dialog.add(inputFieldLineThickness, new Arrangement(0, 9, 1.0, 0.0));
 
+		addLineAroundSwitch.setText("Add lines on the outside of the grid");
+		addLineAroundSwitch.setSelected(false);
+		dialog.add(addLineAroundSwitch, new Arrangement(0, 10, 1.0, 0.0));
+
 		JPanel buttonRow = new JPanel();
 		GridLayout buttonRowLayout = new GridLayout(1, 3);
 		buttonRowLayout.setHgap(8);
 		buttonRow.setLayout(buttonRowLayout);
-		dialog.add(buttonRow, new Arrangement(0, 10, 1.0, 0.0));
+		dialog.add(buttonRow, new Arrangement(0, 11, 1.0, 0.0));
 
 		JButton okButton = new JButton("OK, create grid");
 		okButton.addActionListener(new ActionListener() {
@@ -121,6 +128,7 @@ public class CreateGridGUI {
 				Integer width = calcStrToInt(inputFieldWidth.getText());
 				Integer height = calcStrToInt(inputFieldHeight.getText());
 				Integer lineThickness = calcStrToInt(inputFieldLineThickness.getText());
+				boolean addLineAround = addLineAroundSwitch.isSelected();
 
 				if ((horz != null) && (vert != null) &&
 					(width != null) && (height != null) && (lineThickness != null)) {
@@ -130,14 +138,22 @@ public class CreateGridGUI {
 					if (vert < 1) {
 						vert = 1;
 					}
-					int fullWidth = (horz * width) + ((horz + 1) * lineThickness);
-					int fullHeight = (vert * height) + ((vert + 1) * lineThickness);
+					int fullWidth = (horz * width) + ((horz - 1) * lineThickness);
+					int fullHeight = (vert * height) + ((vert - 1) * lineThickness);
+					if (addLineAround) {
+						fullWidth += 2*lineThickness;
+						fullHeight += 2*lineThickness;
+					}
 					Image gridPic = new Image(fullWidth, fullHeight, backgroundColor);
 
 					for (int x = 0; x < horz; x++) {
 						for (int y = 0; y < vert; y++) {
-							int offsetX = lineThickness + (x * (width + lineThickness));
-							int offsetY = lineThickness + (y * (height + lineThickness));
+							int offsetX = x * (width + lineThickness);
+							int offsetY = y * (height + lineThickness);
+							if (addLineAround) {
+								offsetX += lineThickness;
+								offsetY += lineThickness;
+							}
 
 							if (modeCreateNewImage) {
 								ColorRGBA drawColor = foregroundColor;

@@ -1124,6 +1124,7 @@ public class GUI extends MainWindow {
 		refreshMainView();
 		refreshTitleBarAndSaveExportItems();
 		refreshLayerView();
+		setPosLabelTexts(0, 0);
 
 		return null;
 	}
