@@ -42,6 +42,7 @@ import com.asofterspace.toolbox.images.PicFile;
 import com.asofterspace.toolbox.io.Directory;
 import com.asofterspace.toolbox.io.File;
 import com.asofterspace.toolbox.utils.CallbackWithStatus;
+import com.asofterspace.toolbox.utils.MathUtils;
 import com.asofterspace.toolbox.utils.Pair;
 import com.asofterspace.toolbox.utils.StrUtils;
 import com.asofterspace.toolbox.Utils;
@@ -573,8 +574,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ImageLayerBasedOnText txtLayer = getCurrentTextLayer();
-				txtLayer.setOffsetX(StrUtils.strToInt(textLayerOffsetXInput.getText(), 0));
-				txtLayer.setOffsetY(StrUtils.strToInt(textLayerOffsetYInput.getText(), 0));
+				txtLayer.setOffsetX(StrUtils.strToInt(MathUtils.calculateMathStr(textLayerOffsetXInput.getText()), 0));
+				txtLayer.setOffsetY(StrUtils.strToInt(MathUtils.calculateMathStr(textLayerOffsetYInput.getText()), 0));
 				txtLayer.setFontName(textLayerFontNameInput.getText());
 				txtLayer.setFontSize(StrUtils.strToInt(textLayerFontSizeInput.getText(), 10));
 				txtLayer.setTextColor(ColorRGBA.fromString(textLayerColorInput.getText()));
@@ -622,8 +623,8 @@ public class GUI extends MainWindow {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ImageLayerBasedOnImage imgLayer = getCurrentImageLayer();
-				imgLayer.setOffsetX(StrUtils.strToInt(imgLayerOffsetXInput.getText(), 0));
-				imgLayer.setOffsetY(StrUtils.strToInt(imgLayerOffsetYInput.getText(), 0));
+				imgLayer.setOffsetX(StrUtils.strToInt(MathUtils.calculateMathStr(imgLayerOffsetXInput.getText()), 0));
+				imgLayer.setOffsetY(StrUtils.strToInt(MathUtils.calculateMathStr(imgLayerOffsetYInput.getText()), 0));
 				imgLayer.setCaption(imgLayerTextInput.getText());
 				refreshMainView();
 				refreshLayerView();
